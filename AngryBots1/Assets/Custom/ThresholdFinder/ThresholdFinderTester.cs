@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using UnityEngine;
 
-namespace Stimulus
+namespace ThresholdFinding
 {
 	public class ThresholdFinderTester : MonoBehaviour
 	{
@@ -25,12 +25,12 @@ namespace Stimulus
 			Subject subject = new Subject(realThresh, sensitivity, min, max);
 
 			// simualte
-			while(finder.IsFinished() == false)
+			while(finder.Finished == false)
 			{
-				float stimulus = finder.GetNextStimulus();
+				float stimulus = finder.NextStimulus;
 				bool observation = subject.ObserveStimuli(stimulus);
-				Debug.Log("Subject observed " + observation + " at stimulus " + stimulus + 
-					" in " + ((finder.GetCurrentTrial() as ConstantStepTrial).ascending ? "ascending" : "descending") + " trial");
+				//Debug.Log("Subject observed " + observation + " at stimulus " + stimulus + 
+				//	" in " + ((finder.CurrentTrial as ConstantStepTrial).ascending ? "ascending" : "descending") + " trial");
 				finder.ReportObservation(stimulus, observation);
 			}
 
@@ -44,7 +44,7 @@ namespace Stimulus
 			{
 				sb.Append(thresholds[i]).Append(", ");
 			}
-			Debug.Log("Thresholds\n===========\n" + sb.ToString());
+			Debug.Log("Thresholds:\n" + sb.ToString());
 
 		}
 
@@ -57,11 +57,11 @@ namespace Stimulus
 			Subject subject = new Subject(realThresh, sensitivity, min, max);
 
 			float s = 0;
-			while(trial.IsDone() == false)
+			while(trial.Finished == false)
 			{
-				s = trial.GetNextStimulus();
+				s = trial.NextStimulus;
 				bool v = subject.ObserveStimuli(s);
-				trial.ReportObservation(v);
+				trial.ReportObservation(s, v);
 			}
 			Debug.Log("Stimulus: " + s);
 		}
@@ -102,7 +102,7 @@ namespace Stimulus
 				
 				float chance = Mathf.Pow(distanceNormalized, 0.08f);
 				chance *= sensitivity;
-				Debug.Log("Chance of detection at stimuli " + stimuli + ": " + chance);
+				//Debug.Log("Chance of detection at stimuli " + stimuli + ": " + chance);
 				float rand = UnityEngine.Random.Range(0.0f, 1.0f);
 				if(rand <= chance)
 				{

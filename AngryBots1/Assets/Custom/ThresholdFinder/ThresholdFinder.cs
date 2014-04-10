@@ -1,18 +1,20 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stimulus
+namespace ThresholdFinding
 {
 	/*
 
 	TODO: Seems to be working, but needs more rigorous testing
 	TODO: Use generics to abstract away float type
 	TODO: Find and clean up useless methods
-	TODO: Change some methods to be properties instead
-	TODO: Get initial stimulus as well (max or min)
-	TODO: Use parameter stimulus for reporting observation
+	DONE: Change some methods to be properties instead
+	DONE: Get initial stimulus as well (max or min)
+	DONE: Use parameter stimulus for reporting observation
 	TODO: Document eeeeeverryything
 	*/
+
+	/// Is this class really useful, as it primarily just proxies methods to the strategy?
 	public class ThresholdFinder
 	{
 		private ITrialStrategy strategy;
@@ -22,24 +24,24 @@ namespace Stimulus
 			this.strategy = strategy;
 		}
 
-		public float GetNextStimulus()
+		public float NextStimulus
 		{
-			return strategy.GetNextStimulus();
+			get {return strategy.NextStimulus;}
 		}
 
-		public Trial GetCurrentTrial()
+		public Trial CurrentTrial
 		{
-			return strategy.GetCurrentTrial();
+			get { return strategy.CurrentTrial; }
 		}
 
 		public bool ReportObservation(float stimulus, bool observation)
 		{
-			return strategy.ReportObservation(observation);
+			return strategy.ReportObservation(stimulus, observation);
 		}
 
-		public bool IsFinished()
+		public bool Finished
 		{
-			return strategy.IsFinished();
+			get { return strategy.Finished; }
 		}
 
 		public void GetObservations(out float[] stimuli, out bool[] values)

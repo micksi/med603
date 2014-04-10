@@ -1,30 +1,33 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stimulus
+namespace ThresholdFinding
 {
 	public abstract class Trial
 	{
-		public float min {get; protected set;}
-		public float max {get; protected set;}
+		public float Min {get; protected set;}
+		public float Max {get; protected set;}
 		protected float currentStimulus {get; set;}
-		protected bool done = false;
 		private List<KeyValuePair<float, bool>> observations = new List<KeyValuePair<float, bool>>();
 
 
-		public bool IsFailed()
+		public bool Failed
 		{
-			if(currentStimulus > max || currentStimulus < min)
+			get
 			{
-				return true;
+				if(currentStimulus > Max || currentStimulus < Min)
+				{
+					return true;
+				}
+				return false;
 			}
-			return false;
 		}
 
 
-		public bool IsDone()
+		public bool Finished
 		{
-			return done;
+			get;
+			protected set;
 		}
 
 		public List<KeyValuePair<float, bool>> GetObservations()
@@ -37,9 +40,9 @@ namespace Stimulus
 			observations.Add(new KeyValuePair<float, bool>(stimulus, value));
 		}
 
-		public abstract bool ReportObservation(bool value);
-		public abstract float GetNextStimulus();
-		public abstract float GetResultingThreshold();
+		public abstract bool ReportObservation(float stimulus, bool value);
+		public abstract float NextStimulus {get;}
+		public abstract float ResultingThreshold {get;}
 	}
 
 	public class ConstantStepTrial : Trial
@@ -52,61 +55,76 @@ namespace Stimulus
 		public ConstantStepTrial(bool ascending, float min, float max, float step)
 		{
 			this.ascending = ascending;
-			this.min = min;
-			this.max = max;
+			this.Min = min;
+			this.Max = max;
 			this.step = step;
 			this.currentStimulus = (ascending == true) ? min : max;
 		}
 
-		public override bool ReportObservation(bool value)
+		public override bool ReportObservation(float stimulus, bool value)
 		{
-			RecordObservation(currentStimulus, value);
+			RecordObservation(stimulus, value);
 			if(ascending)
 			{
-				done = value;
+				Finished = value;
 			}
 			else
 			{
-				done = !value;
+				Finished = !value;
 			}
-			return done;
+			return Finished;
 		}
 
-		public override float GetResultingThreshold()
+		public override float ResultingThreshold
 		{
-			if(IsDone() == false)
+			get
 			{
-				throw new InvalidOperationException("Cannot get resulting threshold before trial is done");
-			}
-			else
-			{
-				return currentStimulus;
+				if(Finished == false)
+				{
+					throw new InvalidOperationException("Cannot get resulting threshold before trial is done");
+				}
+				else
+				{
+					return GetObservations()[GetObservations().Count - 1].Key;
+				}
 			}
 		}
 
-		public override float GetNextStimulus()
+		public override float NextStimulus
 		{
-			// check state
-			if(IsFailed())
+			get
 			{
-				throw new InvalidOperationException(
-					"Trials is exhausted and thus failed. currentStimulus: " + currentStimulus
-				);
-			}
-			else if(IsDone())
-			{
-				throw new InvalidOperationException("Trials is done");	
-			}
+				// check state
+				if(Failed)
+				{
+					throw new InvalidOperationException(
+						"Trials is exhausted and thus failed. currentStimulus: " + currentStimulus
+					);
+				}
+				else if(Finished)
+				{
+					throw new InvalidOperationException("Trials is done");	
+				}
 
-			if(ascending == true)
-			{
-				currentStimulus += step;	
+				float result = currentStimulus;
+
+				if(ascending == true)
+				{
+					currentStimulus += step;	
+				}
+				else
+				{
+					currentStimulus -= step;
+				}
+				return result;
 			}
-			else
-			{
-				currentStimulus -= step;
-			}
-			return currentStimulus;
+		}
+
+		public override string ToString()
+		{
+			return String.Format("Trial with Min: {0}, Max: {1}, direction: {2}",
+				Min, Max, (ascending ? "Ascending" : "Descending")
+			);
 		}
 	}
 }

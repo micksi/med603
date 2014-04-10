@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace Stimulus
+namespace ThresholdFinding
 {
 	public interface ITrialStrategy
 	{
-		bool ReportObservation(bool value);
-		bool IsFinished();
+		bool ReportObservation(float stimulus, bool value);
+		bool Finished {get;}
 		void GetObservations(out float[] stimuli, out bool[] values);
 		void GetThresholds(out float[] thresholds);
-		float GetNextStimulus();
-		Trial GetCurrentTrial();
+		float NextStimulus {get;}
+		Trial CurrentTrial {get;}
 	}
 
 	public class AlternatingTrialsStrategy : ITrialStrategy
@@ -36,34 +37,44 @@ namespace Stimulus
 			}
 		}
 
-		public bool ReportObservation(bool value)
+		public bool ReportObservation(float stimulus, bool value)
 		{	
-			bool result = trials[index].ReportObservation(value);
+			bool result = trials[index].ReportObservation(stimulus, value);
+			if(result == true)
+			{
+				Debug.Log(trials[index].ToString() + " finished at stimulus " + stimulus);
+			}
 			return result;
 		}
 
-		public float GetNextStimulus()
+		public float NextStimulus
 		{
-			Trial trial = trials[index];
-			if(trial.IsDone())
+			get
 			{
-				trial = trials[++index];
+				Trial trial = trials[index];
+				if(trial.Finished)
+				{
+					trial = trials[++index];
+				}
+				return trial.NextStimulus;
 			}
-			return trial.GetNextStimulus();
 		}
 
-		public Trial GetCurrentTrial()
+		public Trial CurrentTrial
 		{
-			return trials[index];
+			get { return trials[index]; }
 		}
 
-		public bool IsFinished() 
+		public bool Finished 
 		{
-			if(index >= trials.Length | (index == trials.Length - 1 && trials[index].IsDone()))
+			get
 			{
-				return true;
+				if(index >= trials.Length | (index == trials.Length - 1 && trials[index].Finished))
+				{
+					return true;
+				}
+				return false;
 			}
-			return false;
 		}
 
 		public void GetObservations(out float[] stimuli, out bool[] values)
@@ -91,11 +102,11 @@ namespace Stimulus
 			for(int i = 0; i < trials.Length; i++)
 			{
 				Trial trial = trials[i];
-				if(trial.IsDone() == false)
+				if(trial.Finished == false)
 				{
 					throw new InvalidOperationException("Trying to get threshold before all trials are done");
 				}
-				if(trial.IsFailed() == true)
+				if(trial.Failed == true)
 				{
 					throw new InvalidOperationException(
 						String.Format(
@@ -104,7 +115,7 @@ namespace Stimulus
 						)
 					);
 				}
-				thresholds[i] = trial.GetResultingThreshold();
+				thresholds[i] = trial.ResultingThreshold;
 			}
 		}
 	}
