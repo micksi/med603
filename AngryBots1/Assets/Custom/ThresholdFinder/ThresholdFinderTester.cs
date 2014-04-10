@@ -16,10 +16,14 @@ namespace ThresholdFinding
 		public static void Run()
 		{
 			const float min = 0.0f, max = 100.0f, step = 3.0f;
-			const int trials = 10;
+			const int trials = 10, reversals = 9;
 
-			ITrialStrategy strategy = new AlternatingTrialsStrategy(trials, min, max, step);
+			ITrialFactory factory = new StaircaseTrialFactory(min, max, step, reversals);
+			ITrialStrategy strategy = new AlternatingTrialsStrategy(factory, trials);
 			ThresholdFinder finder = new ThresholdFinder(strategy);
+
+			// ITrialStrategy strategy = new StaircaseTrialsStrategy(trials, min, max, step, reversals);
+			// ThresholdFinder finder = new ThresholdFinder(strategy);
 
 			const float realThresh = 40.0f, sensitivity = 1.0f;
 			Subject subject = new Subject(realThresh, sensitivity, min, max);

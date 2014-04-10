@@ -1,20 +1,130 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ThresholdFinding
 {
 	/*
 
 	TODO: Seems to be working, but needs more rigorous testing
-	TODO: Use generics to abstract away float type
-	TODO: Find and clean up useless methods
-	DONE: Change some methods to be properties instead
-	DONE: Get initial stimulus as well (max or min)
-	DONE: Use parameter stimulus for reporting observation
+	TODO: Find and clean up useless methods (if any)
 	TODO: Document eeeeeverryything
+	TODO: Create more implementations in order to figure out if the interface is OK
+	TODO: Examine if current factory pattern is necessary and/or could be optimised
 	*/
 
-	/// Is this class really useful, as it primarily just proxies methods to the strategy?
+	public class ThresholdFinder
+	{
+		protected Trial[] trials;
+		protected int index = 0;
+
+		public ThresholdFinder(ITrialStrategy strategy)
+		{
+			trials = strategy.GenerateTrials();
+		}
+
+		public bool ReportObservation(float stimulus, bool value)
+		{	
+			bool result = trials[index].ReportObservation(stimulus, value);
+			if(result == true)
+			{
+				Debug.Log(trials[index].ToString() + " finished at stimulus " + stimulus);
+			}
+			return result;
+		}
+
+		public float NextStimulus
+		{
+			get
+			{
+				Trial trial = trials[index];
+				if(trial.Finished)
+				{
+					trial = trials[++index];
+				}
+				return trial.NextStimulus;
+			}
+		}
+
+		public Trial CurrentTrial
+		{
+			get { return trials[index]; }
+		}
+
+		public bool Finished 
+		{
+			get
+			{
+				if(index >= trials.Length | (index == trials.Length - 1 && trials[index].Finished))
+				{
+					return true;
+				}
+				return false;
+			}
+		}
+
+		public void GetObservations(out float[] stimuli, out bool[] values)
+		{	
+			List<float> stimuliList = new List<float>();
+			List<bool> valueList = new List<bool>();
+
+			// Concatenate all oversations from different trials
+			for(int i = 0; i < trials.Length; i++)
+			{
+				foreach (var observation in trials[i].GetObservations())
+				{
+					stimuliList.Add(observation.Key);
+					valueList.Add(observation.Value);
+				}
+			}
+			stimuli = stimuliList.ToArray();
+			values = valueList.ToArray();
+
+		}
+
+		public void GetThresholds(out float[] thresholds)
+		{
+			thresholds = new float[trials.Length];
+			for(int i = 0; i < trials.Length; i++)
+			{
+				Trial trial = trials[i];
+				if(trial.Finished == false)
+				{
+					throw new InvalidOperationException("Trying to get threshold before all trials are done");
+				}
+				if(trial.Failed == true)
+				{
+					throw new InvalidOperationException(
+						String.Format(
+							"Trying to get threshold from an exhausted (failed) trial.\nIndex: {0}",
+							index
+						)
+					);
+				}
+				thresholds[i] = trial.ResultingThreshold;
+			}
+		}
+
+		public float[] GetThresholds()
+		{
+			float[] thresholds;
+			GetThresholds(out thresholds);
+			return thresholds;
+		}
+
+		public float GetThreshold()
+		{
+			float[] thresholds = GetThresholds();
+			float sum = 0;
+			for(int i = 0; i < thresholds.Length; i++)
+			{
+				sum += thresholds[i];
+			}
+			return sum / thresholds.Length;
+		}
+	}
+
+	/*
 	public class ThresholdFinder
 	{
 		private ITrialStrategy strategy;
@@ -66,5 +176,7 @@ namespace ThresholdFinding
 			}
 			return sum / thresholds.Length;
 		}
+
 	}
+	*/
 }
