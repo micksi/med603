@@ -10,7 +10,8 @@ namespace ThresholdFinding
 
 		private int maxReversals;
 		private int reversals = 0;
-		private bool startAscending;
+		public bool startAscending {get; private set;}
+		public event EventHandler<ReverseEventArgs> ReverseEvent;
 
 		public StaircaseTrial(bool ascending, float min, float max, float step, int maxReversals)
 		: base(ascending, min, max, step)
@@ -25,9 +26,13 @@ namespace ThresholdFinding
 			if(value == ascending)
 			{
 				// reverse
-				this.ascending = !this.ascending;
-				this.reversals++;
-				Debug.Log(this.ToString() + " is reversing at stimulus " + stimulus + ". Reversal number " + reversals);
+				ascending = !ascending;
+				reversals++;
+				if(ReverseEvent != null)
+				{
+					ReverseEvent(this, new ReverseEventArgs(ascending, reversals));
+				}
+				Debug.Log(ToString() + " is reversing at stimulus " + stimulus + ". Reversal number " + reversals);
 
 				if(reversals >= maxReversals)
 				{
@@ -70,11 +75,22 @@ namespace ThresholdFinding
 
 		public override string ToString()
 		{
-			return String.Format("Staircase trial with Min: {0}, Max: {1}, startDirection: {2}",
-				Min, Max, (startAscending ? "Ascending" : "Descending")
+			return String.Format("{0} with Min = {1}, Max = {2}, startDirection = {3}",
+				GetType().Name, Min, Max, (startAscending ? "Ascending" : "Descending")
 			);
 		}
 
+	}
+
+	internal class ReverseEventArgs : EventArgs
+	{
+		public readonly bool ToAscending;
+		public readonly int Iteration;
+		public ReverseEventArgs(bool toAscending, int iteration)
+		{
+			this.ToAscending = toAscending;
+			this.Iteration = iteration;
+		}
 	}
 
 	/*

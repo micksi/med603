@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace ThresholdFinding
@@ -29,6 +30,7 @@ namespace ThresholdFinding
 			if(result == true)
 			{
 				Debug.Log(trials[index].ToString() + " finished at stimulus " + stimulus);
+				SaveObservationsToDisk(trials[index]);
 			}
 			return result;
 		}
@@ -46,6 +48,29 @@ namespace ThresholdFinding
 			}
 		}
 
+		private void SaveObservationsToDisk(Trial trial)
+		{
+			string dataPath = Application.dataPath;
+			dataPath = dataPath.Replace("Assets", "");
+
+			if(Application.platform == RuntimePlatform.WindowsPlayer ||
+			   Application.platform == RuntimePlatform.WindowsEditor)
+			{
+				dataPath = dataPath.Replace('/', '\\');
+			}
+
+			string path = Path.Combine(dataPath, "Observations");
+			path = Path.Combine(path, trial + " at " + DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".txt");
+
+			if(Directory.Exists(Path.GetDirectoryName(path)) == false)
+			{
+				Directory.CreateDirectory(Path.GetDirectoryName(path));
+			}
+
+			Debug.Log("Saving observations to file: " + path);
+			trial.WriteObservationsToFile(path);
+		}
+
 		public Trial CurrentTrial
 		{
 			get { return trials[index]; }
@@ -55,7 +80,7 @@ namespace ThresholdFinding
 		{
 			get
 			{
-				if(index >= trials.Length | (index == trials.Length - 1 && trials[index].Finished))
+				if(index >= trials.Length || (index == trials.Length - 1 && trials[index].Finished))
 				{
 					return true;
 				}

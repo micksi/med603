@@ -5,8 +5,8 @@ namespace ThresholdFinding
 {
 	public class ConstantStepTrial : Trial
 	{
-		protected bool ascending;
-
+		public bool ascending {get; protected set;}
+		protected float currentStimulus {get; set;}
 		protected float step;
 
 
@@ -64,8 +64,6 @@ namespace ThresholdFinding
 					throw new InvalidOperationException("Trials is done");	
 				}
 
-				float result = currentStimulus;
-
 				if(ascending == true)
 				{
 					currentStimulus += step;	
@@ -74,13 +72,28 @@ namespace ThresholdFinding
 				{
 					currentStimulus -= step;
 				}
+
+				float result = currentStimulus;
+
 				return result;
+			}
+		}
+
+		public override bool Failed
+		{
+			get
+			{
+				if(currentStimulus > Max || currentStimulus < Min)
+				{
+					return true;
+				}
+				return false;
 			}
 		}
 
 		public override string ToString()
 		{
-			return String.Format("Trial with Min: {0}, Max: {1}, direction: {2}",
+			return this.GetType().Name + String.Format(" with Min = {0}, Max = {1}, direction = {2}",
 				Min, Max, (ascending ? "Ascending" : "Descending")
 			);
 		}

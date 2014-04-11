@@ -42,4 +42,23 @@ namespace ThresholdFinding
 			return new StaircaseTrial(ascending, min, max, step, reversals);
 		}
 	}
+
+	public class InterleavedStaircaseTrialFactory : ITrialFactory
+	{
+		private float min, max, step;
+		private int reversals;
+
+		public InterleavedStaircaseTrialFactory(float min, float max, float step, int reversals)
+		{
+			this.min = min;
+			this.max = max;
+			this.step = step;
+			this.reversals = reversals;
+		}
+		
+		public Trial NewTrial(bool ascending)
+		{
+			return new InterleavedStaircaseTrial(ascending, min, max, step, reversals);
+		}	
+	}
 }
