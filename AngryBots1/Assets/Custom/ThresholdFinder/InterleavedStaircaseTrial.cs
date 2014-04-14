@@ -12,13 +12,13 @@ namespace ThresholdFinding
 
 		private bool startAscending;
 		private int maxReversals;
-		private float step;
+		private double step;
 		private int index = 0;
 
 		// TODO: Child trials are failing. Investigate if the right observations are reported, and how
 		//       to keep the index in sync across observations.,
 
-		public InterleavedStaircaseTrial(bool startAscending, float min, float max, float step, int maxReversals)
+		public InterleavedStaircaseTrial(bool startAscending, double min, double max, double step, int maxReversals)
 		{
 			this.startAscending = startAscending;
 			this.Min = min;
@@ -37,7 +37,7 @@ namespace ThresholdFinding
 			trials[1].ReverseEvent += OnStaircaseReverse;
 		}
 
-		public override bool ReportObservation(float stimulus, bool value)
+		public override bool ReportObservation(double stimulus, bool value)
 		{
 			bool result = this.trials[index].ReportObservation(stimulus, value);
 			return Finished;
@@ -56,12 +56,12 @@ namespace ThresholdFinding
 			}
 		}
 
-		public override List<KeyValuePair<float, bool>> GetObservations()
+		public override List<KeyValuePair<double, bool>> GetObservations()
 		{
 			var first = trials[0].GetObservations();
 			var second = trials[1].GetObservations();
-			List<KeyValuePair<float, bool>> result =
-				new List<KeyValuePair<float, bool>>(first.Count + second.Count);
+			List<KeyValuePair<double, bool>> result =
+				new List<KeyValuePair<double, bool>>(first.Count + second.Count);
 
 			foreach(var pair in first)
 			{
@@ -75,7 +75,7 @@ namespace ThresholdFinding
 			return result;
 		}
 
-		public override float NextStimulus 
+		public override double NextStimulus 
 		{
 			get
 			{
@@ -84,7 +84,7 @@ namespace ThresholdFinding
 				{
 					SwitchIndex();
 				}
-				float result = trials[index].NextStimulus;
+				double result = trials[index].NextStimulus;
 				return result;
 			}
 		}
@@ -96,7 +96,7 @@ namespace ThresholdFinding
 		// etc.
 		public override string GetObservationsAsString(string del=",")
 		{
-			var observations = new List<KeyValuePair<float, bool>>[2]
+			var observations = new List<KeyValuePair<double, bool>>[2]
 			{
 				trials[0].GetObservations(),
 				trials[1].GetObservations()
@@ -147,7 +147,7 @@ namespace ThresholdFinding
 			}
 		}
 
-		public override float ResultingThreshold 
+		public override double ResultingThreshold 
 		{
 			get
 			{

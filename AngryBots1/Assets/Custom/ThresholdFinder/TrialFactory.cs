@@ -8,9 +8,9 @@ namespace ThresholdFinding
 	public class ConstantStepTrialFactory : ITrialFactory
 	{	
 
-		private float min, max, step;
+		private double min, max, step;
 
-		public ConstantStepTrialFactory(float min, float max, float step)
+		public ConstantStepTrialFactory(double min, double max, double step)
 		{
 			this.min = min;
 			this.max = max;
@@ -26,10 +26,10 @@ namespace ThresholdFinding
 	public class StaircaseTrialFactory : ITrialFactory
 	{	
 
-		private float min, max, step;
+		private double min, max, step;
 		private int reversals;
 
-		public StaircaseTrialFactory(float min, float max, float step, int reversals)
+		public StaircaseTrialFactory(double min, double max, double step, int reversals)
 		{
 			this.min = min;
 			this.max = max;
@@ -45,10 +45,10 @@ namespace ThresholdFinding
 
 	public class InterleavedStaircaseTrialFactory : ITrialFactory
 	{
-		private float min, max, step;
+		private double min, max, step;
 		private int reversals;
 
-		public InterleavedStaircaseTrialFactory(float min, float max, float step, int reversals)
+		public InterleavedStaircaseTrialFactory(double min, double max, double step, int reversals)
 		{
 			this.min = min;
 			this.max = max;

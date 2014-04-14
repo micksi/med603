@@ -18,24 +18,26 @@ namespace ThresholdFinding
 	{
 		protected Trial[] trials;
 		protected int index = 0;
+		private bool finished = false;
+		public event EventHandler<FinishedEventArgs> FinishedEvent;
 
 		public ThresholdFinder(ITrialStrategy strategy)
 		{
 			trials = strategy.GenerateTrials();
 		}
 
-		public bool ReportObservation(float stimulus, bool value)
+		public bool ReportObservation(double stimulus, bool value)
 		{	
 			bool result = trials[index].ReportObservation(stimulus, value);
 			if(result == true)
 			{
 				Debug.Log(trials[index].ToString() + " finished at stimulus " + stimulus);
-				SaveObservationsToDisk(trials[index]);
+				//SaveObservationsToDisk(trials[index]);
 			}
 			return result;
 		}
 
-		public float NextStimulus
+		public double NextStimulus
 		{
 			get
 			{
@@ -48,10 +50,18 @@ namespace ThresholdFinding
 			}
 		}
 
+		public void SaveObservationsToDisk()
+		{
+			for(int i = 0; i < trials.Length; i++)
+			{
+				SaveObservationsToDisk(trials[i]);
+			}
+		}
+
 		private void SaveObservationsToDisk(Trial trial)
 		{
 			string dataPath = Application.dataPath;
-			dataPath = dataPath.Replace("Assets", "");
+			dataPath = dataPath.Replace("Assets", ""); // Go up one level
 
 			if(Application.platform == RuntimePlatform.WindowsPlayer ||
 			   Application.platform == RuntimePlatform.WindowsEditor)
@@ -80,17 +90,30 @@ namespace ThresholdFinding
 		{
 			get
 			{
+				if(finished == true)
+				{
+					return finished;
+				}
+
 				if(index >= trials.Length || (index == trials.Length - 1 && trials[index].Finished))
 				{
+					if(finished == false)
+					{
+						if(FinishedEvent != null)
+						{
+							FinishedEvent(this, new FinishedEventArgs());
+						}
+					}
+					finished = true;
 					return true;
 				}
 				return false;
 			}
 		}
 
-		public void GetObservations(out float[] stimuli, out bool[] values)
+		public void GetObservations(out double[] stimuli, out bool[] values)
 		{	
-			List<float> stimuliList = new List<float>();
+			List<double> stimuliList = new List<double>();
 			List<bool> valueList = new List<bool>();
 
 			// Concatenate all oversations from different trials
@@ -107,9 +130,9 @@ namespace ThresholdFinding
 
 		}
 
-		public void GetThresholds(out float[] thresholds)
+		public void GetThresholds(out double[] thresholds)
 		{
-			thresholds = new float[trials.Length];
+			thresholds = new double[trials.Length];
 			for(int i = 0; i < trials.Length; i++)
 			{
 				Trial trial = trials[i];
@@ -130,17 +153,17 @@ namespace ThresholdFinding
 			}
 		}
 
-		public float[] GetThresholds()
+		public double[] GetThresholds()
 		{
-			float[] thresholds;
+			double[] thresholds;
 			GetThresholds(out thresholds);
 			return thresholds;
 		}
 
-		public float GetThreshold()
+		public double GetThreshold()
 		{
-			float[] thresholds = GetThresholds();
-			float sum = 0;
+			double[] thresholds = GetThresholds();
+			double sum = 0;
 			for(int i = 0; i < thresholds.Length; i++)
 			{
 				sum += thresholds[i];
@@ -149,59 +172,8 @@ namespace ThresholdFinding
 		}
 	}
 
-	/*
-	public class ThresholdFinder
+	public class FinishedEventArgs : EventArgs
 	{
-		private ITrialStrategy strategy;
-
-		public ThresholdFinder(ITrialStrategy strategy)
-		{
-			this.strategy = strategy;
-		}
-
-		public float NextStimulus
-		{
-			get {return strategy.NextStimulus;}
-		}
-
-		public Trial CurrentTrial
-		{
-			get { return strategy.CurrentTrial; }
-		}
-
-		public bool ReportObservation(float stimulus, bool observation)
-		{
-			return strategy.ReportObservation(stimulus, observation);
-		}
-
-		public bool Finished
-		{
-			get { return strategy.Finished; }
-		}
-
-		public void GetObservations(out float[] stimuli, out bool[] values)
-		{
-			strategy.GetObservations(out stimuli, out values);
-		}
-
-		public float[] GetThresholds()
-		{
-			float[] result;
-			strategy.GetThresholds(out result);
-			return result;
-		}
-
-		public float GetThreshold()
-		{
-			float[] thresholds = GetThresholds();
-			float sum = 0;
-			for(int i = 0; i < thresholds.Length; i++)
-			{
-				sum += thresholds[i];
-			}
-			return sum / thresholds.Length;
-		}
 
 	}
-	*/
 }

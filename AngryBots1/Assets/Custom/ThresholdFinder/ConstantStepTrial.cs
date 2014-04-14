@@ -6,11 +6,11 @@ namespace ThresholdFinding
 	public class ConstantStepTrial : Trial
 	{
 		public bool ascending {get; protected set;}
-		protected float currentStimulus {get; set;}
-		protected float step;
+		protected double currentStimulus {get; set;}
+		protected double step;
 
 
-		public ConstantStepTrial(bool ascending, float min, float max, float step)
+		public ConstantStepTrial(bool ascending, double min, double max, double step)
 		{
 			this.ascending = ascending;
 			this.Min = min;
@@ -19,7 +19,7 @@ namespace ThresholdFinding
 			this.currentStimulus = (ascending == true) ? min : max;
 		}
 
-		public override bool ReportObservation(float stimulus, bool value)
+		public override bool ReportObservation(double stimulus, bool value)
 		{
 			RecordObservation(stimulus, value);
 			if(ascending)
@@ -33,7 +33,7 @@ namespace ThresholdFinding
 			return Finished;
 		}
 
-		public override float ResultingThreshold
+		public override double ResultingThreshold
 		{
 			get
 			{
@@ -48,7 +48,7 @@ namespace ThresholdFinding
 			}
 		}
 
-		public override float NextStimulus
+		public override double NextStimulus
 		{
 			get
 			{
@@ -73,7 +73,7 @@ namespace ThresholdFinding
 					currentStimulus -= step;
 				}
 
-				float result = currentStimulus;
+				double result = currentStimulus;
 
 				return result;
 			}

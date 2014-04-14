@@ -13,14 +13,14 @@ namespace ThresholdFinding
 		public bool startAscending {get; private set;}
 		public event EventHandler<ReverseEventArgs> ReverseEvent;
 
-		public StaircaseTrial(bool ascending, float min, float max, float step, int maxReversals)
+		public StaircaseTrial(bool ascending, double min, double max, double step, int maxReversals)
 		: base(ascending, min, max, step)
 		{
 			this.maxReversals = maxReversals;
 			this.startAscending = ascending;
 		}
 
-		public override bool ReportObservation(float stimulus, bool value)
+		public override bool ReportObservation(double stimulus, bool value)
 		{
 			RecordObservation(stimulus, value);
 			if(value == ascending)
@@ -42,7 +42,7 @@ namespace ThresholdFinding
 			return Finished;
 		}
 
-		public override float ResultingThreshold
+		public override double ResultingThreshold
 		{
 			get
 			{
@@ -57,12 +57,12 @@ namespace ThresholdFinding
 			}
 		}
 
-		private float GetMeanThreshold()
+		private double GetMeanThreshold()
 		{
-			List<KeyValuePair<float, bool>> observations = GetObservations();
-			float mean = 0;
+			List<KeyValuePair<double, bool>> observations = GetObservations();
+			double mean = 0;
 			bool previous = !startAscending;
-			foreach(KeyValuePair<float, bool> pair in observations)
+			foreach(KeyValuePair<double, bool> pair in observations)
 			{
 				if(pair.Value != previous)
 				{
@@ -98,19 +98,19 @@ namespace ThresholdFinding
 	{
 		#region attributes
 
-		private float step;
+		private double step;
 		private bool ascending;
-		private float currentStimulus;
+		private double currentStimulus;
 
 		#endregion
 
 		#region properties
 
-		public float NextStimulus
+		public double NextStimulus
 		{
 			get
 			{
-				float result = currentStimulus;
+				double result = currentStimulus;
 				if(ascending)
 				{
 					currentStimulus += step;
@@ -122,13 +122,13 @@ namespace ThresholdFinding
 			}
 		}
 
-		public float ResultingThreshold {get;}
+		public double ResultingThreshold {get;}
 		
 		#endregion
 
 		#region constructors
 
-		public ParallelTrial(bool initiallyAcending, float min, float max, float step)
+		public ParallelTrial(bool initiallyAcending, double min, double max, double step)
 		{
 			this.Min = min;
 			this.Max = max;
@@ -142,7 +142,7 @@ namespace ThresholdFinding
 
 		#region methods
 
-		public bool ReportObservation(float stimulus, bool value)
+		public bool ReportObservation(double stimulus, bool value)
 		{
 			
 		}

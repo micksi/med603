@@ -7,10 +7,10 @@ namespace ThresholdFinding
 
 	public abstract class Trial
 	{
-		public float Min {get; protected set;}
-		public float Max {get; protected set;}
+		public double Min {get; protected set;}
+		public double Max {get; protected set;}
 		
-		private List<KeyValuePair<float, bool>> observations = new List<KeyValuePair<float, bool>>();
+		private List<KeyValuePair<double, bool>> observations = new List<KeyValuePair<double, bool>>();
 
 
 		public abstract bool Failed
@@ -25,7 +25,7 @@ namespace ThresholdFinding
 			protected set;
 		}
 
-		public virtual List<KeyValuePair<float, bool>> GetObservations()
+		public virtual List<KeyValuePair<double, bool>> GetObservations()
 		{
 			return observations;
 		}
@@ -50,14 +50,14 @@ namespace ThresholdFinding
 			System.IO.File.WriteAllText(fileName, content, Encoding.ASCII);
 		}
 
-		protected void RecordObservation(float stimulus, bool value)
+		protected void RecordObservation(double stimulus, bool value)
 		{
-			observations.Add(new KeyValuePair<float, bool>(stimulus, value));
+			observations.Add(new KeyValuePair<double, bool>(stimulus, value));
 		}
 
-		public abstract bool ReportObservation(float stimulus, bool value);
-		public abstract float NextStimulus {get;}
-		public abstract float ResultingThreshold {get;}
+		public abstract bool ReportObservation(double stimulus, bool value);
+		public abstract double NextStimulus {get;}
+		public abstract double ResultingThreshold {get;}
 	}
 	
 }
