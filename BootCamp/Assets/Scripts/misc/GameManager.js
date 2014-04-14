@@ -23,7 +23,7 @@ class GameManager extends MonoBehaviour
 	{
 		TrainingStatistics.ResetStatistics();
 		
-		Screen.lockCursor = true;
+		Screen.lockCursor = false;//true;
 		
 		running = false;
 		pause = false;
@@ -94,7 +94,7 @@ class GameManager extends MonoBehaviour
         	}           
         }
 		
-		Screen.lockCursor = !pause && !scores;
+		Screen.lockCursor = false;//!pause && !scores;
 	}
 	
 	function StartGame()

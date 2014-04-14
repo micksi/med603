@@ -87,7 +87,7 @@ class StreamingController extends MonoBehaviour
         loadForest = false;
         alpha = 0.0;
 
-        Screen.lockCursor = true;
+        Screen.lockCursor = false;//true;
 
 		if(Application.isEditor)
         {

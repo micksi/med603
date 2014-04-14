@@ -284,10 +284,11 @@ class SoldierCamera extends MonoBehaviour
 
 	function GetInput()
 	{
-		var a : Vector2 = soldierController.aim ? aimSpeed : speed;
-		x += Mathf.Clamp(Input.GetAxis("Mouse X") * a.x, -maxSpeed.x, maxSpeed.x) * deltaTime;
-		y -= Mathf.Clamp(Input.GetAxis("Mouse Y") * a.y, -maxSpeed.y, maxSpeed.y) * deltaTime;
-		y = ClampAngle(y, yMinLimit, yMaxLimit);
+		// TBs edit: Stationary camera
+		//var a : Vector2 = soldierController.aim ? aimSpeed : speed;
+		//x += Mathf.Clamp(Input.GetAxis("Mouse X") * a.x, -maxSpeed.x, maxSpeed.x) * deltaTime;
+		//y -= Mathf.Clamp(Input.GetAxis("Mouse Y") * a.y, -maxSpeed.y, maxSpeed.y) * deltaTime;
+		//y = ClampAngle(y, yMinLimit, yMaxLimit);
 	}
 
     function DepthOfFieldControl()
