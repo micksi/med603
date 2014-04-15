@@ -50,7 +50,7 @@ namespace ThresholdFinding
 			System.IO.File.WriteAllText(fileName, content, Encoding.ASCII);
 		}
 
-		protected void RecordObservation(double stimulus, bool value)
+		protected virtual void RecordObservation(double stimulus, bool value)
 		{
 			observations.Add(new KeyValuePair<double, bool>(stimulus, value));
 		}

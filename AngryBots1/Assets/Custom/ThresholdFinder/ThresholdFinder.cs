@@ -11,7 +11,7 @@ namespace ThresholdFinding
 	TODO: Find and clean up useless methods (if any)
 	TODO: Document eeeeeverryything
 	TODO: Create more implementations in order to figure out if the interface is OK
-	TODO: Examine if current factory pattern is necessary and/or could be optimised
+	TODO: Finish implementing and testing BestPestTrial along with ObservationsProvider
 	*/
 
 	public class ThresholdFinder
