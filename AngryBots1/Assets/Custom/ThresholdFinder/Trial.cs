@@ -7,11 +7,17 @@ namespace ThresholdFinding
 
 	public abstract class Trial
 	{
-		public double Min {get; protected set;}
-		public double Max {get; protected set;}
 		
 		private List<KeyValuePair<double, bool>> observations = new List<KeyValuePair<double, bool>>();
+		public readonly Range Range;
 
+		public double Min {get { return Range.Min; }}
+		public double Max {get { return Range.Max; }}
+		
+		public Trial(Range range)	
+		{
+			this.Range = range;
+		}
 
 		public abstract bool Failed
 		{

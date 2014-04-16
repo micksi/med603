@@ -2,20 +2,32 @@ using System;
 using System.Collections.Generic;
 
 namespace ThresholdFinding
-{
+{	
+
+	// TODO: Rewrite to use Range and indicies in the range instead
 	public class ConstantStepTrial : Trial
 	{
-		public bool ascending {get; protected set;}
+		public bool ascending {get; protected set;} // Should this be public?
 		protected double currentStimulus {get; set;}
-		protected double step;
+		protected double step
+		{
+			get
+			{
+				return Range.Step;
+			}
+		}
 
-
-		public ConstantStepTrial(bool ascending, double min, double max, double step)
+		public ConstantStepTrial(bool ascending, Range range) : base(range)
 		{
 			this.ascending = ascending;
-			this.Min = min;
-			this.Max = max;
-			this.step = step;
+			this.currentStimulus = (ascending == true) ? min : max;
+		}
+
+		public ConstantStepTrial(bool ascending, double min, double max, double step)
+		  : base(new Range(min, max, (int)((max - min) / step)))
+		{
+			this.ascending = ascending;
+			
 			this.currentStimulus = (ascending == true) ? min : max;
 		}
 
