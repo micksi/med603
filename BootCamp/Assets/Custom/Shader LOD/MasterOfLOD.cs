@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class MasterOfLOD : MonoBehaviour {
 
+	public bool disable = false;
+
 	// User's distance from the screen, in centimetres
 	public float userDistanceCentimetres = 60f;
 	[Range(0.0F, 50.0F)]
@@ -75,6 +77,16 @@ public class MasterOfLOD : MonoBehaviour {
 			}
 		}
 
+		if(disable)
+		{
+			foreach(GameObject go in gameObjectsWithPlaceholder)
+			{
+				go.renderer.material.shader = highShader;
+			}
+			return;
+		}
+
+
 		affectedGameObjects = gameObjectsWithPlaceholder.ToArray();
 		
 		cam = Camera.main;
@@ -94,6 +106,8 @@ public class MasterOfLOD : MonoBehaviour {
 
 	void Update()
 	{
+		if(disable) return;
+
 		// Update FocusProvider's source setting (mouse, gaze, centre of screen...)
 		FocusProvider.source = focusSource;
 
