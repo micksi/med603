@@ -14,6 +14,7 @@ Shader "Custom/DLAA"
 		_MainTex ("Base (RGB)", 2D) = "white" {}
 		_OffsetSize ("Sample offset size", Float) = 1.0
 		_QualityLevel("Quality level", Range(1, 4)) = 3
+		_Mixer("Mixer", Range(0,1)) = 0
 	}
 
 	CGINCLUDE
@@ -25,6 +26,7 @@ Shader "Custom/DLAA"
 
 	uniform float _OffsetSize;
 	uniform float _QualityLevel;
+	uniform float _Mixer;
 
 	struct v2f 
 	{
@@ -114,8 +116,8 @@ Shader "Custom/DLAA"
 		float edge_mask_v = saturate( ( lambda * edge_v_lum - epsilon ) / blurred_h_lum );
 
 		float4 clr = center;
-		clr = lerp( clr, blurred_h, edge_mask_v );
-		clr = lerp( clr, blurred_v, edge_mask_h ); // blurrier version
+		clr = lerp( clr, blurred_h, edge_mask_v  * _Mixer);
+		clr = lerp( clr, blurred_v, edge_mask_h  * _Mixer); // blurrier version
 
 		//
 		// Long Edges
@@ -125,8 +127,10 @@ Shader "Custom/DLAA"
 		float4 v0, v1, v2, v3, v4, v5, v6, v7;
 
 		// sample 16x16 cross (sparse-sample on X360, incremental kernel update on SPUs)
-		LD( h0, 1.5, 0 ) LD( h1, 3.5, 0 ) LD( h2, 5.5, 0 ) LD( h3, 7.5, 0 ) LD( h4, -1.5,0 ) LD( h5, -3.5,0 ) LD( h6, -5.5,0 ) LD( h7, -7.5,0 )
-		LD( v0, 0, 1.5 ) LD( v1, 0, 3.5 ) LD( v2, 0, 5.5 ) LD( v3, 0, 7.5 ) LD( v4, 0,-1.5 ) LD( v5, 0,-3.5 ) LD( v6, 0,-5.5 ) LD( v7, 0,-7.5 )
+		LD( h0,  1.5, 0) LD( h1,  3.5, 0) LD( h2,  5.5, 0) LD( h3,  7.5, 0) 
+		LD( h4, -1.5,0 ) LD( h5, -3.5,0 ) LD( h6, -5.5,0 ) LD( h7, -7.5,0 )
+		LD( v0, 0, 1.5 ) LD( v1, 0, 3.5 ) LD( v2, 0, 5.5 ) LD( v3, 0, 7.5 ) 
+		LD( v4, 0,-1.5 ) LD( v5, 0,-3.5 ) LD( v6, 0,-5.5 ) LD( v7, 0,-7.5 )
 
 		float long_edge_mask_h = ( h0.a + h1.a + h2.a + h3.a + h4.a + h5.a + h6.a + h7.a ) / 8.0f;
 		float long_edge_mask_v = ( v0.a + v1.a + v2.a + v3.a + v4.a + v5.a + v6.a + v7.a ) / 8.0f;
@@ -173,8 +177,8 @@ Shader "Custom/DLAA"
 			clr_h = lerp( top   , clr_h, vhxy.z );
 			clr_h = lerp( bottom, clr_h, vhxy.w );
 
-			clr = lerp( clr, clr_v, long_edge_mask_v );
-			clr = lerp( clr, clr_h, long_edge_mask_h );
+			clr = lerp( clr, clr_v, long_edge_mask_v  * _Mixer);
+			clr = lerp( clr, clr_h, long_edge_mask_h  * _Mixer);
 		}
 
 		return clr;
@@ -225,8 +229,8 @@ Shader "Custom/DLAA"
 		float edge_mask_v = saturate( ( lambda * edge_v_lum - epsilon ) / blurred_h_lum );
 
 		float4 clr = center;
-		clr = lerp( clr, blurred_h, edge_mask_v );
-		clr = lerp( clr, blurred_v, edge_mask_h * 0.5f ); // TFU2 uses 1.0f instead of 0.5f
+		clr = lerp( clr, blurred_h, edge_mask_v  * _Mixer);
+		clr = lerp( clr, blurred_v, edge_mask_h * 0.5f  * _Mixer); // TFU2 uses 1.0f instead of 0.5f
 
 		//
 		// Long Edges
@@ -236,8 +240,10 @@ Shader "Custom/DLAA"
 		float4 v0, v1, v2, v3, v4, v5, v6, v7;
 
 		// sample 16x16 cross (sparse-sample on X360, incremental kernel update on SPUs)
-		LD( h0, 1.5, 0 ) LD( h1, 3.5, 0 ) LD( h2, 5.5, 0 ) LD( h3, 7.5, 0 ) LD( h4, -1.5,0 ) LD( h5, -3.5,0 ) LD( h6, -5.5,0 ) LD( h7, -7.5,0 )
-		LD( v0, 0, 1.5 ) LD( v1, 0, 3.5 ) LD( v2, 0, 5.5 ) LD( v3, 0, 7.5 ) LD( v4, 0,-1.5 ) LD( v5, 0,-3.5 ) LD( v6, 0,-5.5 ) LD( v7, 0,-7.5 )
+		LD( h0, 1.5, 0 ) LD( h1, 3.5, 0 ) LD( h2, 5.5, 0 ) LD( h3, 7.5, 0 ) 
+		LD( h4, -1.5,0 ) LD( h5, -3.5,0 ) LD( h6, -5.5,0 ) LD( h7, -7.5,0 )
+		LD( v0, 0, 1.5 ) LD( v1, 0, 3.5 ) LD( v2, 0, 5.5 ) LD( v3, 0, 7.5 ) 
+		LD( v4, 0,-1.5 ) LD( v5, 0,-3.5 ) LD( v6, 0,-5.5 ) LD( v7, 0,-7.5 )
 
 		float long_edge_mask_h = ( h0.a + h1.a + h2.a + h3.a + h4.a + h5.a + h6.a + h7.a ) / 8.0f;
 		float long_edge_mask_v = ( v0.a + v1.a + v2.a + v3.a + v4.a + v5.a + v6.a + v7.a ) / 8.0f;
@@ -277,8 +283,8 @@ Shader "Custom/DLAA"
 			clr_h = lerp( top   , clr_h, vhxy.z );
 			clr_h = lerp( bottom, clr_h, vhxy.w );
 
-			clr = lerp( clr, clr_v, long_edge_mask_v );
-			clr = lerp( clr, clr_h, long_edge_mask_h );
+			clr = lerp( clr, clr_v, long_edge_mask_v  * _Mixer);
+			clr = lerp( clr, clr_h, long_edge_mask_h  * _Mixer);
 		}
 
 		return clr;
@@ -297,17 +303,22 @@ Shader "Custom/DLAA"
 	}
 
 	half4 fragFirst (v2f i) : COLOR 
-	{		 	 	   
+	{		 	 	
+		//return float4(1,0,0,1);
 		return highPassPre (i.uv);
 	}
 
 	half4 fragSecond (v2f i) : COLOR 
 	{		 	    
+		//return float4(0,1,0,1);
+
 		return edgeDetectAndBlur( i.uv );
 	}
 
 	half4 fragThird (v2f i) : COLOR 
 	{	 	 	    
+		//return float4(0,0,1,1);
+
 		return edgeDetectAndBlurSharper( i.uv );
 	}
 
