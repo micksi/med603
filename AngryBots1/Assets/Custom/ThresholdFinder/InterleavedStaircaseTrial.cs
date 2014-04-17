@@ -81,7 +81,7 @@ namespace ThresholdFinding
 			return result;
 		}
 
-		public override double NextStimulus 
+		public override double Stimulus 
 		{
 			get
 			{
@@ -90,7 +90,7 @@ namespace ThresholdFinding
 				{
 					SwitchIndex();
 				}
-				double result = trials[index].NextStimulus;
+				double result = trials[index].Stimulus;
 				return result;
 			}
 		}

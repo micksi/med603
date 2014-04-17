@@ -47,7 +47,7 @@ namespace ThresholdFinding
 			return maxIndex;
 		}
 
-		public static double CalculateNextStimulus(double[] stims, List<KeyValuePair<double, bool>> samples)
+		public static double CalculateStimulus(double[] stims, List<KeyValuePair<double, bool>> samples)
 		{
 			int i = CalculateNextIndex(stims, samples);
 			return stims[i];

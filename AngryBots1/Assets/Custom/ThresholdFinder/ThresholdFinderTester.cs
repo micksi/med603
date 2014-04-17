@@ -31,7 +31,7 @@ namespace ThresholdFinding
 			// simulate
 			while(finder.Finished == false)
 			{
-				double stimulus = finder.NextStimulus;
+				double stimulus = finder.Stimulus;
 				bool observation = subject.ObserveStimulus(stimulus);
 				//Debug.Log("Observer observed " + observation + " at stimulus " + stimulus + 
 				//	" in " + ((finder.CurrentTrial as ConstantStepTrial).ascending ? "ascending" : "descending") + " trial");
@@ -65,7 +65,7 @@ namespace ThresholdFinding
 			double s = 0;
 			while(trial.Finished == false)
 			{
-				s = trial.NextStimulus;
+				s = trial.Stimulus;
 				bool v = subject.ObserveStimulus(s);
 				trial.ReportObservation(s, v);
 			}

@@ -62,7 +62,7 @@ namespace ThresholdFinding
 			}
 		}
 
-		public override double NextStimulus
+		public override double Stimulus
 		{
 			get
 			{

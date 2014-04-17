@@ -38,7 +38,7 @@ namespace ThresholdFinding
 			return result;
 		}
 
-		public double NextStimulus
+		public double Stimulus
 		{
 			get
 			{
@@ -47,7 +47,7 @@ namespace ThresholdFinding
 				{
 					trial = trials[++index];
 				}
-				return trial.NextStimulus;
+				return trial.Stimulus;
 			}
 		}
 

@@ -5,77 +5,53 @@ using System.Text;
 namespace ThresholdFinding
 {
 
+	// TODO: Cache stimulus values for better performance
+	// TODO: Test thoroughly
+	// TODO: Pull out data for comparison in matlab
 	public class BestPestTrial : Trial
 	{
 
 		public bool StartAscending {get; private set;}
-		private int counter = 0;
-		private IObservationsProvider observationsProvider;
+		private int counter;
 
-		public BestPestTrial(bool ascending, double min, double max, int res, IObservationsProvider op)
-		 : base(new Range(min, max, res))
+		public BestPestTrial(bool ascending, Range range, int counter)
+		 : base(range)
 		{
 			this.StartAscending = ascending;
-			
-			this.observationsProvider = op;
+			this.counter = counter;
 		}
 
 		public override bool Failed
 		{
 			get
 			{
-				throw new NotImplementedException();
+				if(Stimulus < Range.Min || Stimulus > Range.Max)
+				{
+					return true;
+				}
+				return false;
 			}
 		}
 
 		public override bool ReportObservation(double stimulus, bool value)
 		{
-			observationsProvider.ReportObservation(stimulus, value);
-			return true;
+			RecordObservation(stimulus, value);
+			counter--;
+			if(counter < 0)
+			{
+				Finished = true;
+			}
+			return Finished;
 		}
 
-		public override double NextStimulus
+		public override double Stimulus
 		{
 			get
 			{
-				double result;
-				if(counter == 0)
-				{
-					result = (Max - Min) / 2;
-				}
-				else
-				{
-					result = observationsProvider.GetFiftyPercentEstimation();
-				}
-
-				counter++;
-				return result;
+				return BestPest.CalculateStimulus(Range.ToArray(), GetObservations());
 			}
 		}
 
-		private List<KeyValuePair<double, bool>> GetAllObservations()
-		{
-			return observationsProvider.GetObservations();
-		}
-
-		private bool[] GetAllObservationsAtStimulus(double stimulus)
-		{
-			List<KeyValuePair<double, bool>> observations = GetAllObservations();
-			List<bool> result = new List<bool>();
-			foreach(KeyValuePair<double, bool> pair in observations)
-			{
-				if(pair.Key == stimulus)
-				{
-					result.Add(pair.Value);
-				}
-			}
-			return result.ToArray();
-		}
-
-		private double GetProbabilityOfPositiveAtStimulus(double stimulus)
-		{
-			throw new NotImplementedException();
-		}
 
 		public override double ResultingThreshold 
 		{

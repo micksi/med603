@@ -106,7 +106,7 @@ namespace ThresholdFinding
 
 		#region properties
 
-		public double NextStimulus
+		public double Stimulus
 		{
 			get
 			{

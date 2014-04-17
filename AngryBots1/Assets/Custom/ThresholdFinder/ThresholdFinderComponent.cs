@@ -67,7 +67,7 @@ public class ThresholdFinderComponent : MonoBehaviour
 
 	public void Start()
 	{
-		Stimulus = Finder.NextStimulus;
+		Stimulus = Finder.Stimulus;
 	}
 
 	public void Update()
@@ -92,7 +92,7 @@ public class ThresholdFinderComponent : MonoBehaviour
 	{
 		Finder.ReportObservation(stimulus, observation);
 		if(Finder.Finished == false)
-			Stimulus = Finder.NextStimulus;
+			Stimulus = Finder.Stimulus;
 		Debug.Log(observation + " was observed at stimulus " + stimulus);
 		Debug.Log("Next stimulus is " + Stimulus);
 	}

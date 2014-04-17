@@ -62,7 +62,7 @@ namespace ThresholdFinding
 		}
 
 		public abstract bool ReportObservation(double stimulus, bool value);
-		public abstract double NextStimulus {get;}
+		public abstract double Stimulus {get;}
 		public abstract double ResultingThreshold {get;}
 	}
 	
