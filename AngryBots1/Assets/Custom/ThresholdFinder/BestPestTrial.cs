@@ -12,11 +12,11 @@ namespace ThresholdFinding
 		private int counter = 0;
 		private IObservationsProvider observationsProvider;
 
-		public BestPestTrial(bool ascending, double min, double max, IObservationsProvider op)
+		public BestPestTrial(bool ascending, double min, double max, int res, IObservationsProvider op)
+		 : base(new Range(min, max, res))
 		{
 			this.StartAscending = ascending;
-			this.Min = min;
-			this.Max = max;
+			
 			this.observationsProvider = op;
 		}
 

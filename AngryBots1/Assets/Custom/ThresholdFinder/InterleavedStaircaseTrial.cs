@@ -12,30 +12,36 @@ namespace ThresholdFinding
 
 		private bool startAscending;
 		private int maxReversals;
-		private double step;
+
+		private double step
+		{
+			get
+			{
+				return Range.Step;
+			}
+		}
 		private int index = 0;
 
 		// TODO: Child trials are failing. Investigate if the right observations are reported, and how
 		//       to keep the index in sync across observations.,
 
-		public InterleavedStaircaseTrial(bool startAscending, double min, double max, double step, int maxReversals)
+		public InterleavedStaircaseTrial(bool startAscending, Range range, int maxReversals)
+		 : base(range)
 		{
-			this.startAscending = startAscending;
-			this.Min = min;
-			this.Max = max;
-			this.step = step;
+			this.startAscending = startAscending;			
 			this.maxReversals = maxReversals;
 
 			this.trials = new StaircaseTrial[2];
 
 			this.trials[Convert.ToInt32(startAscending)] = 
-				new StaircaseTrial(true, min, max, step, maxReversals);
+				new StaircaseTrial(true, range, maxReversals);
 			this.trials[Convert.ToInt32(!startAscending)] = 			
-				new StaircaseTrial(false, min, max, step, maxReversals);
+				new StaircaseTrial(false, range, maxReversals);
 
 			trials[0].ReverseEvent += OnStaircaseReverse;
 			trials[1].ReverseEvent += OnStaircaseReverse;
 		}
+
 
 		public override bool ReportObservation(double stimulus, bool value)
 		{

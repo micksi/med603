@@ -8,7 +8,16 @@ namespace ThresholdFinding
 	public class ConstantStepTrial : Trial
 	{
 		public bool ascending {get; protected set;} // Should this be public?
-		protected double currentStimulus {get; set;}
+		protected double currentStimulus
+		{
+			get
+			{
+				return Range.GetValue(index);
+			}
+		}
+
+		private int index;
+
 		protected double step
 		{
 			get
@@ -20,16 +29,9 @@ namespace ThresholdFinding
 		public ConstantStepTrial(bool ascending, Range range) : base(range)
 		{
 			this.ascending = ascending;
-			this.currentStimulus = (ascending == true) ? min : max;
+			this.index = (ascending) ? 0 : range.Resolution;
 		}
 
-		public ConstantStepTrial(bool ascending, double min, double max, double step)
-		  : base(new Range(min, max, (int)((max - min) / step)))
-		{
-			this.ascending = ascending;
-			
-			this.currentStimulus = (ascending == true) ? min : max;
-		}
 
 		public override bool ReportObservation(double stimulus, bool value)
 		{
@@ -76,16 +78,16 @@ namespace ThresholdFinding
 					throw new InvalidOperationException("Trials is done");	
 				}
 
+				double result = currentStimulus;
 				if(ascending == true)
 				{
-					currentStimulus += step;	
+					index++;
 				}
 				else
 				{
-					currentStimulus -= step;
+					index--;
 				}
 
-				double result = currentStimulus;
 
 				return result;
 			}
@@ -95,7 +97,7 @@ namespace ThresholdFinding
 		{
 			get
 			{
-				if(currentStimulus > Max || currentStimulus < Min)
+				if(index < 0 || index > Range.Resolution)
 				{
 					return true;
 				}

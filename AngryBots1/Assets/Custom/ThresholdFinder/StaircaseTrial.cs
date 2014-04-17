@@ -13,8 +13,8 @@ namespace ThresholdFinding
 		public bool startAscending {get; private set;}
 		public event EventHandler<ReverseEventArgs> ReverseEvent;
 
-		public StaircaseTrial(bool ascending, double min, double max, double step, int maxReversals)
-		: base(ascending, min, max, step)
+		public StaircaseTrial(bool ascending, Range range, int maxReversals)
+		: base(ascending, range)
 		{
 			this.maxReversals = maxReversals;
 			this.startAscending = ascending;

@@ -14,7 +14,7 @@ public class ThresholdFinderComponent : MonoBehaviour
 
 	public double min = 0.0f;
 	public double max = 1.0f;
-	public double step = 0.01f;
+	public int resolution = 10;
 	public int trials = 2;
 	public int reversals = 9; // Only used with trials of type Staircase and InterleavedStaircase
 
@@ -37,19 +37,20 @@ public class ThresholdFinderComponent : MonoBehaviour
 	public void Awake()
 	{
 		ITrialFactory factory = null;
+		Range range = new Range(min, max, resolution);
 		switch(trialType)
 		{
 			case TrialType.InterleavedStaircase:
-				factory = new InterleavedStaircaseTrialFactory(min, max, step, reversals);
+				factory = new InterleavedStaircaseTrialFactory(range, reversals);
 				break;
 			case TrialType.ConstantStep:
-				factory = new ConstantStepTrialFactory(min, max, step);
+				factory = new ConstantStepTrialFactory(range);
 				break;
 			case TrialType.Staircase:
-				factory = new StaircaseTrialFactory(min, max, step, reversals);
+				factory = new StaircaseTrialFactory(range, reversals);
 				break;
 			default:
-				factory = new ConstantStepTrialFactory(min, max, step);
+				factory = new ConstantStepTrialFactory(range);
 				break;
 		}
 		// Alternating is the only strategy thus far

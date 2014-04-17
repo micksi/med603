@@ -15,13 +15,13 @@ namespace ThresholdFinding
 
 		public static void Run()
 		{
-			const double min = 15.0f, max = 35.0f, step = 0.5f;
-			const int trials = 2;
+			const double min = 15.0f, max = 35.0f;
+			const int trials = 2, resolution = 20;
 			const int reversals = 9;
-
-			ITrialFactory factory = new InterleavedStaircaseTrialFactory(min, max, step, reversals);
-			// ITrialFactory factory = new ConstantStepTrialFactory(min, max, step);
-			// ITrialFactory factory = new StaircaseTrialFactory(min, max, step, reversals);
+			Range range = new Range(min, max, resolution);
+			ITrialFactory factory = new InterleavedStaircaseTrialFactory(range, reversals);
+			// ITrialFactory factory = new ConstantStepTrialFactory(range);
+			// ITrialFactory factory = new StaircaseTrialFactory(range, reversals);
 			ITrialStrategy strategy = new AlternatingTrialsStrategy(factory, trials);
 			ThresholdFinder finder = new ThresholdFinder(strategy);
 
@@ -55,8 +55,9 @@ namespace ThresholdFinding
 
 		public static void TestConstantStepTrial()
 		{
-			const double min = 0.0f, max = 100.0f, step = 3.0f;
-			ConstantStepTrial trial = new ConstantStepTrial(false, min, max, step);
+			const double min = 0.0f, max = 100.0f;
+			const int resolution = 10;
+			ConstantStepTrial trial = new ConstantStepTrial(false, new Range(min, max, resolution));
 
 			const double realThresh = 40.0f, sensitivity = 1.0f;
 			Observer subject = new Observer(realThresh, sensitivity, min, max);

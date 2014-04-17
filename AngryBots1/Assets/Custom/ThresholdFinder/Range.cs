@@ -46,6 +46,23 @@ namespace ThresholdFinding
 			}
 		}
 
+		public double GetValue(int index)
+		{
+			if(index > Resolution || index < 0)
+			{
+				throw new InvalidOperationException("Cannot get value outside range");
+			}
+			if(index == 0)
+			{
+				return Min;
+			}
+			if(index == Resolution)
+			{
+				return Max;
+			}
+			return Min + index * Step;
+		}
+
 		public double Step
 		{
 			get

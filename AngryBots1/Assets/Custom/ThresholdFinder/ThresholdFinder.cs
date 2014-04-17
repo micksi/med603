@@ -10,8 +10,9 @@ namespace ThresholdFinding
 	TODO: Seems to be working, but needs more rigorous testing
 	TODO: Find and clean up useless methods (if any)
 	TODO: Document eeeeeverryything
+	TODO: Make sure that the new refactoring to use Ranges did not cause any problems
 	TODO: Create more implementations in order to figure out if the interface is OK
-	TODO: Finish implementing and testing BestPestTrial along with ObservationsProvider
+	TODO: Finish implementing and testing BestPestTrial along with ObservationsProvider (maybe)
 	*/
 
 	public class ThresholdFinder
