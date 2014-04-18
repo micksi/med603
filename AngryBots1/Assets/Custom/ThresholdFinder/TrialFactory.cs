@@ -62,4 +62,20 @@ namespace ThresholdFinding
 			return new InterleavedStaircaseTrial(ascending, range, reversals);
 		}	
 	}
+
+	public class BestPestTrialFactory : TrialFactory
+	{
+
+		private int nTrials;
+
+		public BestPestTrialFactory(Range range, int nTrials) : base(range)
+		{
+			this.nTrials = nTrials;
+		}
+
+		public override Trial NewTrial(bool ascending)
+		{
+			return new BestPestTrial(ascending, range, nTrials);
+		}	
+	}
 }

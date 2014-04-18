@@ -6,7 +6,6 @@ using UnityEngine;
 namespace ThresholdFinding
 {
 	/*
-
 	TODO: Seems to be working, but needs more rigorous testing
 	TODO: Find and clean up useless methods (if any)
 	TODO: Document eeeeeverryything

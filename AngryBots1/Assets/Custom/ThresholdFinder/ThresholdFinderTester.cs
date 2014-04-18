@@ -10,18 +10,20 @@ namespace ThresholdFinding
 		void Start()
 		{
 			ThresholdFinderTester.Run();
-			//ThresholdFinderTester.TestConstantStepTrial();
+			// ThresholdFinderTester.TestBestPest();
+			// ThresholdFinderTester.TestConstantStepTrial();
 		}
 
 		public static void Run()
 		{
-			const double min = 15.0f, max = 35.0f;
+			const double min = 0.0, max = 1.0;
 			const int trials = 2, resolution = 20;
 			const int reversals = 9;
 			Range range = new Range(min, max, resolution);
-			ITrialFactory factory = new InterleavedStaircaseTrialFactory(range, reversals);
+			// ITrialFactory factory = new InterleavedStaircaseTrialFactory(range, reversals);
 			// ITrialFactory factory = new ConstantStepTrialFactory(range);
 			// ITrialFactory factory = new StaircaseTrialFactory(range, reversals);
+			ITrialFactory factory = new BestPestTrialFactory(range, 10);
 			ITrialStrategy strategy = new AlternatingTrialsStrategy(factory, trials);
 			ThresholdFinder finder = new ThresholdFinder(strategy);
 
@@ -70,6 +72,13 @@ namespace ThresholdFinding
 				trial.ReportObservation(s, v);
 			}
 			Debug.Log("Stimulus: " + s);
+		}
+
+		public static void TestBestPest()
+		{
+			Range range = new Range(0.0, 1.0, 20);
+			double a = BestPest.Logistic(0.0, -1.0, 0.0, 2.0);
+			Debug.Log(a);
 		}
 
 		private class Observer

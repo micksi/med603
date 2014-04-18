@@ -8,6 +8,7 @@ namespace ThresholdFinding
 	// TODO: Cache stimulus values for better performance
 	// TODO: Test thoroughly
 	// TODO: Pull out data for comparison in matlab
+	// TODO: We are not getting the results we want. Double check calculations in matlab
 	public class BestPestTrial : Trial
 	{
 
@@ -16,11 +17,11 @@ namespace ThresholdFinding
 		private double[] stimRange;
 		private double[] probsBuffer;
 
-		public BestPestTrial(bool ascending, Range range, int counter)
+		public BestPestTrial(bool ascending, Range range, int numberOfTrials)
 		 : base(range)
 		{
 			this.StartAscending = ascending;
-			this.counter = counter;
+			this.counter = numberOfTrials;
 			this.stimRange = Range.ToArray();
 			this.probsBuffer = new double[stimRange.Length];
 		}
@@ -62,7 +63,16 @@ namespace ThresholdFinding
 		{
 			get
 			{
-				throw new NotImplementedException();
+				if(Finished == false)
+				{
+					throw new InvalidOperationException("Trial is not finished.");
+				}
+				if(Failed)
+				{
+					throw new InvalidOperationException(
+						"Trial failed and no resulting threshold was thus achieved");
+				}
+				return Stimulus;
 			}
 		}
 	}

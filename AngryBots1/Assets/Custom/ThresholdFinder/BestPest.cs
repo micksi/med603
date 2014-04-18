@@ -15,7 +15,7 @@ namespace ThresholdFinding
 		public static double Logistic(double stim, double obs, double meas, double B = 1.0, double S = 1.0)
 		{
 			double exponent = obs * (meas - stim) * 4 * B * Math.Pow(S, -1.0);
-			return (1 + Math.Pow(Math.Exp(exponent), -1.0));
+			return Math.Pow(1 + Math.Exp(exponent), -1.0);
 		}
 
 		public static int CalculateNextIndex(ref double[] probs,
