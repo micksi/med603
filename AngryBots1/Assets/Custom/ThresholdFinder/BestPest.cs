@@ -18,13 +18,13 @@ namespace ThresholdFinding
 			return (1 + Math.Pow(Math.Exp(exponent), -1.0));
 		}
 
-		public static int CalculateNextIndex(double[] stims, List<KeyValuePair<double, bool>> samples)
+		public static int CalculateNextIndex(ref double[] probs,
+			double[] stims, List<KeyValuePair<double, bool>> samples)
 		{
 			if(samples.Count < 1)
 			{
 				return stims.Length / 2;
 			}
-			double[] probs = new double[stims.Length];
 			int maxIndex = 0;
 			double maxProb = 0.0;
 
@@ -45,12 +45,24 @@ namespace ThresholdFinding
 				}
 			}
 			return maxIndex;
+		}		
+
+		public static int CalculateNextIndex(double[] stims, List<KeyValuePair<double, bool>> samples)
+		{
+			double[] probs = new double[stims.Length];
+			return CalculateNextIndex(ref probs, stims, samples);
+		}
+
+		public static double CalculateStimulus(ref double[] probs, double[] stims, List<KeyValuePair<double, bool>> samples)
+		{
+			int i = CalculateNextIndex(ref probs, stims, samples);
+			return stims[i];
 		}
 
 		public static double CalculateStimulus(double[] stims, List<KeyValuePair<double, bool>> samples)
 		{
-			int i = CalculateNextIndex(stims, samples);
-			return stims[i];
+			double[] probs = new double[stims.Length];
+			return CalculateStimulus(ref probs, stims, samples);
 		}
 
 	}

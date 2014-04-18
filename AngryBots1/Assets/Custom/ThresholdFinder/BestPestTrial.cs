@@ -13,12 +13,16 @@ namespace ThresholdFinding
 
 		public bool StartAscending {get; private set;}
 		private int counter;
+		private double[] stimRange;
+		private double[] probsBuffer;
 
 		public BestPestTrial(bool ascending, Range range, int counter)
 		 : base(range)
 		{
 			this.StartAscending = ascending;
 			this.counter = counter;
+			this.stimRange = Range.ToArray();
+			this.probsBuffer = new double[stimRange.Length];
 		}
 
 		public override bool Failed
@@ -48,7 +52,8 @@ namespace ThresholdFinding
 		{
 			get
 			{
-				return BestPest.CalculateStimulus(Range.ToArray(), GetObservations());
+				double result = BestPest.CalculateStimulus(ref probsBuffer, stimRange, GetObservations());
+				return result;
 			}
 		}
 
