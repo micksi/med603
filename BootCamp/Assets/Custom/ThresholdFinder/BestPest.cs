@@ -4,29 +4,32 @@ using System.Collections.Generic;
 namespace ThresholdFinding
 {
 
-	public static class BestPest
+	public class BestPest
 	{
 
-		public static double Logistic(double stim, bool obs, double meas, double B = 1.0, double S = 1.0)
+		public static double ProbabilityOf50Percent(double stim, bool obs, double meas,
+			double E, double S, double B)
 		{
-			return Logistic(stim, obs ? 1.0 : -1.0, meas, B, S);
+			return ProbabilityOf50Percent(stim, obs ? 1.0 : -1.0, meas, E, S, B);
 		}
 
-		public static double Logistic(double stim, double obs, double meas, double B = 1.0, double S = 1.0)
+
+		public static double ProbabilityOf50Percent(double stim, double obs, double meas,
+			double E, double S, double B)
 		{
-			double exponent = obs * (meas - stim) * 4 * B * Math.Pow(S, -1.0);
-			return Math.Pow(1 + Math.Exp(exponent), -1.0);
+			double exponent = -obs * (meas - stim) * 4 * B * Math.Pow(S, -1.0);
+			return E + S * Math.Pow(1 + Math.Exp(exponent), -1.0);	
 		}
 
 		public static int CalculateNextIndex(ref double[] probs,
-			double[] stims, List<KeyValuePair<double, bool>> samples)
+			double[] stims, List<KeyValuePair<double, bool>> samples, double E, double S, double B)
 		{
 			if(samples.Count < 1)
 			{
 				return stims.Length / 2;
 			}
 			int maxIndex = 0;
-			double maxProb = 0.0;
+			double maxProb = Double.NegativeInfinity;
 
 			for(int j = 0; j < probs.Length; j++)
 			{
@@ -34,7 +37,7 @@ namespace ThresholdFinding
 				double prob = 0.0;
 				foreach(var sample in samples)
 				{
-					prob += Math.Log(Logistic(stim, sample.Value, sample.Key));
+					prob += Math.Log(ProbabilityOf50Percent(stim, sample.Value, sample.Key, E, S, B));
 				}
 				probs[j] = prob;
 				// save max index
@@ -47,22 +50,25 @@ namespace ThresholdFinding
 			return maxIndex;
 		}		
 
-		public static int CalculateNextIndex(double[] stims, List<KeyValuePair<double, bool>> samples)
+		public static int CalculateNextIndex(double[] stims, List<KeyValuePair<double, bool>> samples,
+			double E, double S, double B)
 		{
 			double[] probs = new double[stims.Length];
-			return CalculateNextIndex(ref probs, stims, samples);
+			return CalculateNextIndex(ref probs, stims, samples, E, S, B);
 		}
 
-		public static double CalculateStimulus(ref double[] probs, double[] stims, List<KeyValuePair<double, bool>> samples)
+		public static double CalculateStimulus(ref double[] probs, double[] stims,
+			List<KeyValuePair<double, bool>> samples, double E, double S, double B)
 		{
-			int i = CalculateNextIndex(ref probs, stims, samples);
+			int i = CalculateNextIndex(ref probs, stims, samples, E, S, B);
 			return stims[i];
 		}
 
-		public static double CalculateStimulus(double[] stims, List<KeyValuePair<double, bool>> samples)
+		public static double CalculateStimulus(double[] stims, List<KeyValuePair<double, bool>> samples,
+			double E, double S, double B)
 		{
 			double[] probs = new double[stims.Length];
-			return CalculateStimulus(ref probs, stims, samples);
+			return CalculateStimulus(ref probs, stims, samples, E, S, B);
 		}
 
 	}

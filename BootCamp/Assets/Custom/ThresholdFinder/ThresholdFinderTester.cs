@@ -9,8 +9,8 @@ namespace ThresholdFinding
 
 		void Start()
 		{
-			ThresholdFinderTester.Run();
-			// ThresholdFinderTester.TestBestPest();
+			//ThresholdFinderTester.Run();
+			ThresholdFinderTester.TestBestPest();
 			// ThresholdFinderTester.TestConstantStepTrial();
 		}
 
@@ -19,15 +19,17 @@ namespace ThresholdFinding
 			const double min = 0.0, max = 1.0;
 			const int trials = 2, resolution = 20;
 			const int reversals = 9;
+			const double steepness = 2.0; // for bestPEST;
+			const int nStimuli = 10; // for bestPEST;
 			Range range = new Range(min, max, resolution);
 			// ITrialFactory factory = new InterleavedStaircaseTrialFactory(range, reversals);
 			// ITrialFactory factory = new ConstantStepTrialFactory(range);
 			// ITrialFactory factory = new StaircaseTrialFactory(range, reversals);
-			ITrialFactory factory = new BestPestTrialFactory(range, 10);
+			ITrialFactory factory = new BestPestTrialFactory(range, steepness, nStimuli);
 			ITrialStrategy strategy = new AlternatingTrialsStrategy(factory, trials);
 			ThresholdFinder finder = new ThresholdFinder(strategy);
 
-			const double realThresh = 25.0f, sensitivity = 1.0f;
+			const double realThresh = 0.5f, sensitivity = 1.0f;
 			Observer subject = new Observer(realThresh, sensitivity, min, max);
 
 			// simulate
@@ -55,6 +57,26 @@ namespace ThresholdFinding
 
 		}
 
+		public static void TestBestPest()
+		{
+			const int len = 10;
+			bool[] r = new bool[len] { true, false, true, false, true, true, false, false, true, false };
+			const double steepness = 2.0;
+
+
+			Range range = new Range(0.0, 1.0, 20);
+			ITrialFactory factory = new BestPestTrialFactory(range, steepness, len);
+			ITrialStrategy strategy = new AlternatingTrialsStrategy(factory, 1);
+			ThresholdFinder finder = new ThresholdFinder(strategy);
+
+			for(int i = 0; i < len && finder.Finished == false; i++)
+			{
+				double s = finder.Stimulus;
+				finder.ReportObservation(s, r[i]);
+			}
+			finder.SaveObservationsToDisk();
+		}
+
 		public static void TestConstantStepTrial()
 		{
 			const double min = 0.0f, max = 100.0f;
@@ -72,13 +94,6 @@ namespace ThresholdFinding
 				trial.ReportObservation(s, v);
 			}
 			Debug.Log("Stimulus: " + s);
-		}
-
-		public static void TestBestPest()
-		{
-			Range range = new Range(0.0, 1.0, 20);
-			double a = BestPest.Logistic(0.0, -1.0, 0.0, 2.0);
-			Debug.Log(a);
 		}
 
 		private class Observer
@@ -113,44 +128,9 @@ namespace ThresholdFinding
 				Debug.Log("Observer perceived " + result + " at stimulus " + stimulus);
 				return result;
 
-				// if(distance >= 0.0)
-				// {
-				// 	return true;
-				// }
-				// else
-				// {
-				// 	return false;
-				// }
 			}
 
-			/*public bool ObserveStimulus(double stimuli)
-			{
-				double distance = stimuli - actualThreshold;
-				double maxDistance = (max - actualThreshold);
-				double safeDistancePercent = 0.4f;
-				double safeDistance = safeDistancePercent * maxDistance;
-
-				if(distance < 0)
-				{
-					return false;
-				}
-				if(distance > safeDistance)
-				{
-					return true;
-				}
-
-				double distanceNormalized = distance / (maxDistance - safeDistance);
-				
-				double chance = Mathf.Pow(distanceNormalized, 0.08f);
-				chance *= sensitivity;
-				//Debug.Log("Chance of detection at stimuli " + stimuli + ": " + chance);
-				double rand = UnityEngine.Random.Range(0.0f, 1.0f);
-				if(rand <= chance)
-				{
-					return true;
-				}
-				return false;
-			}*/
+			
 		}
 
 	}

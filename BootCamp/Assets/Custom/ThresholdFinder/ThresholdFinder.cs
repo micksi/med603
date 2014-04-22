@@ -58,7 +58,7 @@ namespace ThresholdFinding
 			}
 		}
 
-		private void SaveObservationsToDisk(Trial trial)
+		public string GetOutputDirectory()
 		{
 			string dataPath = Application.dataPath;
 			dataPath = dataPath.Replace("Assets", ""); // Go up one level
@@ -70,7 +70,13 @@ namespace ThresholdFinding
 			}
 
 			string path = Path.Combine(dataPath, "Observations");
-			path = Path.Combine(path, trial + " at " + DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".txt");
+			return path;
+		}
+
+		private void SaveObservationsToDisk(Trial trial)
+		{
+			string path = GetOutputDirectory();
+			path = Path.Combine(path, trial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".txt");
 
 			if(Directory.Exists(Path.GetDirectoryName(path)) == false)
 			{
