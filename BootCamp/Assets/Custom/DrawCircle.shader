@@ -13,8 +13,9 @@ Shader "Custom/DrawCircle"
 	{
 		_MainTex ("Base (RGB)", 2D) = "white" {}
 		_CSF ("CSF map - determining amount", 2D) = "white" {}
-		_LowCSColour("The colour to apply when below threshold", Color) = (0,0,0,1)
-		//_Threshold("Threshold", Float) = 0.5
+		_LowCSColour("The colour to apply when below threshold", Color) = (0,0,1,1)
+		_Threshold("Threshold", Float) = 0.5
+		_Delta("Delta", Float) = 0.005
 	}
 
 	CGINCLUDE
@@ -28,6 +29,7 @@ Shader "Custom/DrawCircle"
 	uniform float4 _MainTex_TexelSize;
 	uniform float4 _LowCSColour;
 	uniform float _Threshold;
+	uniform float _Delta;
 
 	struct v2f 
 	{
@@ -46,8 +48,9 @@ Shader "Custom/DrawCircle"
 	{
 		LD(float4 original, 0, 0)
 		float4 csf = tex2D(_CSF, texCoord);
+		float intensity = GetIntensity(csf);
 
-		if(GetIntensity(csf) < _Threshold)
+		if( _Threshold - _Delta < intensity && intensity < _Threshold)
 		{
 			return _LowCSColour;
 		}

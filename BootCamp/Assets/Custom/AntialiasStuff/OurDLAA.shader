@@ -148,13 +148,13 @@ Shader "Custom/OurDLAA"
 
 		// use CSF value to determine how much AA effect is applied
 		return lerp(original, clr, csf);
+		// debug:
+		//return lerp(float4(1,0,0,1), clr, csf);
 	}	
 
 	// TB playing around. Not needed for the project.
 	float4 medianBlur5(  float2 texCoord )
 	{
-		//float4 center, left, right, top, bottom;
-
 		float4 samples0, samples1, samples2, samples3, samples4;
 
 		// sample 5x5 cross    
@@ -210,7 +210,7 @@ Shader "Custom/OurDLAA"
 		b = GetIntensity(samples4);
 		if(a < b && hi != 4 && nhi != 4) { m = 4; medianVal = samples4; };
 
-		return medianVal;//float4(1, 1, 1, 1);//samples[(m == 0 ? 0 : (m == 1 ? 1 : (m == 2 ? 2 : (m == 3 ? 3 : 4)))];
+		return medianVal;
 	}
 
 	// TB playing around. Not needed for the project.
@@ -307,8 +307,6 @@ Shader "Custom/OurDLAA"
 
 	half4 antialias (v2f i) : COLOR 
 	{		 	
-		//return maxn( i.uv, 1.5 );    
-		//return medianBlur5( i.uv );
 		return edgeDetectAndBlur( i.uv );
 	}
 
@@ -342,7 +340,7 @@ Shader "Custom/OurDLAA"
 		}
 
 		// Debugging pass - shows CSF as coloured overlay. Doesn't apply AA.
-		Pass {
+		/*Pass {
 			ZTest Always Cull Off ZWrite Off
 			Fog { Mode off }
 
@@ -355,7 +353,7 @@ Shader "Custom/OurDLAA"
 			#pragma glsl
 
 			ENDCG
-		}
+		}*/
 	}
 
 	Fallback off
