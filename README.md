@@ -1,4 +1,3 @@
 # MED6 Group 603 Repository
 
-## Please write important stuff here,
-test
+## Please write important stuff here
