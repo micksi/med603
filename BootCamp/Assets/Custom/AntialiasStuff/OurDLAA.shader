@@ -150,7 +150,7 @@ Shader "Custom/OurDLAA"
 		return lerp(original, clr, csf);
 	}	
 
-	float4 medianBlur(  float2 texCoord )
+	float4 medianBlur5(  float2 texCoord )
 	{
 		//float4 center, left, right, top, bottom;
 
@@ -212,6 +212,174 @@ Shader "Custom/OurDLAA"
 		return medianVal;//float4(1, 1, 1, 1);//samples[(m == 0 ? 0 : (m == 1 ? 1 : (m == 2 ? 2 : (m == 3 ? 3 : 4)))];
 	}
 
+	float4 medianBlur9(  float2 texCoord )
+	{
+		//float4 center, left, right, top, bottom;
+
+		float4 samples0, samples1, samples2, samples3, samples4,
+			   samples5, samples6, samples7, samples8, samples9;
+
+		// sample 5x5 cross    
+		LD( samples0,      0,   0 )
+		LD( samples1,  -1.5,   0 )
+		LD( samples2,  1.5,   0 )
+		LD( samples3,      0,-1.5 )
+		LD( samples4,   0, 1.5 )
+		LD( samples5, -1.5,  1.5 )
+		LD( samples6, -1.5, -1.5 )
+		LD( samples7,  1.5,  1.5 )
+		LD( samples8,  1.5, -1.5 )
+
+		int max1 = 0, max2, max3;
+		float a, b;
+		float4 medianVal = samples0;
+		float4 temp;
+
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples1);
+		if(a < b) { max1 = 1; medianVal = samples1; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples2);
+		if(a < b) { max1 = 2; medianVal = samples2; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples3);
+		if(a < b) { max1 = 3; medianVal = samples3; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples4);
+		if(a < b) { max1 = 4; medianVal = samples4; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples5);
+		if(a < b) { max1 = 5; medianVal = samples5; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples6);
+		if(a < b) { max1 = 6; medianVal = samples6; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples7);
+		if(a < b) { max1 = 7; medianVal = samples7; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples8);
+		if(a < b) { max1 = 8; medianVal = samples8; };
+
+		max2 = (max1 == 0) ? 1 : 0;
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples1);
+		if(a < b && max1 != 1) { max2 = 1; medianVal = samples1; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples2);
+		if(a < b && max1 != 2) { max2 = 2; medianVal = samples2; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples3);
+		if(a < b && max1 != 3) { max2 = 3; medianVal = samples3; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples4);
+		if(a < b && max1 != 4) { max2 = 4; medianVal = samples4; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples5);
+		if(a < b && max1 != 5) { max2 = 5; medianVal = samples5; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples6);
+		if(a < b && max1 != 6) { max2 = 6; medianVal = samples6; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples7);
+		if(a < b && max1 != 7) { max2 = 7; medianVal = samples7; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples8);
+		if(a < b && max1 != 8) { max2 = 8; medianVal = samples8; };
+
+		max3 = (max1 == 0 || max2 == 0) ? ((max1 == 1 || max2 == 1) ? 2 : 1 ) : 0;
+
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples1);
+		if(a < b && max1 != 1 && max2 != 1) { max3 = 1; medianVal = samples1; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples2);
+		if(a < b && max1 != 2 && max2 != 2) { max3 = 2; medianVal = samples2; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples3);
+		if(a < b && max1 != 3 && max2 != 3) { max3 = 3; medianVal = samples3; };
+		a = GetIntensity(medianVal);
+		b = GetIntensity(samples4);
+		if(a < b && max1 != 4 && max2 != 4) { max3 = 4; medianVal = samples4; };
+
+		return medianVal;//float4(1, 1, 1, 1);//samples[(m == 0 ? 0 : (m == 1 ? 1 : (m == 2 ? 2 : (m == 3 ? 3 : 4)))];
+	}
+
+	float4 max5(float2 texCoord, float radius)
+	{
+		float4 samples0, samples1, samples2, samples3, samples4;
+
+		// sample 5x5 cross    
+		LD( samples0,      0,   0 )
+		LD( samples1,  -radius,   0 )
+		LD( samples2,  radius,   0 )
+		LD( samples3,      0,-radius )
+		LD( samples4,   0, radius )
+
+		float a, b;
+		float4 maxVal = samples0;
+
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples1);
+		if(a < b) { maxVal = samples1; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples2);
+		if(a < b) { maxVal = samples2; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples3);
+		if(a < b) { maxVal = samples3; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples4);
+		if(a < b) { maxVal = samples4; };
+
+		return maxVal;
+	}
+
+	float4 max9(float2 texCoord, float radius)
+	{
+		float4 samples0, samples1, samples2, samples3, samples4,
+			   samples5, samples6, samples7, samples8;
+
+		// sample 3x3
+		LD( samples0,      0,   0 )
+		LD( samples1,  -radius,   0 )
+		LD( samples2,  radius,   0 )
+		LD( samples3,      0,-radius )
+		LD( samples4,   0, radius )
+		LD( samples5,  -radius,  radius )
+		LD( samples6,  -radius, -radius )
+		LD( samples7,   radius, -radius )
+		LD( samples8,   radius,  radius )
+
+		float a, b;
+		float4 maxVal = samples0;
+
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples1);
+		if(a < b) { maxVal = samples1; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples2);
+		if(a < b) { maxVal = samples2; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples3);
+		if(a < b) { maxVal = samples3; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples4);
+		if(a < b) { maxVal = samples4; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples5);
+		if(a < b) { maxVal = samples5; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples6);
+		if(a < b) { maxVal = samples6; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples7);
+		if(a < b) { maxVal = samples7; };
+		a = GetIntensity(maxVal);
+		b = GetIntensity(samples8);
+		if(a < b) { maxVal = samples8; };
+
+		return maxVal;
+	}
 
 	v2f vert( appdata_img v ) 
 	{
@@ -225,8 +393,9 @@ Shader "Custom/OurDLAA"
 	}
 
 	half4 fragWide (v2f i) : COLOR 
-	{		 	    
-		//return medianBlur( i.uv );
+	{		 	
+		//return maxn( i.uv, 1.5 );    
+		//return medianBlur5( i.uv );
 		return edgeDetectAndBlur( i.uv );
 	}
 
