@@ -110,15 +110,13 @@
 		float fragmentEccentricityDeg = pixel2degree(distanceFromMouseInPixels);
 		//float fragmentEccentricityDeg = pixel2degree(distanceFromCenterInPixels);
 		float fragmentCyclesPerDeg = getResolvableCyclesPerDegreeAt(fragmentEccentricityDeg);
-		
+		float maxCyclesPerDeg = getResolvableCyclesPerDegreeAt(0.0);
 		if(fragmentCyclesPerDeg > maxCyclesPerDegForScreen)
 		{
 			return 1;
 		}
 		
-		return fragmentCyclesPerDeg / maxCyclesPerDegForScreen;
-		
-		// TODO map fragmentCyclesPerDeg to some arbitrary [0;1] value, and return that.
+		return fragmentCyclesPerDeg / maxCyclesPerDeg;
 	}
 	
 	

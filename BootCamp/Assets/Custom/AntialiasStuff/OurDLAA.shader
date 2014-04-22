@@ -146,14 +146,15 @@ Shader "Custom/OurDLAA"
 			clr = lerp( clr, clr_h, long_edge_mask_h );
 		}
 
-		//return clr;
+		// use CSF value to determine how much AA effect is applied
 		return lerp(original, clr, csf);
+		// debug:
+		//return lerp(float4(1,0,0,1), clr, csf);
 	}	
 
+	// TB playing around. Not needed for the project.
 	float4 medianBlur5(  float2 texCoord )
 	{
-		//float4 center, left, right, top, bottom;
-
 		float4 samples0, samples1, samples2, samples3, samples4;
 
 		// sample 5x5 cross    
@@ -209,101 +210,10 @@ Shader "Custom/OurDLAA"
 		b = GetIntensity(samples4);
 		if(a < b && hi != 4 && nhi != 4) { m = 4; medianVal = samples4; };
 
-		return medianVal;//float4(1, 1, 1, 1);//samples[(m == 0 ? 0 : (m == 1 ? 1 : (m == 2 ? 2 : (m == 3 ? 3 : 4)))];
+		return medianVal;
 	}
 
-	float4 medianBlur9(  float2 texCoord )
-	{
-		//float4 center, left, right, top, bottom;
-
-		float4 samples0, samples1, samples2, samples3, samples4,
-			   samples5, samples6, samples7, samples8, samples9;
-
-		// sample 5x5 cross    
-		LD( samples0,      0,   0 )
-		LD( samples1,  -1.5,   0 )
-		LD( samples2,  1.5,   0 )
-		LD( samples3,      0,-1.5 )
-		LD( samples4,   0, 1.5 )
-		LD( samples5, -1.5,  1.5 )
-		LD( samples6, -1.5, -1.5 )
-		LD( samples7,  1.5,  1.5 )
-		LD( samples8,  1.5, -1.5 )
-
-		int max1 = 0, max2, max3;
-		float a, b;
-		float4 medianVal = samples0;
-		float4 temp;
-
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples1);
-		if(a < b) { max1 = 1; medianVal = samples1; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples2);
-		if(a < b) { max1 = 2; medianVal = samples2; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples3);
-		if(a < b) { max1 = 3; medianVal = samples3; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples4);
-		if(a < b) { max1 = 4; medianVal = samples4; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples5);
-		if(a < b) { max1 = 5; medianVal = samples5; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples6);
-		if(a < b) { max1 = 6; medianVal = samples6; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples7);
-		if(a < b) { max1 = 7; medianVal = samples7; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples8);
-		if(a < b) { max1 = 8; medianVal = samples8; };
-
-		max2 = (max1 == 0) ? 1 : 0;
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples1);
-		if(a < b && max1 != 1) { max2 = 1; medianVal = samples1; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples2);
-		if(a < b && max1 != 2) { max2 = 2; medianVal = samples2; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples3);
-		if(a < b && max1 != 3) { max2 = 3; medianVal = samples3; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples4);
-		if(a < b && max1 != 4) { max2 = 4; medianVal = samples4; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples5);
-		if(a < b && max1 != 5) { max2 = 5; medianVal = samples5; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples6);
-		if(a < b && max1 != 6) { max2 = 6; medianVal = samples6; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples7);
-		if(a < b && max1 != 7) { max2 = 7; medianVal = samples7; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples8);
-		if(a < b && max1 != 8) { max2 = 8; medianVal = samples8; };
-
-		max3 = (max1 == 0 || max2 == 0) ? ((max1 == 1 || max2 == 1) ? 2 : 1 ) : 0;
-
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples1);
-		if(a < b && max1 != 1 && max2 != 1) { max3 = 1; medianVal = samples1; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples2);
-		if(a < b && max1 != 2 && max2 != 2) { max3 = 2; medianVal = samples2; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples3);
-		if(a < b && max1 != 3 && max2 != 3) { max3 = 3; medianVal = samples3; };
-		a = GetIntensity(medianVal);
-		b = GetIntensity(samples4);
-		if(a < b && max1 != 4 && max2 != 4) { max3 = 4; medianVal = samples4; };
-
-		return medianVal;//float4(1, 1, 1, 1);//samples[(m == 0 ? 0 : (m == 1 ? 1 : (m == 2 ? 2 : (m == 3 ? 3 : 4)))];
-	}
-
+	// TB playing around. Not needed for the project.
 	float4 max5(float2 texCoord, float radius)
 	{
 		float4 samples0, samples1, samples2, samples3, samples4;
@@ -334,6 +244,7 @@ Shader "Custom/OurDLAA"
 		return maxVal;
 	}
 
+	// TB playing around. Not needed for the project.
 	float4 max9(float2 texCoord, float radius)
 	{
 		float4 samples0, samples1, samples2, samples3, samples4,
@@ -381,6 +292,8 @@ Shader "Custom/OurDLAA"
 		return maxVal;
 	}
 
+	
+
 	v2f vert( appdata_img v ) 
 	{
 		v2f o;
@@ -392,16 +305,25 @@ Shader "Custom/OurDLAA"
 		return o;
 	}
 
-	half4 fragWide (v2f i) : COLOR 
+	half4 antialias (v2f i) : COLOR 
 	{		 	
-		//return maxn( i.uv, 1.5 );    
-		//return medianBlur5( i.uv );
 		return edgeDetectAndBlur( i.uv );
+	}
+
+	float4 showCSF( v2f i ) : COLOR
+	{
+		float4 edgeColour = float4(1,0.5,0.4,1);
+		float4 csf = tex2D(_CSF, i.uv);
+		float4 main = tex2D( _MainTex, i.uv);
+
+		return lerp(edgeColour, main, csf);
 	}
 
 	ENDCG	
 
 	SubShader {
+
+		// Applies AA.
 		Pass {
 			ZTest Always Cull Off ZWrite Off
 			Fog { Mode off }
@@ -409,13 +331,29 @@ Shader "Custom/OurDLAA"
 			CGPROGRAM
 
 			#pragma vertex vert
-			#pragma fragment fragWide
+			#pragma fragment antialias
 			#pragma target 3.0
 			#pragma exclude_renderers d3d11_9x
 			#pragma glsl
 
 			ENDCG
 		}
+
+		// Debugging pass - shows CSF as coloured overlay. Doesn't apply AA.
+		/*Pass {
+			ZTest Always Cull Off ZWrite Off
+			Fog { Mode off }
+
+			CGPROGRAM
+
+			#pragma vertex vert
+			#pragma fragment showCSF
+			#pragma target 3.0
+			#pragma exclude_renderers d3d11_9x
+			#pragma glsl
+
+			ENDCG
+		}*/
 	}
 
 	Fallback off
