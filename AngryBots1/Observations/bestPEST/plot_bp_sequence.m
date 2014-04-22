@@ -1,11 +1,16 @@
-function result = plot_bp_sequence(range, obs)
+function result = plot_bp_sequence(range, sequence, axes)
     % Initialize
     samples = [0 -1; 1 1];
-    for i = 1:length(obs)
-        [probs, next] = best_pest(range, samples);
+    [probs, next] = next_thresh_est(range, samples);
+    plot(range, probs)
+    hold on;
+    scatter(next, max(probs));
+    for i = 1:length(sequence)
+        samples(i+2, :) = [next, sequence(i)];
+        [probs, next] = next_thresh_est(range, samples);
         plot(range, probs)
-        hold on;
-        samples(i+2, :) = [next, obs(i)];
+        scatter(next, max(probs));
     end
+    
     hold off;
 end

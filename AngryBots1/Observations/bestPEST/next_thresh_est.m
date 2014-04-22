@@ -1,6 +1,6 @@
 function [probs, next] = next_thresh_est(range, samples)
-    if(size(samples, 2) < 1)
-        probs = prob_response(range, 1, median(range));
+    if(size(samples, 1) < 1)
+        probs = prob_response(range, -1, median(range));
         next = median(range);
     else
         probs = zeros(length(range), 1);
@@ -12,5 +12,6 @@ function [probs, next] = next_thresh_est(range, samples)
             end;
             probs(i) = prob;
         end
-        next = 0
+        [m, I] = max(probs);
+        next = range(I);
 end
