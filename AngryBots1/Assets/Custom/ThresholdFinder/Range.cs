@@ -42,7 +42,7 @@ namespace ThresholdFinding
 		{
 			get
 			{
-				return (Max - Min) / 2;
+				return Min + Scale / 2;
 			}
 		}
 
@@ -67,8 +67,17 @@ namespace ThresholdFinding
 		{
 			get
 			{
-				return (Max - Min) / (double) Resolution;
+				return Scale / (double) Resolution;
 			}
 		}
+
+		public double Scale
+		{
+			get
+			{
+				return (Max - Min);
+			}
+		}
+
 	}
 }

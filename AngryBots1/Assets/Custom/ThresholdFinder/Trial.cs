@@ -43,7 +43,7 @@ namespace ThresholdFinding
 			{
 				sb.Append(pair.Key)
 					.Append(del)
-					.Append(Convert.ToInt32(pair.Value))
+					.Append(pair.Value ? "1" : "-1")
 					.Append(Environment.NewLine);
 			}
 			return sb.ToString();

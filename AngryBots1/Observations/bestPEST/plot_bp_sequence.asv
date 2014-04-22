@@ -1,4 +1,4 @@
-function samples = plot_bp_sequence(range, sequence)
+function result = plot_bp_sequence(range, sequence)
     % Initialize
     samples = [0 -1; 1 1];
     [probs, next] = next_thresh_est(range, samples);

@@ -66,16 +66,18 @@ namespace ThresholdFinding
 	public class BestPestTrialFactory : TrialFactory
 	{
 
-		private int nTrials;
+		private readonly int nStimuli;
+		private readonly double steepness;
 
-		public BestPestTrialFactory(Range range, int nTrials) : base(range)
+		public BestPestTrialFactory(Range range, double steepness, int nStimuli) : base(range)
 		{
-			this.nTrials = nTrials;
+			this.nStimuli = nStimuli;
+			this.steepness = steepness;
 		}
 
 		public override Trial NewTrial(bool ascending)
 		{
-			return new BestPestTrial(ascending, range, nTrials);
+			return new BestPestTrial(ascending, range, steepness, nStimuli);
 		}	
 	}
 }
