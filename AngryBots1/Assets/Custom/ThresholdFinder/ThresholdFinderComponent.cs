@@ -6,7 +6,7 @@ using ThresholdFinding;
 public class ThresholdFinderComponent : MonoBehaviour
 {
 
-	public enum TrialType {ConstantStep, Staircase, InterleavedStaircase};
+	public enum TrialType {ConstantStep, Staircase, InterleavedStaircase, BestPEST};
 	public enum StrategyType {Alternating};
 
 	public TrialType trialType = TrialType.ConstantStep;
@@ -16,7 +16,9 @@ public class ThresholdFinderComponent : MonoBehaviour
 	public double max = 1.0f;
 	public int resolution = 10;
 	public int trials = 2;
-	public int reversals = 9; // Only used with trials of type Staircase and InterleavedStaircase
+	public int StairCase_reversals = 9; // Only used with trials of type Staircase and InterleavedStaircase
+	public double BestPEST_steepness = 2.0; // Only used with BestPEST
+	public int BestPEST_Stimuli = 10; // Only used with BestPEST
 
 	public string positiveKey = "y";
 	public string negativeKey = "n";
@@ -41,13 +43,16 @@ public class ThresholdFinderComponent : MonoBehaviour
 		switch(trialType)
 		{
 			case TrialType.InterleavedStaircase:
-				factory = new InterleavedStaircaseTrialFactory(range, reversals);
+				factory = new InterleavedStaircaseTrialFactory(range, StairCase_reversals);
 				break;
 			case TrialType.ConstantStep:
 				factory = new ConstantStepTrialFactory(range);
 				break;
 			case TrialType.Staircase:
-				factory = new StaircaseTrialFactory(range, reversals);
+				factory = new StaircaseTrialFactory(range, StairCase_reversals);
+				break;
+			case TrialType.BestPEST:
+				factory = new BestPestTrialFactory(range, BestPEST_steepness, BestPEST_Stimuli);
 				break;
 			default:
 				factory = new ConstantStepTrialFactory(range);
