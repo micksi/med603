@@ -6,7 +6,7 @@ namespace ThresholdFinding
 	public class Range
 	{
 		public readonly double Min, Max;
-		public readonly int Resolution;
+		public readonly int Resolution; // Number of steps
 
 
 		public Range(double min, double max, int resolution = 10)
