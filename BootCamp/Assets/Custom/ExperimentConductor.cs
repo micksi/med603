@@ -5,7 +5,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	public ThresholdFinderComponent thresholdFinder;
 	public CSF csfGenerator;
-	public Shader csfUser;
+	public Shader csfUser; // Must have _CSF and _MainTex texture properties
 	public FocusProvider.Source focusSource;
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
