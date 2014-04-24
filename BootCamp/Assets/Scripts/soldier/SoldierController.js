@@ -182,10 +182,10 @@ class SoldierController extends MonoBehaviour
 	function GetUserInputs()
 	{
 		//Check if the user if firing the weapon
-		fire = Input.GetButton("Fire1") && weaponSystem.currentGun.freeToShoot && !dead && !inAir;
+		fire = false; // Turned off for experiment 1  //Input.GetButton("Fire1") && weaponSystem.currentGun.freeToShoot && !dead && !inAir;
 		
 		//Check if the user is aiming the weapon
-		aim = Input.GetButton("Fire2") && !dead;
+		aim = false; // Turned off for experiment 1 //Input.GetButton("Fire2") && !dead;
 		
 		idleTimer += Time.deltaTime;
 		

@@ -96,7 +96,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 24504798}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce4ead94b172f454eae1fe416d870642, type: 3}
   m_Name: 
@@ -221,13 +221,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 998dfeb257b7a7e48a1820b2ea8ba268, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trialType: 2
+  trialType: 3
   strategyType: 0
   min: 0
   max: 1
   resolution: 10
   trials: 1
-  reversals: 6
+  StairCase_reversals: 9
+  BestPEST_steepness: 2
+  BestPEST_Stimuli: 10
   positiveKey: 79
   negativeKey: 6e
 --- !u!4 &828492705

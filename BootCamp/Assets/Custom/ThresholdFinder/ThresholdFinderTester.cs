@@ -53,7 +53,7 @@ namespace ThresholdFinding
 				sb.Append(thresholds[i]).Append(", ");
 			}
 			Debug.Log("Thresholds:\n" + sb.ToString());
-			finder.SaveObservationsToDisk();
+			finder.SaveObservationsToDisk(finder.GetDefaultOutputDirectory());
 
 		}
 
@@ -74,7 +74,7 @@ namespace ThresholdFinding
 				double s = finder.Stimulus;
 				finder.ReportObservation(s, r[i]);
 			}
-			finder.SaveObservationsToDisk();
+			finder.SaveObservationsToDisk(finder.GetDefaultOutputDirectory());
 		}
 
 		public static void TestConstantStepTrial()

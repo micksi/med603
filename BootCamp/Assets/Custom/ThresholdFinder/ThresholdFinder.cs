@@ -50,15 +50,7 @@ namespace ThresholdFinding
 			}
 		}
 
-		public void SaveObservationsToDisk()
-		{
-			for(int i = 0; i < trials.Length; i++)
-			{
-				SaveObservationsToDisk(trials[i]);
-			}
-		}
-
-		public string GetOutputDirectory()
+		public string GetDefaultOutputDirectory()
 		{
 			string dataPath = Application.dataPath;
 			dataPath = dataPath.Replace("Assets", ""); // Go up one level
@@ -73,18 +65,25 @@ namespace ThresholdFinding
 			return path;
 		}
 
-		private void SaveObservationsToDisk(Trial trial)
+		public void SaveObservationsToDisk(string dir)
 		{
-			string path = GetOutputDirectory();
-			path = Path.Combine(path, trial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".txt");
-
-			if(Directory.Exists(Path.GetDirectoryName(path)) == false)
+			for(int i = 0; i < trials.Length; i++)
 			{
-				Directory.CreateDirectory(Path.GetDirectoryName(path));
+				SaveObservationsToDisk(trials[i], dir);
+			}
+		}
+
+		private void SaveObservationsToDisk(Trial trial, string dir)
+		{
+			string filepath = Path.Combine(dir, trial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".txt");
+
+			if(Directory.Exists(Path.GetDirectoryName(filepath)) == false)
+			{
+				Directory.CreateDirectory(Path.GetDirectoryName(filepath));
 			}
 
-			Debug.Log("Saving observations to file: " + path);
-			trial.WriteObservationsToFile(path);
+			Debug.Log("Saving observations to file: " + filepath);
+			trial.WriteObservationsToFile(filepath);
 		}
 
 		public Trial CurrentTrial
@@ -107,7 +106,7 @@ namespace ThresholdFinding
 					{
 						if(FinishedEvent != null)
 						{
-							FinishedEvent(this, new FinishedEventArgs());
+							FinishedEvent(this, new FinishedEventArgs(this));
 						}
 					}
 					finished = true;
@@ -180,6 +179,10 @@ namespace ThresholdFinding
 
 	public class FinishedEventArgs : EventArgs
 	{
-
+		public readonly ThresholdFinder Finder;
+		public FinishedEventArgs(ThresholdFinder finder)
+		{
+			Finder = finder;
+		}
 	}
 }

@@ -29,7 +29,8 @@ class GunManager extends MonoBehaviour
 	
 	function Update()
 	{
-		for(var i : int = 0; i < guns.length; i++)
+		// Turned off for experiment 1
+		/*for(var i : int = 0; i < guns.length; i++)
 		{
 			if(Input.GetKeyDown(guns[i].keyToActivate))
 			{
@@ -39,6 +40,7 @@ class GunManager extends MonoBehaviour
 		
 		hud.selectedWeapon = currentWeapon;
 		hud.ammoRemaining[currentWeapon] = guns[currentWeapon].gun.currentRounds;
+		*/
 	}
 	
 	function ChangeToGun(gunIndex : int)

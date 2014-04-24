@@ -113,6 +113,11 @@ namespace ThresholdFinding
 				return Stimulus;
 			}
 		}
+
+		public override string ToString()
+		{
+			return this.GetType().Name;
+		}
 	}
 	
 }

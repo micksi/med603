@@ -23,6 +23,8 @@ public class ThresholdFinderComponent : MonoBehaviour
 	public string positiveKey = "y";
 	public string negativeKey = "n";
 
+	public event EventHandler<FinishedEventArgs> FinishedEvent;
+
 	public double Stimulus
 	{
 		get;
@@ -66,7 +68,11 @@ public class ThresholdFinderComponent : MonoBehaviour
 
 	private void OnFinished(object sender, FinishedEventArgs args)
 	{
-		Finder.SaveObservationsToDisk();
+		//Finder.SaveObservationsToDisk();
+		if(FinishedEvent != null)
+		{
+			FinishedEvent(this, args);
+		}
 		Debug.Log("Experiment finished!");
 	}
 
