@@ -5,12 +5,13 @@ using ThresholdFinding;
 
 // TODO Make sure it works with gaze tracking.
 // TODO Test on groupmates
+	// TODO Use keyboard buttons for GUI navigation instead of GUI buttons
 // TODO Pilot test on passerby
 
 public class ExperimentConductor : MonoBehaviour {
 
 	public string experimentName;
-	public ThresholdFinderComponent thresholdFinder;
+	public ThresholdFinderComponent thresholdFinderComponent;
 	public TestFramework.TestFramework testFramework;
 	public CSF csfGenerator;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
@@ -21,7 +22,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private Experiment experiment;
 
-	private enum State { SendToDemographics, SendToCalibration, ShowIntro, StartTrials, EndTrials };
+	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, EndTrials };
 	private State state = State.SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation };
 	private IntroState introState = IntroState.ShowingTrue;
@@ -63,23 +64,19 @@ public class ExperimentConductor : MonoBehaviour {
 
 	Texture2D whiteTex = null;
 	Texture2D blackTex = null;
-	//Texture2D flashScreenTexture = null;
 
 	void Start()
 	{
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
  		blackTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
- 		//flashScreenTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
 
 		// set the pixel values
 		whiteTex.SetPixel(0, 0, Color.white);
 		blackTex.SetPixel(0, 0, Color.black);
-		//flashScreenTexture.SetPixel(0, 0,Color.black);// new Color(0.275f, 0.235f, 0.157f, 1f)); // Average of all scene pixels :)
  
 		// Apply all SetPixel calls
 		whiteTex.Apply();
 		blackTex.Apply();
-		//flashScreenTexture.Apply();
 
 		// Set up GUI Rects
 		int buffer = 10;
@@ -87,16 +84,25 @@ public class ExperimentConductor : MonoBehaviour {
 		leftButtonRect  = new Rect( Screen.width / 3, 5 * Screen.height / 6 + buffer, Screen.width / 6 - buffer/2, Screen.height / 6 );
 		rightButtonRect = new Rect( Screen.width / 2 + buffer / 2, 5 * Screen.height / 6 + buffer, Screen.width / 6 - buffer/2, Screen.height / 6 );
 
-		// 
-		thresholdFinder.ReportObservationEvent += OnReportObservationEvent;
-		thresholdFinder.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
-			/*(object sender, ReportObservationEventArgs args) =>
-			{
-				flashTimeLeft = flashTime;
-			};*/
+		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
+		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
 
-		experiment = new Experiment(experimentName, testFramework, thresholdFinder);
+		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
 		experiment.Begin();		
+	}
+
+	void Update()
+	{
+		switch(state)
+		{
+			case State.RunningTrials:
+				if(flashTimeLeft <= 0) // Only accept input when no flashing is taking place
+					SendInputToTFC();
+				break;
+			case State.ShowIntro:
+				HandleIntroInput();
+				break;
+		}
 	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
@@ -108,13 +114,11 @@ public class ExperimentConductor : MonoBehaviour {
 			return;
 		}
 
-		// TODO Decide: Should end show black, white, or normal, or affected?
-
 		// Update FocusProvider to use the latest source
 		FocusProvider.source = focusSource;
 
 		// Obtain CSF map and send it to material
-		csfGenerator.halfResolutionEccentricity = (float)thresholdFinder.Stimulus;
+		csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
 		RenderTexture csf = RenderTexture.GetTemporary(source.width, source.height);
 		csfGenerator.GetContrastSensitivityMap(source, csf);
 		material.SetTexture("_CSF", csf);
@@ -130,7 +134,7 @@ public class ExperimentConductor : MonoBehaviour {
 				material.SetTexture("_CSF", whiteTex);
 			}
 		}
-		else if (state != State.StartTrials)
+		else if (state != State.RunningTrials)
 		{
 			// Show true state by default unless experiment is really running
 			material.SetTexture("_CSF", whiteTex);
@@ -188,7 +192,7 @@ public class ExperimentConductor : MonoBehaviour {
 				if(GUI.Button(messageRect, "Click here to start with a questionnaire!"))
 				{
 					state = State.SendToCalibration;
-					uint participantNumber = experiment.ActiveParticipant.Id; // TODO get proper participant number
+					uint participantNumber = experiment.ActiveParticipant.Id;
 					Application.OpenURL("https://docs.google.com/forms/d/1-5mbG7bUA0DbApVJEbzrx8IDEuFlJvgUA4pccmDkvy4/viewform?entry.1375030606=" + participantNumber);
 				}
 				break;
@@ -199,9 +203,9 @@ public class ExperimentConductor : MonoBehaviour {
 				}
 				break;
 			case State.ShowIntro:
-				HandleIntro();
+				HandleIntroGUI();
 				break;
-			case State.StartTrials:
+			case State.RunningTrials:
 				break;
 			case State.EndTrials:
 				GUI.Label(messageRect, "Thank you for your participation! You may now approach the test conductor for a short interview.");
@@ -209,31 +213,20 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
-	private void HandleIntro()
+	private void HandleIntroGUI()
 	{
 		switch(introState)
 		{
 			case IntroState.ShowingTrue:
 				GUI.Label(messageRect, "This is how the screen should appear to you."
-						+ " When it looks like this, press the " + trueButtonDescription + " button.");
-			
-				if(GUI.Button(rightButtonRect, "Click here to move on."))
-				{
-					introState = IntroState.ShowingFalse;
-				}
+						+ " When it looks like this during the test, press the " + trueButtonDescription 
+						+ " button. For now, press the " + trueButtonDescription + " button to go on.");
 				break;
 			case IntroState.ShowingFalse:
 				GUI.Label(messageRect, "This is how the screen should NOT appear to you."
-						+ " When it looks like this, press the " + falseButtonDescription + " button.");
-			
-				if(GUI.Button(rightButtonRect, "Click here to move on."))
-				{
-					introState = IntroState.ShowingExplanation;
-				}
-				if(GUI.Button(leftButtonRect, "Click here to go back."))
-				{
-					introState = IntroState.ShowingTrue;
-				}
+						+ " When it looks like this during the test, press the " + falseButtonDescription 
+						+ " button. For now, press the " + trueButtonDescription + " button to go on,"
+						+ " or the " + falseButtonDescription + " button to go back.");
 				break;
 			case IntroState.ShowingExplanation:
 				GUI.Label(messageRect, 
@@ -241,19 +234,62 @@ public class ExperimentConductor : MonoBehaviour {
 					+ falseButtonDescription + " buttons to indicate whether the screen looks like it should " 
 					+ "or not, respectively. Feel free to take the time you need.\n"
 					+ "The screen will blink for a short duration when you have pressed one of the buttons."
+					+ "\nPress the " + trueButtonDescription + " button to start the test, or the "
+					+ falseButtonDescription + " button to go back."
 				);
+				break;
+		}
+	}
 
-				if(GUI.Button(rightButtonRect, "Click here to start the test!"))
+	private void HandleIntroInput()
+	{
+		switch(introState)
+		{
+			case IntroState.ShowingTrue:
+				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
 				{
-					state = State.StartTrials;
-					StartScreenFlash("Starting experiment...", 60);
+					introState = IntroState.ShowingFalse;
 				}
-				if(GUI.Button(leftButtonRect, "Click here to go back."))
+				break;
+			case IntroState.ShowingFalse:
+				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				{
+					introState = IntroState.ShowingExplanation;
+				}
+				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				{
+					introState = IntroState.ShowingTrue;
+				}
+				break;
+			case IntroState.ShowingExplanation:
+				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				{
+					RunningTrials();
+				}
+				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
 				{
 					introState = IntroState.ShowingFalse;
 				}
 				break;
 		}
+	}
+
+	private void SendInputToTFC()
+	{
+		if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+		{
+			thresholdFinderComponent.AddObservation(true);
+		}
+		else if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+		{
+			thresholdFinderComponent.AddObservation(false);
+		}
+	}
+
+	private void RunningTrials()
+	{
+		state = State.RunningTrials;
+		StartScreenFlash("Starting experiment...", 60);
 	}
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)

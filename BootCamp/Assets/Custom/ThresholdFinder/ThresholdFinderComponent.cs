@@ -89,7 +89,7 @@ public class ThresholdFinderComponent : MonoBehaviour
 		{
 			return;
 		}
-
+/*
 		if(Input.GetKeyDown(positiveKey))
 		{
 			ReportObservation(Stimulus, true);
@@ -97,8 +97,12 @@ public class ThresholdFinderComponent : MonoBehaviour
 		else if(Input.GetKeyDown(negativeKey))
 		{
 			ReportObservation(Stimulus, false);
-		}
-		
+		}*/
+	}
+
+	public void AddObservation(bool observation)
+	{
+		ReportObservation(Stimulus, observation);
 	}
 
 	private void ReportObservation(double stimulus, bool observation)
@@ -108,6 +112,7 @@ public class ThresholdFinderComponent : MonoBehaviour
 			// Bail out:
 			return;
 		}
+
 		if(ReportObservationEvent != null)
 		{
 			ReportObservationEvent(this, new ReportObservationEventArgs(stimulus, observation));
