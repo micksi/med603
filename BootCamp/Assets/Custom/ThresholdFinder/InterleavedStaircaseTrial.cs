@@ -45,6 +45,7 @@ namespace ThresholdFinding
 
 		public override bool ReportObservation(double stimulus, bool value)
 		{
+			base.ReportObservation(stimulus, value);
 			bool result = this.trials[index].ReportObservation(stimulus, value);
 			return Finished;
 		}

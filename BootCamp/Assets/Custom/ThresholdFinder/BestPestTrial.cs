@@ -51,6 +51,7 @@ namespace ThresholdFinding
 
 		public override bool ReportObservation(double stimulus, bool value)
 		{
+			base.ReportObservation(stimulus, value);
 			RecordObservation(stimulus, value);
 			counter--;
 			if(counter < 0)

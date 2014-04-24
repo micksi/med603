@@ -11,6 +11,7 @@ namespace TestFramework
 		public readonly string Name;
 		public readonly TestFramework Framework;
 		public readonly ThresholdFinderComponent TFC;
+		private bool begun = false;
 		private List<Participant> participants;
 
 		public Experiment(string name, TestFramework framework, ThresholdFinderComponent tfc)
@@ -44,12 +45,12 @@ namespace TestFramework
 			}
 
 			TFC.Finder.FinishedEvent += OnFinderFinished;
-
 		}
 
 		public override void Begin()
 		{
 			NewParticipant();
+			begun = true;
 		}
 
 		private void OnFinderFinished(object sender, FinishedEventArgs args)
@@ -57,10 +58,12 @@ namespace TestFramework
 			args.Finder.SaveObservationsToDisk(ActiveParticipant.FolderPath);
 		}
 
-		private Participant ActiveParticipant
+		public Participant ActiveParticipant
 		{
 			get
 			{
+				if(begun == false)
+					throw new InvalidOperationException("Experiment not begun yet");
 				return participants[participants.Count - 1];
 			}
 		}

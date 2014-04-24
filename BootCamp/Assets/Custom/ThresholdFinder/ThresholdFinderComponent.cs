@@ -24,6 +24,7 @@ public class ThresholdFinderComponent : MonoBehaviour
 	public string negativeKey = "n";
 
 	public event EventHandler<FinishedEventArgs> FinishedEvent;
+	public event EventHandler<ReportObservationEventArgs> ReportObservationEvent;
 
 	public double Stimulus
 	{
@@ -63,6 +64,7 @@ public class ThresholdFinderComponent : MonoBehaviour
 		// Alternating is the only strategy thus far
 		ITrialStrategy strategy = new AlternatingTrialsStrategy(factory, trials);
 		Finder = new ThresholdFinder(strategy);
+		print("Initialized TFC Finder");
 		Finder.FinishedEvent += OnFinished;
 	}
 
@@ -101,6 +103,15 @@ public class ThresholdFinderComponent : MonoBehaviour
 
 	private void ReportObservation(double stimulus, bool observation)
 	{
+		if(Finder.Finished)
+		{
+			// Bail out:
+			return;
+		}
+		if(ReportObservationEvent != null)
+		{
+			ReportObservationEvent(this, new ReportObservationEventArgs(stimulus, observation));
+		}
 		Finder.ReportObservation(stimulus, observation);
 		if(Finder.Finished == false)
 			Stimulus = Finder.Stimulus;
@@ -108,4 +119,15 @@ public class ThresholdFinderComponent : MonoBehaviour
 		Debug.Log("Next stimulus is " + Stimulus);
 	}
 
+}
+
+public class ReportObservationEventArgs : EventArgs
+{
+	public readonly double Stimulus;
+	public readonly bool Observation;
+	public ReportObservationEventArgs(double stim, bool obs)
+	{
+		Stimulus = stim;
+		Observation = obs;
+	}
 }

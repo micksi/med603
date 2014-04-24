@@ -61,7 +61,21 @@ namespace ThresholdFinding
 			observations.Add(new KeyValuePair<double, bool>(stimulus, value));
 		}
 
-		public abstract bool ReportObservation(double stimulus, bool value);
+		public virtual bool ReportObservation(double stimulus, bool value)
+		{
+			if(Finished)
+			{
+				throw new InvalidOperationException("Please don't report observations when the trial is finished.");
+			}
+			
+			if(Failed)
+			{
+				throw new InvalidOperationException("Please don't report observations when the trial has failed.");
+			}
+
+			return false; // Because it has to return something, and nobody cares what it is.
+		}
+
 		public abstract double Stimulus {get;}
 		public abstract double ResultingThreshold {get;}
 	}
