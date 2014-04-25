@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO Make sure it works with gaze tracking.
+// TODO provide gazelogger with a participant-dependent folder path (in RunTrials())
+
 // TODO Test on groupmates
-	// TODO Use keyboard buttons for GUI navigation instead of GUI buttons
 // TODO Pilot test on passerby
+
 
 public class ExperimentConductor : MonoBehaviour {
 
@@ -23,13 +25,19 @@ public class ExperimentConductor : MonoBehaviour {
 	private Experiment experiment;
 
 	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, EndTrials };
-	private State state = State.SendToDemographics;
+	private State state = State.ShowIntro;//SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation };
 	private IntroState introState = IntroState.ShowingTrue;
 	
-	private const int flashTime = 30; // Frames
-	private int flashTimeLeft = 0; // 
+	private const double flashTimeSeconds = 0.7;
+	private double flashTimeLeft = 0.0;
+	//private const int flashTime = 30; // Frames
+	//private int flashTimeLeft = 0; // 
 	private string flashMessage = "";
+
+	private Texture2D whiteTex = null;
+	private Texture2D blackTex = null;
+	private GazeLogger gazeLogger = new GazeLogger();
 
 	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
 	private string falseButtonDescription = "red";
@@ -62,9 +70,6 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
-	Texture2D whiteTex = null;
-	Texture2D blackTex = null;
-
 	void Start()
 	{
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
@@ -93,23 +98,27 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Update()
 	{
+		if(flashTimeLeft > 0.0)
+			flashTimeLeft -= Time.deltaTime;
+
 		switch(state)
 		{
 			case State.RunningTrials:
-				if(flashTimeLeft <= 0) // Only accept input when no flashing is taking place
+				if(flashTimeLeft <= 0.0) // Only accept input when no flashing is taking place
 					SendInputToTFC();
 				break;
 			case State.ShowIntro:
 				HandleIntroInput();
 				break;
 		}
+
+		gazeLogger.Update();
 	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
 		if(flashTimeLeft > 0)
 		{
-			flashTimeLeft--;
 			Graphics.Blit(blackTex, dest);
 			return;
 		}
@@ -264,7 +273,7 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingExplanation:
 				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
 				{
-					RunningTrials();
+					RunTrials();
 				}
 				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
 				{
@@ -286,25 +295,29 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
-	private void RunningTrials()
+	private void RunTrials()
 	{
+		gazeLogger.BeginLogging( experiment.ParticipantsFolderPath + "/temp.csv", 0.5); // TODO provide gazelogger with a participant-dependent folder path
+		Debug.LogWarning("GazeLogger using a debugging file, not a proper path!");
+
+		StartScreenFlash("Starting experiment...", 3);
 		state = State.RunningTrials;
-		StartScreenFlash("Starting experiment...", 60);
 	}
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
 	{
-		// Flash screen
-		StartScreenFlash("You reported " + args.Observation);
+		// Flash screen	
+		StartScreenFlash("You reported that what you saw looked " + (args.Observation ? "like it should." : "wrong."));
 	}
 
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
 	{
 		print("ExperimentConductor.OnFinishedThresholdFindingEvent: Finished finding a threshold.");
+		gazeLogger.EndLogging();
 		state = State.EndTrials;
 	}
 
-	private void StartScreenFlash(string displayText, int noOfFrames = flashTime)
+	private void StartScreenFlash(string displayText, double noOfFrames = flashTimeSeconds)
 	{
 		flashTimeLeft = noOfFrames;
 		flashMessage = displayText;
