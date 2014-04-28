@@ -1,14 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.IO;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO provide gazelogger with a participant-dependent folder path (in RunTrials())
+// TODO provide gazelogger with a participant-dependent folder path (in StartTrials())
+// TODO Mark wanted user gaze position
+// TODO Save gaze data per trial
+// TODO decide logging frequency
 
 // TODO Test on groupmates
 // TODO Pilot test on passerby
 
+/*
+ * NOTE
+ * By trying really hard to not log gaze data while screen is flashing,
+ * the code has become quite opaque. Sorry about that.
+ * Please do ask if something is not making sense!
+ * TW
+ */
 
 public class ExperimentConductor : MonoBehaviour {
 
@@ -31,13 +42,12 @@ public class ExperimentConductor : MonoBehaviour {
 	
 	private const double flashTimeSeconds = 0.7;
 	private double flashTimeLeft = 0.0;
-	//private const int flashTime = 30; // Frames
-	//private int flashTimeLeft = 0; // 
+	private bool isFlashingScreen = false;
 	private string flashMessage = "";
 
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
-	private GazeLogger gazeLogger = new GazeLogger();
+	private GazeLogger gazeLogger = null;
 
 	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
 	private string falseButtonDescription = "red";
@@ -91,15 +101,24 @@ public class ExperimentConductor : MonoBehaviour {
 
 		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
 		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
+		thresholdFinderComponent.Finder.FinishedTrial += OnFinishedTrialEvent;
 
 		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
 		experiment.Begin();		
+
+		gazeLogger = new GazeLogger(experiment, thresholdFinderComponent.Finder, 0.1); // TODO decide logging frequency
 	}
 
 	void Update()
 	{
-		if(flashTimeLeft > 0.0)
+		if(isFlashingScreen)
+		{
 			flashTimeLeft -= Time.deltaTime;
+			if(flashTimeLeft < 0.0)
+			{
+				OnEndScreenFlash();
+			}
+		}	
 
 		switch(state)
 		{
@@ -117,7 +136,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
-		if(flashTimeLeft > 0)
+		if(isFlashingScreen)
 		{
 			Graphics.Blit(blackTex, dest);
 			return;
@@ -189,7 +208,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnGUI()
 	{
-		if(flashTimeLeft > 0)
+		if(isFlashingScreen)
 		{
 			GUI.Label(messageRect, flashMessage);
 			return;
@@ -273,7 +292,7 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingExplanation:
 				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
 				{
-					RunTrials();
+					StartTrials();
 				}
 				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
 				{
@@ -295,17 +314,25 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
-	private void RunTrials()
+	private void StartTrials()
 	{
-		gazeLogger.BeginLogging( experiment.ParticipantsFolderPath + "/temp.csv", 0.5); // TODO provide gazelogger with a participant-dependent folder path
-		Debug.LogWarning("GazeLogger using a debugging file, not a proper path!");
-
 		StartScreenFlash("Starting experiment...", 3);
 		state = State.RunningTrials;
+		gazeLogger.UpdatePath();
+		gazeLogger.Begin();
+	}
+
+	private void OnEndScreenFlash()
+	{
+		isFlashingScreen = false;
+		gazeLogger.Begin();
 	}
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
 	{
+		// Pause gaze logging
+		gazeLogger.Pause();
+
 		// Flash screen	
 		StartScreenFlash("You reported that what you saw looked " + (args.Observation ? "like it should." : "wrong."));
 	}
@@ -313,13 +340,19 @@ public class ExperimentConductor : MonoBehaviour {
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
 	{
 		print("ExperimentConductor.OnFinishedThresholdFindingEvent: Finished finding a threshold.");
-		gazeLogger.EndLogging();
+		gazeLogger.Pause(); // Just to be sure.
 		state = State.EndTrials;
+	}
+
+	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
+	{
+		
 	}
 
 	private void StartScreenFlash(string displayText, double noOfFrames = flashTimeSeconds)
 	{
 		flashTimeLeft = noOfFrames;
 		flashMessage = displayText;
+		isFlashingScreen = true;
 	}
 }

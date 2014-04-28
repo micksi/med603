@@ -20,6 +20,7 @@ namespace ThresholdFinding
 		protected int index = 0;
 		private bool finished = false;
 		public event EventHandler<FinishedEventArgs> FinishedEvent;
+		public event EventHandler<FinishedTrialArgs> FinishedTrial;
 
 		public ThresholdFinder(ITrialStrategy strategy)
 		{
@@ -45,6 +46,7 @@ namespace ThresholdFinding
 				if(trial.Finished)
 				{
 					trial = trials[++index];
+					FinishedTrial(this, new FinishedTrialArgs(this));
 				}
 				return trial.Stimulus;
 			}
@@ -181,6 +183,15 @@ namespace ThresholdFinding
 	{
 		public readonly ThresholdFinder Finder;
 		public FinishedEventArgs(ThresholdFinder finder)
+		{
+			Finder = finder;
+		}
+	}
+
+	public class FinishedTrialArgs : EventArgs
+	{
+		public readonly ThresholdFinder Finder;
+		public FinishedTrialArgs	(ThresholdFinder finder)
 		{
 			Finder = finder;
 		}

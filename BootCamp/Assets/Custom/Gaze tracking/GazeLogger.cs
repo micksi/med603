@@ -1,39 +1,56 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.IO;
+using ThresholdFinding;
+using TestFramework;
 
 // Logs gaze position data as TIMESTAMP,X,Y
 public class GazeLogger : MonoBehaviour {
 
+	private ThresholdFinder finder = null;
+	private Experiment experiment = null;
+	private string path;
 	private bool logging = false;
-	private bool usingDiff = false;
 	private double logIntervalSeconds;
-	private string targetpath;
-	private Vector2 gazeTarget;
-
 	private double timeToNextLog = 0.0;
 
-	// Will start logging gaze position to the specified file at the specified interval.
-	public void BeginLogging(string targetpath, double logIntervalSeconds)
+	public Vector2 ReferenceLocation = new Vector2(0f, 0f);
+
+	public GazeLogger(Experiment experiment, ThresholdFinder finder, 
+		double logIntervalSeconds)
 	{
-		print("Starting gaze logging to " + targetpath + " every " + logIntervalSeconds + " seconds.");
-		this.targetpath = targetpath;
+		this.experiment = experiment;
+		this.finder = finder;
 		this.logIntervalSeconds = logIntervalSeconds;
-		logging = true;
-		usingDiff = false;
+
+		this.finder.FinishedTrial += OnFinishedTrialEvent;
 	}
 
-	// Log the difference between gaze position and desired position.
-	public void BeginLoggingDiff(string targetpath, double logIntervalSeconds, Vector2 gazeTarget)
+	public GazeLogger(Experiment experiment, ThresholdFinder finder, 
+		double logIntervalSeconds, Vector2 referenceLocation)
+		: this(experiment, finder, logIntervalSeconds)
 	{
-		BeginLogging(targetpath, logIntervalSeconds);
-		this.gazeTarget = gazeTarget;
-		usingDiff = true;
+		this.ReferenceLocation = referenceLocation;
 	}
 
-	public void EndLogging()
+	public void Begin()
+	{
+		logging = true;
+	}
+
+	public void Pause()
 	{
 		logging = false;
+		timeToNextLog = 0.0;
+	}
+
+	public void UpdatePath()
+	{
+		string folderPath = experiment.ActiveParticipant.FolderPath;
+		Trial currenTrial = finder.CurrentTrial;
+		string filename = currenTrial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + " gazelog.txt";
+		path = Path.Combine(folderPath, filename);
 	}
 	
 	// Update is called from the class that owns this instance
@@ -47,29 +64,40 @@ public class GazeLogger : MonoBehaviour {
 			}
 			else
 			{
+				LogGaze();
+
 				// Reset counter
 				timeToNextLog = logIntervalSeconds;
-				Log();
 			}
 		}
 	}
 
-	// Does the actual writing of data to the provided path
-	private void Log()
+	private void LogGaze()
 	{	
 		if(FocusProvider.source != FocusProvider.Source.Gaze)
 		{
 			// If you're testing without gaze tracking, you can comment the following line out.
-			throw new InvalidOperationException("Won't log gaze, as you're not using gaze as focus source.");
+			//throw new InvalidOperationException("Won't log gaze, as you're not using gaze as focus source.");
 		}
 
 		Vector2 logPosition = FocusProvider.GetFocusPosition();
-		if(usingDiff)
-		{
-			logPosition -= gazeTarget;
-		}
+		logPosition -= ReferenceLocation;
 
-		string content = System.String.Format("{0},{1},{2}\n", DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff"), logPosition.x, logPosition.y);
-		System.IO.File.AppendAllText(targetpath, content);
+		Write(DateTime.Now.ToString("HH-mm-ss-fffffff"), logPosition.x, logPosition.y);
+		//string content = System.String.Format("{0},{1},{2}\n", DateTime.Now.ToString("HH-mm-ss-fffffff"), logPosition.x, logPosition.y);
+		//System.IO.File.AppendAllText(targetpath, content);
+	}
+
+	// Does the actual writing of data to the provided path
+	private void Write(string arg1, float arg2, float arg3)
+	{
+		string content = arg1 + arg2 + arg3;
+		System.IO.File.AppendAllText(path, content);
+	}
+
+	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
+	{
+		// Start over in a new file, in order to match the structure of the other logs
+		UpdatePath(); 
 	}
 }
