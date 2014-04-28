@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// As of now, hardcoded to use screen centre
 public class WantedFocusIndicator : MonoBehaviour {
 
 	private Material material;
@@ -8,8 +9,6 @@ public class WantedFocusIndicator : MonoBehaviour {
 	public Color Colour = new Color(0.5f, 0.5f, 0.5f, 1f);
 	public float Radius = 6f;
 	public float Thickness = 1f;
-	public float CentreX = 0;
-	public float CentreY = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -19,14 +18,12 @@ public class WantedFocusIndicator : MonoBehaviour {
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
 		Vector2 centre = FocusProvider.GetScreenCentre();
-		CentreX = centre.x;
-		CentreY = centre.y;
 
 		material.SetColor("_Colour", Colour);
 		material.SetFloat("_Radius", Radius);
 		material.SetFloat("_Thickness", Thickness);
-		material.SetFloat("_X", CentreX);
-		material.SetFloat("_Y", CentreY);
+		material.SetFloat("_X", centre.x);
+		material.SetFloat("_Y", centre.y);
 
 		Graphics.Blit(source, dest, material);
 	}

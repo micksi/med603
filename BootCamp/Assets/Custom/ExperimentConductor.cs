@@ -38,6 +38,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
 	private GazeLogger gazeLogger = null;
+	private WantedFocusIndicator wantedFocusIndicator = null;
 
 	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
 	private string falseButtonDescription = "red";
@@ -110,6 +111,9 @@ public class ExperimentConductor : MonoBehaviour {
 
 		gazeLogger = new GazeLogger(experiment, thresholdFinderComponent.Finder, 0.1); // TODO decide logging frequency
 		gazeLogger.ReferenceLocation = FocusProvider.GetScreenCentre();
+
+		wantedFocusIndicator = GetComponent<WantedFocusIndicator>();
+		wantedFocusIndicator.enabled = false;
 	}
 
 	void Update()
@@ -132,7 +136,9 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			case State.RunningTrials:
 				if(isFlashingScreen == false) // Only accept input when no flashing is taking place
+				{
 					SendInputToTFC();
+				}
 				break;
 			case State.ShowIntro:
 				HandleIntroInput();
@@ -298,6 +304,7 @@ public class ExperimentConductor : MonoBehaviour {
 		state = State.RunningTrials;
 		gazeLogger.UpdatePath();
 		gazeLogger.Begin();
+		wantedFocusIndicator.enabled = true;
 	}
 
 	private void OnEndScreenFlash()
@@ -319,6 +326,7 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		print("ExperimentConductor.OnFinishedThresholdFindingEvent: Finished finding a threshold.");
 		gazeLogger.Pause(); // Just to be sure.
+		wantedFocusIndicator.enabled = false;
 		state = State.EndTrials;
 	}
 
