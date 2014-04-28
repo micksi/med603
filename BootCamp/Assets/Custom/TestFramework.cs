@@ -17,10 +17,10 @@ namespace TestFramework
 
 		public void Update()
 		{
-		/*	if(Input.GetKeyDown("a"))
-			{
-				experiment.NewParticipant();
-			}*/
+			//if(Input.GetKeyDown("a"))
+			//{
+			//	experiment.NewParticipant();
+			//}
 		}
 
 		public void Initialize()

@@ -91,12 +91,17 @@ public static class FocusProvider {
 			case Source.Mouse:
 				return (Vector2)Input.mousePosition;
 			case Source.ScreenCentre:
-				return new Vector2(cam.pixelWidth / 2, cam.pixelHeight / 2);
+				return GetScreenCentre();
 			case Source.Gaze:
 				return gazeScript.GetGazeScreenPosition();
 			default:
 				return new Vector2(-1, -1);
 		}
+	}
+
+	public static Vector2 GetScreenCentre()
+	{
+		return new Vector2(cam.pixelWidth / 2, cam.pixelHeight / 2);
 	}
 
 	public static Vector3 GetFocusDirection()

@@ -148,8 +148,6 @@ Shader "Custom/OurDLAA"
 
 		// use CSF value to determine how much AA effect is applied
 		return lerp(original, clr, csf);
-		// debug:
-		//return lerp(float4(1,0,0,1), clr, csf);
 	}	
 
 	// TB playing around. Not needed for the project.
@@ -292,8 +290,6 @@ Shader "Custom/OurDLAA"
 		return maxVal;
 	}
 
-	
-
 	v2f vert( appdata_img v ) 
 	{
 		v2f o;
@@ -308,15 +304,6 @@ Shader "Custom/OurDLAA"
 	half4 antialias (v2f i) : COLOR 
 	{		 	
 		return edgeDetectAndBlur( i.uv );
-	}
-
-	float4 showCSF( v2f i ) : COLOR
-	{
-		float4 edgeColour = float4(1,0.5,0.4,1);
-		float4 csf = tex2D(_CSF, i.uv);
-		float4 main = tex2D( _MainTex, i.uv);
-
-		return lerp(edgeColour, main, csf);
 	}
 
 	ENDCG	
@@ -338,22 +325,6 @@ Shader "Custom/OurDLAA"
 
 			ENDCG
 		}
-
-		// Debugging pass - shows CSF as coloured overlay. Doesn't apply AA.
-		/*Pass {
-			ZTest Always Cull Off ZWrite Off
-			Fog { Mode off }
-
-			CGPROGRAM
-
-			#pragma vertex vert
-			#pragma fragment showCSF
-			#pragma target 3.0
-			#pragma exclude_renderers d3d11_9x
-			#pragma glsl
-
-			ENDCG
-		}*/
 	}
 
 	Fallback off

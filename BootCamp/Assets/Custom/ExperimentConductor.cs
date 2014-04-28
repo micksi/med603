@@ -5,21 +5,11 @@ using System.IO;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO provide gazelogger with a participant-dependent folder path (in StartTrials())
 // TODO Mark wanted user gaze position
-// TODO Save gaze data per trial
 // TODO decide logging frequency
 
 // TODO Test on groupmates
 // TODO Pilot test on passerby
-
-/*
- * NOTE
- * By trying really hard to not log gaze data while screen is flashing,
- * the code has become quite opaque. Sorry about that.
- * Please do ask if something is not making sense!
- * TW
- */
 
 public class ExperimentConductor : MonoBehaviour {
 
@@ -67,6 +57,19 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
+	private Material _showRequiredAttentionSpot = null;
+	private Material showRequiredAttentionSpot
+	{
+		get 
+		{
+			if(_showRequiredAttentionSpot == null)
+			{
+				_showRequiredAttentionSpot = new Material(Shader.Find("Custom/DrawFocus"));
+			}
+			return _showRequiredAttentionSpot;
+		}
+	}
+
 	private Material _showHalfCSF = null;
 	private Material showHalfCSF
 	{
@@ -101,16 +104,21 @@ public class ExperimentConductor : MonoBehaviour {
 
 		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
 		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
-		thresholdFinderComponent.Finder.FinishedTrial += OnFinishedTrialEvent;
 
 		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
 		experiment.Begin();		
 
 		gazeLogger = new GazeLogger(experiment, thresholdFinderComponent.Finder, 0.1); // TODO decide logging frequency
+		gazeLogger.ReferenceLocation = FocusProvider.GetScreenCentre();
 	}
 
 	void Update()
 	{
+		if(Input.GetKeyDown("a"))
+		{
+			experiment.NewParticipant();
+		}
+
 		if(isFlashingScreen)
 		{
 			flashTimeLeft -= Time.deltaTime;
@@ -123,7 +131,7 @@ public class ExperimentConductor : MonoBehaviour {
 		switch(state)
 		{
 			case State.RunningTrials:
-				if(flashTimeLeft <= 0.0) // Only accept input when no flashing is taking place
+				if(isFlashingScreen == false) // Only accept input when no flashing is taking place
 					SendInputToTFC();
 				break;
 			case State.ShowIntro:
@@ -151,56 +159,26 @@ public class ExperimentConductor : MonoBehaviour {
 		csfGenerator.GetContrastSensitivityMap(source, csf);
 		material.SetTexture("_CSF", csf);
 
+		// Consider whether effect should be full-on or -off regardless of CSF
 		if(state == State.ShowIntro)
 		{	
 			if(introState == IntroState.ShowingFalse) 
 			{
 				material.SetTexture("_CSF", blackTex);
 			}
-			else // Show true state by default  //if(introState == IntroState.ShowingTrue)
+			else // Show true state by default
 			{
 				material.SetTexture("_CSF", whiteTex);
 			}
 		}
 		else if (state != State.RunningTrials)
 		{
-			// Show true state by default unless experiment is really running
+			// Show true state by default, unless experiment is really running
 			material.SetTexture("_CSF", whiteTex);
 		}
-		/*if(debugToggleEffectOnV)
-		{	
-			if(Input.GetKey("v"))
-			{
-				material.SetTexture("_CSF", whiteTex);
-				print("AA on");
-			}
-			else //if(Input.GetKey("b"))
-			{
-				material.SetTexture("_CSF", blackTex);
-				print("AA off");
-			}
-			Graphics.Blit(source, dest, material);
-		}
-		else if(debugShowHalfvalueCSF)
-		{
-			RenderTexture temp = RenderTexture.GetTemporary(source.width, source.height);
-			showHalfCSF.SetTexture("_CSF", csf);
-			showHalfCSF.SetFloat("_Threshold", 0.5f);
-			Graphics.Blit(source, temp, material);
-			Graphics.Blit(temp, dest, showHalfCSF);
-			RenderTexture.ReleaseTemporary(temp);
-		}
-		else if(debugDrawCSFOnly)
-		{
-			Graphics.Blit(csf, dest);
-		}
-		else
-		{*/
-			// Apply effect according to CSF
-			
-		//}
-		
-		Graphics.Blit(source, dest, material);
+
+		// Draw effect
+		Graphics.Blit(source, dest, material); 
 
 		// Clean up
 		RenderTexture.ReleaseTemporary(csf);
@@ -342,11 +320,6 @@ public class ExperimentConductor : MonoBehaviour {
 		print("ExperimentConductor.OnFinishedThresholdFindingEvent: Finished finding a threshold.");
 		gazeLogger.Pause(); // Just to be sure.
 		state = State.EndTrials;
-	}
-
-	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
-	{
-		
 	}
 
 	private void StartScreenFlash(string displayText, double noOfFrames = flashTimeSeconds)

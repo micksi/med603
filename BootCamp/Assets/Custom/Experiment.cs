@@ -14,6 +14,22 @@ namespace TestFramework
 		private bool begun = false;
 		private List<Participant> participants;
 
+		public string FolderPath
+		{
+			get
+			{
+				return Path.Combine(Framework.ExperimentsFolderPath, Name);
+			}
+		}
+
+		public string ParticipantsFolderPath
+		{
+			get
+			{
+				return Path.Combine(FolderPath, "Participants");
+			}
+		}
+
 		public Experiment(string name, TestFramework framework, ThresholdFinderComponent tfc)
 		{
 			this.Name = name;
@@ -68,12 +84,6 @@ namespace TestFramework
 			}
 		}
 
-
-		public void Update()
-		{
-
-		}
-
 		public override Participant NewParticipant()
 		{
 			uint newId = 1;
@@ -82,26 +92,10 @@ namespace TestFramework
 				Participant last = participants[participants.Count - 1];
 				newId = last.Id + 1;
 			}
-
-			Participant p = new Participant(this, newId.ToString());
+			Debug.Log("New participant with id " + newId);
+			Participant p = new Participant(this, newId.ToString("0000"));
 			participants.Add(p);
 			return p;
-		}
-
-		public string FolderPath
-		{
-			get
-			{
-				return Path.Combine(Framework.ExperimentsFolderPath, Name);
-			}
-		}
-
-		public string ParticipantsFolderPath
-		{
-			get
-			{
-				return Path.Combine(FolderPath, "Participants");
-			}
 		}
 	}
 }

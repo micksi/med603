@@ -15,7 +15,9 @@ public class GazeLogger : MonoBehaviour {
 	private double logIntervalSeconds;
 	private double timeToNextLog = 0.0;
 
-	public Vector2 ReferenceLocation = new Vector2(0f, 0f);
+	// Logged in the beginning of each new file for future reference - this
+	// is where the user is supposed to be looking
+	public Vector2 ReferenceLocation = new Vector2(0f, 0f); 
 
 	public GazeLogger(Experiment experiment, ThresholdFinder finder, 
 		double logIntervalSeconds)
@@ -49,7 +51,7 @@ public class GazeLogger : MonoBehaviour {
 	{
 		string folderPath = experiment.ActiveParticipant.FolderPath;
 		Trial currenTrial = finder.CurrentTrial;
-		string filename = currenTrial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + " gazelog.txt";
+		string filename = currenTrial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + " gazelog.csv";
 		path = Path.Combine(folderPath, filename);
 	}
 	
@@ -81,18 +83,37 @@ public class GazeLogger : MonoBehaviour {
 		}
 
 		Vector2 logPosition = FocusProvider.GetFocusPosition();
-		logPosition -= ReferenceLocation;
+		//logPosition -= ReferenceLocation;
+
+		if(File.Exists(path) == false)
+		{
+			// Generate header
+			WriteLine("Gaze tracking data for MED603 experiment 1");
+			WriteLine("User is supposed to look at coordinates " + ReferenceLocation.ToString());
+			WriteLine("Timestamp is in HH-mm-ss-fffffff");
+			WriteLine("------------------------------");
+
+			Write("Timestamp", "x", "y");
+		}
 
 		Write(DateTime.Now.ToString("HH-mm-ss-fffffff"), logPosition.x, logPosition.y);
-		//string content = System.String.Format("{0},{1},{2}\n", DateTime.Now.ToString("HH-mm-ss-fffffff"), logPosition.x, logPosition.y);
-		//System.IO.File.AppendAllText(targetpath, content);
 	}
 
 	// Does the actual writing of data to the provided path
+	private void WriteLine(string arg)
+	{
+		System.IO.File.AppendAllText(path, arg + "\n");
+	}
+
+	private void Write(string arg1, string arg2, string arg3)
+	{
+		string content = arg1 + "," + arg2 + "," + arg3;
+		WriteLine(content);
+	}
+
 	private void Write(string arg1, float arg2, float arg3)
 	{
-		string content = arg1 + arg2 + arg3;
-		System.IO.File.AppendAllText(path, content);
+		Write(arg1, arg2.ToString(), arg3.ToString());
 	}
 
 	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
