@@ -26,7 +26,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private Experiment experiment;
 
 	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, EndTrials };
-	private State state = State.ShowIntro;//SendToDemographics;
+	private State state = State.SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation };
 	private IntroState introState = IntroState.ShowingTrue;
 	
