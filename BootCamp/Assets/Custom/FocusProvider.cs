@@ -89,11 +89,11 @@ public static class FocusProvider {
 		switch(source)
 		{
 			case Source.Mouse:
-				return (Vector2)Input.mousePosition;
+				return GetMousePosition();
 			case Source.ScreenCentre:
 				return GetScreenCentre();
 			case Source.Gaze:
-				return gazeScript.GetGazeScreenPosition();
+				return GetGazePosition();
 			default:
 				return new Vector2(-1, -1);
 		}
@@ -102,6 +102,16 @@ public static class FocusProvider {
 	public static Vector2 GetScreenCentre()
 	{
 		return new Vector2(cam.pixelWidth / 2, cam.pixelHeight / 2);
+	}
+
+	public static Vector2 GetMousePosition()
+	{
+		return (Vector2)Input.mousePosition;
+	}
+
+	public static Vector2 GetGazePosition()
+	{
+		return gazeScript.GetGazeScreenPosition();
 	}
 
 	public static Vector3 GetFocusDirection()

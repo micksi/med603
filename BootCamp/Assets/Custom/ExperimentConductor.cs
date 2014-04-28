@@ -26,8 +26,8 @@ public class ExperimentConductor : MonoBehaviour {
 	private Experiment experiment;
 
 	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, EndTrials };
-	private State state = State.SendToDemographics;
-	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation };
+	private State state = State.SendToCalibration;//SendToDemographics;
+	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
 	private const double flashTimeSeconds = 0.7;
@@ -232,12 +232,14 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingTrue:
 				GUI.Label(messageRect, "This is how the screen should appear to you."
 						+ " When it looks like this during the test, press the " + trueButtonDescription 
-						+ " button. For now, press the " + trueButtonDescription + " button to go on.");
+						+ " button."
+						+ " For now, press the " + trueButtonDescription + " button to go on.");
 				break;
 			case IntroState.ShowingFalse:
 				GUI.Label(messageRect, "This is how the screen should NOT appear to you."
 						+ " When it looks like this during the test, press the " + falseButtonDescription 
-						+ " button. For now, press the " + trueButtonDescription + " button to go on,"
+						+ " button."
+						+ " For now, press the " + trueButtonDescription + " button to go on,"
 						+ " or the " + falseButtonDescription + " button to go back.");
 				break;
 			case IntroState.ShowingExplanation:
@@ -245,7 +247,16 @@ public class ExperimentConductor : MonoBehaviour {
 					"In the following few minutes, you must use the " + trueButtonDescription + " and " 
 					+ falseButtonDescription + " buttons to indicate whether the screen looks like it should " 
 					+ "or not, respectively. Feel free to take the time you need.\n"
+					+ "Note that you must look at the marker in the centre of the screen, not anywhere else."
+					+ " The marker is shown on the next screen.\n"
 					+ "The screen will blink for a short duration when you have pressed one of the buttons."
+					+ "\nPress the " + trueButtonDescription + " button to see the marker, or the "
+					+ falseButtonDescription + " button to go back."
+				);
+				break;
+			case IntroState.ShowingMarker:
+				GUI.Label(messageRect, 
+					"This is the marker, indicating where you must look during the test. Please stick to it!"
 					+ "\nPress the " + trueButtonDescription + " button to start the test, or the "
 					+ falseButtonDescription + " button to go back."
 				);
@@ -276,11 +287,23 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingExplanation:
 				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
 				{
-					StartTrials();
+					introState = IntroState.ShowingMarker;
+					wantedFocusIndicator.enabled = true;
 				}
 				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
 				{
 					introState = IntroState.ShowingFalse;
+				}
+				break;
+			case IntroState.ShowingMarker:
+				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				{
+					StartTrials();
+				}
+				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				{
+					introState = IntroState.ShowingExplanation;
+					wantedFocusIndicator.enabled = false;
 				}
 				break;
 		}
@@ -300,7 +323,9 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void StartTrials()
 	{
-		StartScreenFlash("Starting experiment...", 3);
+		//StartScreenFlash("Starting experiment...", 3);
+		StartScreenFlash(""); // Do not write anything; it is disturbing and keeps the user from the spot they're supposed to look at.
+
 		state = State.RunningTrials;
 		gazeLogger.UpdatePath();
 		gazeLogger.Begin();
@@ -319,7 +344,8 @@ public class ExperimentConductor : MonoBehaviour {
 		gazeLogger.Pause();
 
 		// Flash screen	
-		StartScreenFlash("You reported that what you saw looked " + (args.Observation ? "like it should." : "wrong."));
+		StartScreenFlash(""); // Do not write anything; it is disturbing and keeps the user from the spot they're supposed to look at.
+		//StartScreenFlash("You reported that what you saw looked " + (args.Observation ? "like it should." : "wrong."));
 	}
 
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)

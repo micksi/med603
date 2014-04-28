@@ -15,6 +15,8 @@ public class GazeLogger : MonoBehaviour {
 	private double logIntervalSeconds;
 	private double timeToNextLog = 0.0;
 
+	private FocusProvider.Source gazeSource = FocusProvider.Source.Gaze;
+
 	// Logged in the beginning of each new file for future reference - this
 	// is where the user is supposed to be looking
 	public Vector2 ReferenceLocation = new Vector2(0f, 0f); 
@@ -75,21 +77,29 @@ public class GazeLogger : MonoBehaviour {
 	}
 
 	private void LogGaze()
-	{	
-		if(FocusProvider.source != FocusProvider.Source.Gaze)
+	{
+		Vector2 logPosition = new Vector2(0f, 0f);
+		switch(gazeSource)
 		{
-			// If you're testing without gaze tracking, you can comment the following line out.
-			//throw new InvalidOperationException("Won't log gaze, as you're not using gaze as focus source.");
+			case FocusProvider.Source.Gaze:
+				logPosition = FocusProvider.GetGazePosition();
+				break;
+			case FocusProvider.Source.Mouse:
+				logPosition = FocusProvider.GetMousePosition();
+				break;
+			case FocusProvider.Source.ScreenCentre:
+				logPosition = FocusProvider.GetScreenCentre();
+				break;
 		}
 
-		Vector2 logPosition = FocusProvider.GetFocusPosition();
-		//logPosition -= ReferenceLocation;
+		FocusProvider.GetGazePosition();
 
 		if(File.Exists(path) == false)
 		{
 			// Generate header
 			WriteLine("Gaze tracking data for MED603 experiment 1");
 			WriteLine("User is supposed to look at coordinates " + ReferenceLocation.ToString());
+			WriteLine("Using " + gazeSource + " as gaze data source.");
 			WriteLine("Timestamp is in HH-mm-ss-fffffff");
 			WriteLine("------------------------------");
 
