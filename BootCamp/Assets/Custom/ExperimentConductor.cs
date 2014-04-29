@@ -6,15 +6,16 @@ using TestFramework;
 using ThresholdFinding;
 
 // TODO decide logging frequency (10 Hz at the moment)
-// TODO show progress to user
+// TODO show progress to user		DONE
 //		How?
 //		Per trial?
 // TODO Give user feedback on their responses
 //		Audio?
-// TODO longer pause between trials WORKING ON IT
+// TODO longer pause between trials 	DONE, BUT BROKE END OF EXPERIMENT FEEDBACK
 //		User returns, or countdown? 
 //		Mat: User returns
 //		T: Countdown
+// TODO Fix end of experiment feedback.
 
 // TODO Test on groupmates
 // TODO Pilot test on passerby
@@ -39,7 +40,8 @@ public class ExperimentConductor : MonoBehaviour {
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
-	private const double flashTimeSeconds = 0.7;
+	private const double flashTimeSeconds = 0.1;//0.7;
+	private const double flashTimeBetweenTrialsSeconds = 5; // 15; // TODO Argue for 15 seconds break
 	private double flashTimeLeft = 0.0;
 	private bool isFlashingScreen = false;
 	private string flashMessage = "";
@@ -159,6 +161,20 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.ShowIntro:
 				HandleIntroInput();
 				break;
+			case State.PausingBetweenTrials:
+				flashMessage = String.Format("Rest your eyes a bit.\r\n"
+					+ "{0} seconds till next trial.\r\n"
+					+ "You are {1} percent through.\r\n"
+					+ "Please look at the marker when the next trial starts.", 
+					((int)flashTimeLeft + 1),
+					thresholdFinderComponent.Finder.GetProgress() * 100.0);
+
+
+				/*"Rest your eyes a bit.\r\n"
+					+ ((int)flashTimeLeft + 1) + " seconds till next trial.\r\n"
+					+ "You are " + (thresholdFinderComponent.Finder.GetProgress
+					+ "Please look at the marker when the next trial starts.";
+				*/break;
 		}
 
 		gazeLogger.Update();
@@ -353,6 +369,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private void OnEndScreenFlash()
 	{
 		isFlashingScreen = false;
+		state = State.RunningTrials;
 		gazeLogger.Begin();
 	}
 
@@ -360,6 +377,7 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		// Pause gaze logging
 		gazeLogger.Pause();
+		print("ExpCond.OnReportObservationEvent");
 
 		// Flash screen	
 		StartScreenFlash(""); // Do not write anything; it is disturbing and keeps the user from the spot they're supposed to look at.
@@ -376,10 +394,10 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
 	{
-		/*print("ExperimentConductor.OnFinishedThresholdFindingEvent: Finished finding a threshold.");
-		gazeLogger.Pause(); // Just to be sure.
-		wantedFocusIndicator.enabled = false;
-		state = State.EndTrials;*/
+		gazeLogger.Pause();
+		state = State.PausingBetweenTrials;
+		print("ExpCond.OnFinishedTrialEvent");
+		StartScreenFlash("TRIAL ENDED", flashTimeBetweenTrialsSeconds);
 	}
 
 	private void StartScreenFlash(string displayText, double duration = flashTimeSeconds)

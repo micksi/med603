@@ -46,7 +46,11 @@ namespace ThresholdFinding
 				if(trial.Finished)
 				{
 					trial = trials[++index];
-					FinishedTrial(this, new FinishedTrialArgs(this));
+
+					if(Finished == false)
+					{
+						FinishedTrial(this, new FinishedTrialArgs(this));
+					}
 				}
 				return trial.Stimulus;
 			}
@@ -176,6 +180,11 @@ namespace ThresholdFinding
 				sum += thresholds[i];
 			}
 			return sum / thresholds.Length;
+		}
+
+		public double GetProgress()
+		{
+			return (double)index / (double) trials.Length;
 		}
 	}
 
