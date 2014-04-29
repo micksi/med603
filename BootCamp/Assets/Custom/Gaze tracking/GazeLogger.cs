@@ -15,7 +15,7 @@ public class GazeLogger : MonoBehaviour {
 	private double logIntervalSeconds;
 	private double timeToNextLog = 0.0;
 
-	private FocusProvider.Source gazeSource = FocusProvider.Source.Gaze;
+	private FocusProvider.Source gazeSource = FocusProvider.Source.ScreenCentre;// Gaze; FIXME Debugging lab's windows machine. Set to not use gaze tracker.
 
 	// Logged in the beginning of each new file for future reference - this
 	// is where the user is supposed to be looking
