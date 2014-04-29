@@ -13,10 +13,7 @@ public class WantedFocusIndicator : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		if(material == null)
-		{
-			material = new Material(Shader.Find("Custom/DrawFocus"));
-		}
+		material = new Material(Shader.Find("Custom/DrawFocus"));
 	}
 
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
