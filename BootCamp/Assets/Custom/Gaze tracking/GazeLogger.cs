@@ -112,7 +112,7 @@ public class GazeLogger : MonoBehaviour {
 	// Does the actual writing of data to the provided path
 	private void WriteLine(string arg)
 	{
-		System.IO.File.AppendAllText(path, arg + "\n");
+		System.IO.File.AppendAllText(path, arg + "\r\n");
 	}
 
 	private void Write(string arg1, string arg2, string arg3)

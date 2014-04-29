@@ -46,6 +46,7 @@ public class WantedFocusIndicator : MonoBehaviour {
 		material.SetFloat("_X", centre.x);
 		material.SetFloat("_Y", centre.y);
 
-		Graphics.Blit(source, dest, material);
+		// TESTING removed for debugging Lab Windows
+		//Graphics.Blit(source, dest, material);
 	}
 }
