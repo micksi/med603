@@ -18,8 +18,8 @@ public class GazeLogger : MonoBehaviour {
 	private FocusProvider.Source gazeSource = FocusProvider.Source.ScreenCentre;// Gaze; FIXME Debugging lab's windows machine. Set to not use gaze tracker.
 
 	// Logged in the beginning of each new file for future reference - this
-	// is where the user is supposed to be looking
-	public Vector2 ReferenceLocation = new Vector2(0f, 0f); 
+	// is where the user is supposed to be looking.
+	public Vector2 ReferenceLocation = new Vector2(0f, 0f);
 
 	public GazeLogger(Experiment experiment, ThresholdFinder finder, 
 		double logIntervalSeconds)

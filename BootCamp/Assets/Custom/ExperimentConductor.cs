@@ -14,9 +14,6 @@ using ThresholdFinding;
 public class ExperimentConductor : MonoBehaviour {
 
 	public string experimentName;
-	public ThresholdFinderComponent thresholdFinderComponent;
-	public TestFramework.TestFramework testFramework;
-	public CSF csfGenerator;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
 	public FocusProvider.Source focusSource;
 	public bool debugToggleEffectOnV = false;
@@ -24,9 +21,13 @@ public class ExperimentConductor : MonoBehaviour {
 	public bool debugDrawCSFOnly = false;
 
 	private Experiment experiment;
+	private ThresholdFinderComponent thresholdFinderComponent;
+	private TestFramework.TestFramework testFramework;
+	private CSF csfGenerator;
+
 
 	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, EndTrials };
-	private State state = State.SendToCalibration;//SendToDemographics;
+	private State state = State.ShowIntro; //SendToCalibration;//SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
@@ -103,8 +104,11 @@ public class ExperimentConductor : MonoBehaviour {
 		leftButtonRect  = new Rect( Screen.width / 3, 5 * Screen.height / 6 + buffer, Screen.width / 6 - buffer/2, Screen.height / 6 );
 		rightButtonRect = new Rect( Screen.width / 2 + buffer / 2, 5 * Screen.height / 6 + buffer, Screen.width / 6 - buffer/2, Screen.height / 6 );
 
+		thresholdFinderComponent = GetComponent<ThresholdFinderComponent>();
 		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
 		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
+
+		testFramework = GetComponent<TestFramework.TestFramework>();
 
 		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
 		experiment.Begin();		
@@ -114,6 +118,8 @@ public class ExperimentConductor : MonoBehaviour {
 
 		wantedFocusIndicator = GetComponent<WantedFocusIndicator>();
 		wantedFocusIndicator.enabled = false;
+
+		csfGenerator = GetComponent<CSF>();
 	}
 
 	void Update()

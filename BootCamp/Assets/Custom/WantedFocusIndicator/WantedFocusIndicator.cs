@@ -30,10 +30,10 @@ public class WantedFocusIndicator : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		/*if(material == null)
-		{
-			material = new Material(Shader.Find("Custom/DrawFocus"));
-		}*/
+		//if(material == null)
+		//{
+		//	material = new Material(Shader.Find("Custom/DrawFocus"));
+		//}
 	}
 
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
@@ -46,7 +46,6 @@ public class WantedFocusIndicator : MonoBehaviour {
 		material.SetFloat("_X", centre.x);
 		material.SetFloat("_Y", centre.y);
 
-		// TESTING removed for debugging Lab Windows
-		//Graphics.Blit(source, dest, material);
+		Graphics.Blit(source, dest, material);
 	}
 }

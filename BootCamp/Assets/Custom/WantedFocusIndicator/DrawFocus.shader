@@ -39,6 +39,8 @@ Shader "Custom/DrawFocus"
 		return o;
 	}
 
+	// TODO for some reason not compatible with Windows??
+	// Testing...
 	half4 frag (v2f i) : COLOR 
 	{		 		
 		float x = _X * _MainTex_TexelSize.x;
@@ -51,6 +53,8 @@ Shader "Custom/DrawFocus"
 		float v = (i.uv.y - y) * aspect; // Ensuring aspect ratio independence
 
 		float l = length(float2(h,v));
+
+		return origin * float4(0.5, 0.5, 1.5, 1);
 
 		if(_MainTex_TexelSize.x * (_Radius - _Thickness) < l 
 			&& l < _MainTex_TexelSize.x * _Radius)
