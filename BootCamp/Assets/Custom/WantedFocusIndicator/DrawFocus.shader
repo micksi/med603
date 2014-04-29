@@ -54,8 +54,6 @@ Shader "Custom/DrawFocus"
 
 		float l = length(float2(h,v));
 
-		return origin * float4(0.5, 0.5, 1.5, 1);
-
 		if(_MainTex_TexelSize.x * (_Radius - _Thickness) < l 
 			&& l < _MainTex_TexelSize.x * _Radius)
 		{
@@ -76,7 +74,7 @@ Shader "Custom/DrawFocus"
 
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma glsl
+			#pragma target 3.0
 
 			ENDCG
 		}

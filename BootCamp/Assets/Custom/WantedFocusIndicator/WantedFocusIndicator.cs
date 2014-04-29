@@ -9,31 +9,14 @@ public class WantedFocusIndicator : MonoBehaviour {
 	public float Radius = 6f;
 	public float Thickness = 1f;
 
-	public Shader CirleShader = null;
-	private Material _material = null;
-	private Material material
-	{
-		get 
-		{
-			if(_material == null)
-			{
-				_material = new Material(CirleShader);
-			}
-			return _material;
-		}
-
-		set
-		{
-			_material = value;
-		}
-	}
+	private Material material = null;
 
 	// Use this for initialization
 	void Start () {
-		//if(material == null)
-		//{
-		//	material = new Material(Shader.Find("Custom/DrawFocus"));
-		//}
+		if(material == null)
+		{
+			material = new Material(Shader.Find("Custom/DrawFocus"));
+		}
 	}
 
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
