@@ -5,8 +5,16 @@ using System.IO;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO Mark wanted user gaze position
-// TODO decide logging frequency
+// TODO decide logging frequency (10 Hz at the moment)
+// TODO show progress to user
+//		How?
+//		Per trial?
+// TODO Give user feedback on their responses
+//		Audio?
+// TODO longer pause between trials WORKING ON IT
+//		User returns, or countdown? 
+//		Mat: User returns
+//		T: Countdown
 
 // TODO Test on groupmates
 // TODO Pilot test on passerby
@@ -26,8 +34,8 @@ public class ExperimentConductor : MonoBehaviour {
 	private CSF csfGenerator;
 
 
-	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, EndTrials };
-	private State state = State.ShowIntro; //SendToCalibration;//SendToDemographics;
+	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, PausingBetweenTrials, EndTrials };
+	private State state = State.SendToDemographics;//ShowIntro; //SendToCalibration;//SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
@@ -107,6 +115,8 @@ public class ExperimentConductor : MonoBehaviour {
 		thresholdFinderComponent = GetComponent<ThresholdFinderComponent>();
 		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
 		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
+		thresholdFinderComponent.Finder.FinishedTrial += OnFinishedTrialEvent;
+
 
 		testFramework = GetComponent<TestFramework.TestFramework>();
 
@@ -136,7 +146,7 @@ public class ExperimentConductor : MonoBehaviour {
 			{
 				OnEndScreenFlash();
 			}
-		}	
+		}
 
 		switch(state)
 		{
@@ -224,6 +234,8 @@ public class ExperimentConductor : MonoBehaviour {
 				HandleIntroGUI();
 				break;
 			case State.RunningTrials:
+				break;
+			case State.PausingBetweenTrials:
 				break;
 			case State.EndTrials:
 				GUI.Label(messageRect, "Thank you for your participation! You may now approach the test conductor for a short interview.");
@@ -362,9 +374,17 @@ public class ExperimentConductor : MonoBehaviour {
 		state = State.EndTrials;
 	}
 
-	private void StartScreenFlash(string displayText, double noOfFrames = flashTimeSeconds)
+	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
 	{
-		flashTimeLeft = noOfFrames;
+		/*print("ExperimentConductor.OnFinishedThresholdFindingEvent: Finished finding a threshold.");
+		gazeLogger.Pause(); // Just to be sure.
+		wantedFocusIndicator.enabled = false;
+		state = State.EndTrials;*/
+	}
+
+	private void StartScreenFlash(string displayText, double duration = flashTimeSeconds)
+	{
+		flashTimeLeft = duration;
 		flashMessage = displayText;
 		isFlashingScreen = true;
 	}
