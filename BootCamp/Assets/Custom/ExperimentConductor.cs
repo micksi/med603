@@ -5,16 +5,6 @@ using System.IO;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO decide logging frequency (10 Hz at the moment)
-// TODO show progress to user		DONE
-//		How?
-//		Per trial?		YES
-// TODO Give user feedback on their responses	DONE
-//		Audio? NO, MARKER COLOUR
-// TODO longer pause between trials 	DONE, BUT BROKE END OF EXPERIMENT FEEDBACK
-//		User returns, or countdown? 
-//		Mat: User returns
-//		T: Countdown
 // TODO Fix end of experiment feedback.
 //		Currently, it goes the EndTrials state allright, but it only stays there
 //		for 3-4 frames before... not calling update.
@@ -38,12 +28,12 @@ public class ExperimentConductor : MonoBehaviour {
 	private WantedFocusIndicator wantedFocusIndicator;
 
 	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, PausingBetweenTrials, EndTrials };
-	private State state = State.ShowIntro; //SendToCalibration;//SendToDemographics;
+	private State state = State.SendToDemographics;//ShowIntro; //SendToCalibration;//SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
 	private const double flashTimeSeconds = 0.7;
-	private const double flashTimeBetweenTrialsSeconds = 5; // 15; // TODO Argue for 15 seconds break
+	private const double flashTimeBetweenTrialsSeconds = 15; // TODO Argue for 15 seconds break
 	private double flashTimeLeft = 0.0;
 	private bool isFlashingScreen = false;
 	private string flashMessage = "";
@@ -134,11 +124,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Update()
 	{
-		/*if(Input.GetKeyDown("a"))
-		{
-			experiment.NewParticipant();
-		}*/
-
 		if(isFlashingScreen)
 		{
 			flashTimeLeft -= Time.deltaTime;
@@ -367,8 +352,10 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void OnEndScreenFlash()
 	{
+		print("End flash " + DateTime.Now);
 		isFlashingScreen = false;
-		state = State.RunningTrials;
+		if(state != State.EndTrials)
+			state = State.RunningTrials;
 		gazeLogger.Begin();
 		wantedFocusIndicator.SetNormal();
 	}
@@ -377,7 +364,6 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		// Pause gaze logging
 		gazeLogger.Pause();
-		print("Reported observation");
 
 		// Set marker colour
 		if(args.Observation)
@@ -390,8 +376,7 @@ public class ExperimentConductor : MonoBehaviour {
 		}	
 
 		// Flash screen	
-		StartScreenFlash(""); // Do not write anything; it is disturbing and keeps the user from the spot they're supposed to look at.
-		//StartScreenFlash("You reported that what you saw looked " + (args.Observation ? "like it should." : "wrong."));
+		StartScreenFlash(""); 
 	}
 
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
@@ -406,7 +391,6 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		gazeLogger.Pause();
 		state = State.PausingBetweenTrials;
-		print("Finished a trial");
 		StartScreenFlash("TRIAL ENDED", flashTimeBetweenTrialsSeconds);
 	}
 

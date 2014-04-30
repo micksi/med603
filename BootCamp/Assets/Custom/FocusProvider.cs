@@ -86,6 +86,12 @@ public static class FocusProvider {
 	// Returns focus position, in pixels.
 	public static Vector2 GetFocusPosition()
 	{	
+		return GetFocusPosition(source);
+	}
+
+	// Returns focus position, in pixels.
+	public static Vector2 GetFocusPosition(Source source)
+	{
 		switch(source)
 		{
 			case Source.Mouse:
