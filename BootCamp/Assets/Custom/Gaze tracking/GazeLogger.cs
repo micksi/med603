@@ -99,6 +99,7 @@ public class GazeLogger : MonoBehaviour {
 			// Generate header
 			WriteLine("Gaze tracking data for MED603 experiment 1");
 			WriteLine("User is supposed to look at coordinates " + ReferenceLocation.ToString());
+			WriteLine("Current resolution is " + FocusProvider.GetScreenResolution());
 			WriteLine("Using " + gazeSource + " as gaze data source.");
 			WriteLine("Timestamp is in HH-mm-ss-fffffff");
 			WriteLine("------------------------------");

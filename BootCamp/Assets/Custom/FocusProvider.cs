@@ -120,6 +120,11 @@ public static class FocusProvider {
 		return gazeScript.GetGazeScreenPosition();
 	}
 
+	public static Vector2 GetScreenResolution()
+	{
+		return new Vector2(cam.pixelWidth, cam.pixelHeight);
+	}
+
 	public static Vector3 GetFocusDirection()
 	{
 		Vector2 focusPoint = GetFocusPosition();

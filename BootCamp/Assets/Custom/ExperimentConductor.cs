@@ -148,7 +148,7 @@ public class ExperimentConductor : MonoBehaviour {
 					+ "You are {1} percent through.\r\n"
 					+ "Please look at the marker when the next trial starts.", 
 					((int)flashTimeLeft + 1),
-					thresholdFinderComponent.Finder.GetProgress() * 100.0);
+					(thresholdFinderComponent.Finder.GetProgress() * 100.0).ToString("F1"));
 
 
 				/*"Rest your eyes a bit.\r\n"
@@ -158,7 +158,13 @@ public class ExperimentConductor : MonoBehaviour {
 				*/break;
 		}
 
+		CheckDebugInput();
 		gazeLogger.Update();
+	}
+
+	private void CheckDebugInput()
+	{
+
 	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
@@ -196,6 +202,25 @@ public class ExperimentConductor : MonoBehaviour {
 			material.SetTexture("_CSF", whiteTex);
 		}
 
+		// Debugging purposes - not to be used by testers
+		if(Input.GetKey(KeyCode.Alpha0))
+		{
+			// Use gaze for CSF
+			FocusProvider.source = FocusProvider.Source.Gaze;
+			csfGenerator.GetContrastSensitivityMap(source, csf);
+			material.SetTexture("_CSF", csf);
+		}	
+		else if(Input.GetKey(KeyCode.Alpha1))
+		{
+			// Use white CSF
+			material.SetTexture("_CSF", whiteTex);
+		}
+		else if(Input.GetKey(KeyCode.Alpha2))
+		{
+			// Use black CSF
+			material.SetTexture("_CSF", blackTex);
+		}
+
 		// Draw effect
 		Graphics.Blit(source, dest, material); 
 
@@ -205,8 +230,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnGUI()
 	{
-		print("State: " + state);
-
 		if(isFlashingScreen)
 		{
 			GUI.Label(messageRect, flashMessage);
@@ -352,7 +375,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void OnEndScreenFlash()
 	{
-		print("End flash " + DateTime.Now);
 		isFlashingScreen = false;
 		if(state != State.EndTrials)
 			state = State.RunningTrials;
@@ -381,7 +403,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
 	{
-		print("Finished finding a threshold.");
 		gazeLogger.Pause(); // Just to be sure.
 		wantedFocusIndicator.enabled = false;
 		state = State.EndTrials;
