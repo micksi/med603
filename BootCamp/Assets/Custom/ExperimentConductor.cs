@@ -8,14 +8,16 @@ using ThresholdFinding;
 // TODO decide logging frequency (10 Hz at the moment)
 // TODO show progress to user		DONE
 //		How?
-//		Per trial?
-// TODO Give user feedback on their responses
-//		Audio?
+//		Per trial?		YES
+// TODO Give user feedback on their responses	DONE
+//		Audio? NO, MARKER COLOUR
 // TODO longer pause between trials 	DONE, BUT BROKE END OF EXPERIMENT FEEDBACK
 //		User returns, or countdown? 
 //		Mat: User returns
 //		T: Countdown
 // TODO Fix end of experiment feedback.
+//		Currently, it goes the EndTrials state allright, but it only stays there
+//		for 3-4 frames before... not calling update.
 
 // TODO Test on groupmates
 // TODO Pilot test on passerby
@@ -33,14 +35,14 @@ public class ExperimentConductor : MonoBehaviour {
 	private ThresholdFinderComponent thresholdFinderComponent;
 	private TestFramework.TestFramework testFramework;
 	private CSF csfGenerator;
-
+	private WantedFocusIndicator wantedFocusIndicator;
 
 	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, PausingBetweenTrials, EndTrials };
-	private State state = State.SendToDemographics;//ShowIntro; //SendToCalibration;//SendToDemographics;
+	private State state = State.ShowIntro; //SendToCalibration;//SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
-	private const double flashTimeSeconds = 0.1;//0.7;
+	private const double flashTimeSeconds = 0.7;
 	private const double flashTimeBetweenTrialsSeconds = 5; // 15; // TODO Argue for 15 seconds break
 	private double flashTimeLeft = 0.0;
 	private bool isFlashingScreen = false;
@@ -49,12 +51,11 @@ public class ExperimentConductor : MonoBehaviour {
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
 	private GazeLogger gazeLogger = null;
-	private WantedFocusIndicator wantedFocusIndicator = null;
 
 	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
 	private string falseButtonDescription = "red";
 
-	private Rect messageRect, rightButtonRect, leftButtonRect;
+	private Rect messageRect;
 
 	private Material _material = null;
 	private Material material
@@ -108,17 +109,14 @@ public class ExperimentConductor : MonoBehaviour {
 		whiteTex.Apply();
 		blackTex.Apply();
 
-		// Set up GUI Rects
-		int buffer = 10;
+		// Set up GUI Rect
 		messageRect = new Rect( Screen.width / 3, Screen.height / 3, Screen.width / 3, Screen.height / 3);
-		leftButtonRect  = new Rect( Screen.width / 3, 5 * Screen.height / 6 + buffer, Screen.width / 6 - buffer/2, Screen.height / 6 );
-		rightButtonRect = new Rect( Screen.width / 2 + buffer / 2, 5 * Screen.height / 6 + buffer, Screen.width / 6 - buffer/2, Screen.height / 6 );
 
+		// Set up listeners
 		thresholdFinderComponent = GetComponent<ThresholdFinderComponent>();
 		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
 		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
 		thresholdFinderComponent.Finder.FinishedTrial += OnFinishedTrialEvent;
-
 
 		testFramework = GetComponent<TestFramework.TestFramework>();
 
@@ -136,10 +134,10 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Update()
 	{
-		if(Input.GetKeyDown("a"))
+		/*if(Input.GetKeyDown("a"))
 		{
 			experiment.NewParticipant();
-		}
+		}*/
 
 		if(isFlashingScreen)
 		{
@@ -224,6 +222,8 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnGUI()
 	{
+		print("State: " + state);
+
 		if(isFlashingScreen)
 		{
 			GUI.Label(messageRect, flashMessage);
@@ -357,7 +357,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void StartTrials()
 	{
-		//StartScreenFlash("Starting experiment...", 3);
 		StartScreenFlash(""); // Do not write anything; it is disturbing and keeps the user from the spot they're supposed to look at.
 
 		state = State.RunningTrials;
@@ -371,13 +370,24 @@ public class ExperimentConductor : MonoBehaviour {
 		isFlashingScreen = false;
 		state = State.RunningTrials;
 		gazeLogger.Begin();
+		wantedFocusIndicator.SetNormal();
 	}
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
 	{
 		// Pause gaze logging
 		gazeLogger.Pause();
-		print("ExpCond.OnReportObservationEvent");
+		print("Reported observation");
+
+		// Set marker colour
+		if(args.Observation)
+		{
+			wantedFocusIndicator.SetPositive();
+		}
+		else
+		{
+			wantedFocusIndicator.SetNegative();
+		}	
 
 		// Flash screen	
 		StartScreenFlash(""); // Do not write anything; it is disturbing and keeps the user from the spot they're supposed to look at.
@@ -386,7 +396,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
 	{
-		print("ExperimentConductor.OnFinishedThresholdFindingEvent: Finished finding a threshold.");
+		print("Finished finding a threshold.");
 		gazeLogger.Pause(); // Just to be sure.
 		wantedFocusIndicator.enabled = false;
 		state = State.EndTrials;
@@ -396,7 +406,7 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		gazeLogger.Pause();
 		state = State.PausingBetweenTrials;
-		print("ExpCond.OnFinishedTrialEvent");
+		print("Finished a trial");
 		StartScreenFlash("TRIAL ENDED", flashTimeBetweenTrialsSeconds);
 	}
 
