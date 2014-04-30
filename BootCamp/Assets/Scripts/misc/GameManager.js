@@ -62,7 +62,7 @@ class GameManager extends MonoBehaviour
 	{
 		if(!pause && running) time += Time.deltaTime;
 		
-		if(Input.GetKeyDown(KeyCode.M) || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
+		if(false)//Input.GetKeyDown(KeyCode.M) || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P)) No menu access during experiment
 		{
 			pause = !pause;
 			
