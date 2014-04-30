@@ -5,9 +5,7 @@ using System.IO;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO Fix end of experiment feedback.
-//		Currently, it goes the EndTrials state allright, but it only stays there
-//		for 3-4 frames before... not calling update.
+// TODO Maybe instruct user on the visual feedback?
 
 // TODO Test on groupmates
 // TODO Pilot test on passerby
@@ -276,6 +274,8 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingMarker:
 				GUI.Label(messageRect, 
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
+					+ "\nIt will turn green when you respond that the scene looks like it should, and"
+					+ " red when you respond that the scene doesn't look like it should."
 					+ "\nPress the " + trueButtonDescription + " button to start the test, or the "
 					+ falseButtonDescription + " button to go back."
 				);
