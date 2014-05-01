@@ -75,7 +75,7 @@ public class GazeLogger : MonoBehaviour {
 			timeBetweenFlush += Time.deltaTime;
 			if(sb.Length > minSizeBeforeFlush)
 			{
-				 print ("sb length: " + sb.Length + " Gathered in: " + timeBetweenFlush + " secounds.");
+				//print ("sb length: " + sb.Length + " Gathered in: " + timeBetweenFlush + " seconds.");
 				timeBetweenFlush = 0;
 				Flush();
 			}
