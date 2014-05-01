@@ -7,54 +7,105 @@ using ThresholdFinding;
 using TestFramework;
 
 // Logs gaze position data as TIMESTAMP,X,Y
-public class GazeLogger : MonoBehaviour {
+// TODO: Also log ReferenceLocation per line
+public class GazeLogger
+{
 
 	private ThresholdFinder finder = null;
 	private Experiment experiment = null;
 	private string path;
 	private bool logging = false;
-	private double logIntervalSeconds;
-	private double timeToNextLog = 0.0167; //~60hz
-	private double minSizeBeforeFlush = 1800; //about every 1 second
-
-	private double timeBetweenFlush = 0;
+	private const double logInterval = 1.0/60.0;
 
 	private FocusProvider.Source gazeSource = FocusProvider.Source.Mouse;// Gaze; FIXME Debugging lab's windows machine. Set to not use gaze tracker.
 
-	private StringBuilder sb = new StringBuilder();
-	private StringBuilder sbHeader;
+	private StringBuilder sb = null;
+	private StringBuilder sbHeader = null;
+	private const int linesBeforeFlush = 500;
 
 	// Logged in the beginning of each new file for future reference - this
 	// is where the user is supposed to be looking.
 	public Vector2 ReferenceLocation = new Vector2(0f, 0f);
 
-	public GazeLogger(Experiment experiment, ThresholdFinder finder, 
-		double logIntervalSeconds)
+	private MonoBehaviour component;
+
+	public GazeLogger(MonoBehaviour component, Experiment experiment, ThresholdFinder finder)
 	{
+		this.component = component;
 		this.experiment = experiment;
 		this.finder = finder;
-		this.logIntervalSeconds = logIntervalSeconds;
 
 		this.finder.FinishedTrial += OnFinishedTrialEvent;
 	}
 
-	public GazeLogger(Experiment experiment, ThresholdFinder finder, 
-		double logIntervalSeconds, Vector2 referenceLocation)
-		: this(experiment, finder, logIntervalSeconds)
+	public GazeLogger(MonoBehaviour component, Experiment experiment, ThresholdFinder finder, 
+		Vector2 referenceLocation)
+		: this(component, experiment, finder)
 	{
 		this.ReferenceLocation = referenceLocation;
 	}
 
 	public void Begin()
 	{
+		if(logging == true)
+		{
+			throw new InvalidOperationException("Cant begin logging when logging already happens");
+		}
 		logging = true;
+		if(gazeSource == FocusProvider.Source.Gaze)
+		{
+			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
+			gazeWrap.GazeUpdate += OnGazeUpdate;
+		}
+		// else if(gazeSource == FocusProvider.Source.Mouse)
+		// {
+		// 	component.StartCoroutine(LogMousePosition());
+		// }
 	}
 
 	public void Pause()
 	{
+		if(logging == false)
+		{
+			throw new InvalidOperationException("Cant pause logging when logging is already paused");
+		}
 		Flush();
 		logging = false;
-		timeToNextLog = 0.0;
+		if(gazeSource == FocusProvider.Source.Gaze)
+		{
+			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
+			gazeWrap.GazeUpdate -= OnGazeUpdate;
+		}
+		// else if(gazeSource == FocusProvider.Source.Mouse)
+		// {
+		// 	component.StopAllCoroutines();
+		// }
+	}
+
+	[Obsolete("Mouse is logged in FixedUpdate", true)]
+	public IEnumerator LogMousePosition()
+	{
+		float beginTime = Time.time;
+		while(true)
+		{
+
+			Vector3 mousePos = FocusProvider.GetMousePosition();
+			OnGazeUpdate(this, new GazeUpdateEventArgs(new Vector3(mousePos.x, mousePos.y)));
+			// Debug.Log(Time.time - beginTime);
+			beginTime = Time.time;
+			yield return new WaitForSeconds((float)logInterval);
+		}
+		yield return false;
+	}
+
+	public void OnGazeUpdate(object sender, GazeUpdateEventArgs args)
+	{
+		Log(args.Position);
+	}
+
+	public void Log(Vector3 position)
+	{
+		Write(DateTime.Now.ToString("HH-mm-ss-fffffff"), position.x, position.y);
 	}
 
 	public void UpdatePath()
@@ -64,34 +115,19 @@ public class GazeLogger : MonoBehaviour {
 		string filename = currenTrial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + " gazelog.csv";
 		path = Path.Combine(folderPath, filename);
 	}
-	
-	// Update is called from the class that owns this instance
-	// unless you attach it as a component somewhere.
-	public void FixedUpdate () {
-		if(logging)
+
+	// Dummy method! FIXME: Delete
+	public void FixedUpdate()
+	{
+		if(logging == true && gazeSource == FocusProvider.Source.Mouse)
 		{
-			if(timeToNextLog > 0)
-			{
-				timeToNextLog -= Time.deltaTime;
-			}
-			else
-			{
-				WriteToBuffer();
-
-				// Reset counter
-				timeToNextLog = logIntervalSeconds;
-			}
-
-			timeBetweenFlush += Time.deltaTime;
-			if(sb.Length > minSizeBeforeFlush)
-			{
-				//print ("sb length: " + sb.Length + " Gathered in: " + timeBetweenFlush + " secounds.");
-				timeBetweenFlush = 0;
-				Flush();
-			}
+			Vector3 mousePos = FocusProvider.GetMousePosition();
+			OnGazeUpdate(this, new GazeUpdateEventArgs(new Vector3(mousePos.x, mousePos.y)));
 		}
 	}
+	
 
+	[Obsolete("use Log instead", true)]
 	private void WriteToBuffer()
 	{
 		Vector2 logPosition = new Vector2(0f, 0f);
@@ -120,19 +156,36 @@ public class GazeLogger : MonoBehaviour {
 		}
 
 		System.IO.File.AppendAllText(path,sb.ToString());
-		sb = new StringBuilder();
+		sb = null;
+		Debug.Log("Flushed...");
 	}
 
 	// Does the actual writing of data to the provided path
 	private void WriteLine(string arg)
 	{
+		if(sb == null)
+		{
+			int capacity = linesBeforeFlush * (arg.Length + 1);
+			Debug.Log("Capacity: " + capacity);
+			sb = new StringBuilder(capacity, capacity);
+		}
+
+		//Debug.Log("Length: " + sb.Length + ", MaxCapacity: " + sb.MaxCapacity);
+		if(sb.Length + arg.Length >= sb.MaxCapacity)
+		{
+			Flush();
+			WriteLine(arg);
+			return;
+		}
+
 		sb.Append(arg)
 			.Append(Environment.NewLine);
 	}
 
 	private void Write(string arg1, string arg2, string arg3)
 	{
-		string content = arg1 + "," + arg2 + "," + arg3;
+		string content = arg1 + "," + arg2 + "," + arg3 + "," + 
+			ReferenceLocation.x + "," + ReferenceLocation.y;
 		WriteLine(content);
 	}
 
@@ -150,12 +203,13 @@ public class GazeLogger : MonoBehaviour {
 
 	private void GenerateHeader()
 	{
-		sbHeader = new StringBuilder();
+		int headerLength = 300; // header is 229 constant characters + newlines + variable strings
+		sbHeader = new StringBuilder(headerLength);
 		// Generate header
 		sbHeader.Append("Gaze tracking data for MED603 experiment 1")
 			.Append(Environment.NewLine);
 		sbHeader.Append("User is supposed to look at coordinates " + ReferenceLocation.ToString())
-		          .Append(Environment.NewLine);
+          	.Append(Environment.NewLine);
 		sbHeader.Append("Current resolution is " + FocusProvider.GetScreenResolution())
 			.Append(Environment.NewLine);
 		sbHeader.Append("Using " + gazeSource + " as gaze data source.")
@@ -165,7 +219,7 @@ public class GazeLogger : MonoBehaviour {
 		sbHeader.Append("------------------------------")
 			.Append(Environment.NewLine);
 		
-		sbHeader.Append("Timestamp,x,y")
+		sbHeader.Append("Timestamp,x,y,ref_x,ref_y")
 			.Append(Environment.NewLine);
 		//print ("header: " + DateTime.Now);
 	}
