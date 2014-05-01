@@ -70,22 +70,12 @@ public class GazeLogger : MonoBehaviour {
 	public void FixedUpdate () {
 		if(logging)
 		{
-			if(timeToNextLog > 0)
-			{
-				timeToNextLog -= Time.deltaTime;
-			}
-			else
-			{
-				WriteToBuffer();
-
-				// Reset counter
-				timeToNextLog = logIntervalSeconds;
-			}
+			WriteToBuffer();
 
 			timeBetweenFlush += Time.deltaTime;
 			if(sb.Length > minSizeBeforeFlush)
 			{
-				//print ("sb length: " + sb.Length + " Gathered in: " + timeBetweenFlush + " secounds.");
+				 print ("sb length: " + sb.Length + " Gathered in: " + timeBetweenFlush + " secounds.");
 				timeBetweenFlush = 0;
 				Flush();
 			}
