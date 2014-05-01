@@ -6,8 +6,8 @@ using System.IO;
 using ThresholdFinding;
 using TestFramework;
 
-// Logs gaze position data as TIMESTAMP,X,Y
-// TODO: Also log ReferenceLocation per line
+// Logs gaze position data as TIMESTAMP,X,Y, REF_X, REF_Y
+// TODO: Get rid of mutable state plx
 public class GazeLogger
 {
 
@@ -157,7 +157,7 @@ public class GazeLogger
 
 		System.IO.File.AppendAllText(path,sb.ToString());
 		sb = null;
-		Debug.Log("Flushed...");
+		// Debug.Log("Flushed...");
 	}
 
 	// Does the actual writing of data to the provided path
@@ -166,7 +166,7 @@ public class GazeLogger
 		if(sb == null)
 		{
 			int capacity = linesBeforeFlush * (arg.Length + 1);
-			Debug.Log("Capacity: " + capacity);
+			// Debug.Log("Capacity: " + capacity);
 			sb = new StringBuilder(capacity, capacity);
 		}
 
