@@ -21,6 +21,9 @@ public class WantedFocusIndicator : MonoBehaviour {
 	private float lerpDuration;
 	private float lerpTimeLeft;
 
+	private float abnormalColourDuration;
+	private bool isAbnormal = false;
+
 	// Use this for initialization
 	void Start () {
 		material = new Material(circleShader);//Shader.Find("Custom/DrawFocus"));
@@ -45,6 +48,16 @@ public class WantedFocusIndicator : MonoBehaviour {
 		{
 			lerping = false;
 			centre = lerpTarget;
+		}
+
+		if(isAbnormal)
+		{
+			abnormalColourDuration -= Time.deltaTime;
+			if(abnormalColourDuration <= 0f)
+			{
+				isAbnormal = false;
+				SetNormal();
+			}
 		}
 	}
 
@@ -74,18 +87,26 @@ public class WantedFocusIndicator : MonoBehaviour {
 		Graphics.Blit(source, dest, material);
 	}
 
-	public void SetPositive()
+	public void SetPositive(float durationSeconds)
 	{
 		currentColour = PositiveColour;
+		GoAbnormal(durationSeconds);
 	}
 
-	public void SetNegative()
+	public void SetNegative(float durationSeconds)
 	{
 		currentColour = NegativeColour;
+		GoAbnormal(durationSeconds);
 	}
 
 	public void SetNormal()
 	{
 		currentColour = NormalColour;
+	}
+
+	private void GoAbnormal(float durationSeconds)
+	{
+		abnormalColourDuration = durationSeconds;
+		isAbnormal = true;
 	}
 }

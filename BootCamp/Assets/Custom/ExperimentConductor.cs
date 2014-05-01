@@ -10,6 +10,7 @@ using ThresholdFinding;
 
 public class ExperimentConductor : MonoBehaviour {
 
+	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
 	public FocusProvider.Source focusSource;
@@ -22,35 +23,38 @@ public class ExperimentConductor : MonoBehaviour {
 	private TestFramework.TestFramework testFramework;
 	private CSF csfGenerator;
 	private WantedFocusIndicator wantedFocusIndicator;
-
 	private Vector2 wantedFocusPosition;
-
-	private enum State { SendToDemographics, SendToCalibration, ShowIntro, GatheringObservations, EndTrials };
-	private State state = State.SendToDemographics;//ShowIntro; //SendToCalibration;//SendToDemographics;
-	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
-	private IntroState introState = IntroState.ShowingTrue;
-	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
-	private ObservationState observationState = ObservationState.Flashing;
-
-	private const double flashTimeSeconds = 1.5;
-	private const double flashTimeForRests = 15; // TODO Argue for 15 seconds break
-
-	private double flashTimeLeft = 0.0;
-	//private bool isFlashingScreen = false;
-	private string restMessage = "";
-	private const double timeToObserve = 2.0; // Seconds
-	private double observationTimeLeft = 0.0;
-
-	private const float wantedFocusIndicatorLerpTime = 1f; // seconds
-
-	private Texture2D whiteTex = null;
-	private Texture2D blackTex = null;
 	private GazeLogger gazeLogger = null;
 
+	// States
+	private enum State { SendToDemographics, SendToCalibration, ShowIntro, GatheringObservations, EndTrials };
+	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
+	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
+	private State state = State.SendToDemographics;
+	private IntroState introState = IntroState.ShowingTrue;
+	private ObservationState observationState = ObservationState.Flashing;
+
+	// Flash properties
+	private const double flashDuration = 1.5;
+	private const double flashDurationForRests = 15; // TODO Argue for 15 seconds break
+	private double flashTimeLeft = 0.0;
+
+	// WantedFocusIndicator properties
+	private const float wantedFocusIndicatorLerpDuration = 1f; // Seconds
+	private const float wantedFocusIndicatorColourFeedbackDuration = 1f; // Seconds
+
+	// Observation properties
+	private const double userObservationDuration = 2.0; // Seconds
+	private double userObservationTimeLeft = 0.0; // Seconds
+	private string restMessage = "";
+
+	// Button descriptions
 	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
 	private string falseButtonDescription = "red";
 
 	private Rect messageRect;
+	private Texture2D whiteTex = null;
+	private Texture2D blackTex = null;
 
 	private Material _material = null;
 	private Material material
@@ -151,9 +155,9 @@ public class ExperimentConductor : MonoBehaviour {
 						}
 						break;
 					case ObservationState.UserObserving:
-						if(observationTimeLeft > 0)
+						if(userObservationTimeLeft > 0)
 						{
-							observationTimeLeft -= Time.deltaTime;
+							userObservationTimeLeft -= Time.deltaTime;
 						}
 						else
 						{
@@ -161,12 +165,20 @@ public class ExperimentConductor : MonoBehaviour {
 						}
 						break;
 					case ObservationState.Resting:
-						restMessage = String.Format("Rest your eyes a bit.\r\n"
-						+ "{0} seconds till next trial.\r\n"
-						+ "You are {1} percent through.\r\n"
-						+ "Please look at the marker when the next trial starts.", 
-						((int)flashTimeLeft + 1),
-						(thresholdFinderComponent.Finder.GetProgress() * 100.0).ToString("F1"));
+						if(flashTimeLeft > 0)
+						{
+							flashTimeLeft -= Time.deltaTime;
+							restMessage = String.Format("Rest your eyes a bit.\r\n"
+							+ "{0} seconds till next trial.\r\n"
+							+ "You are {1} percent through.\r\n"
+							+ "Please look at the marker when the next trial starts.", 
+							((int)flashTimeLeft + 1),
+							(thresholdFinderComponent.Finder.GetProgress() * 100.0).ToString("F1"));
+						}
+						else
+						{
+							StartUserObserving();
+						}						
 						break;
 					case ObservationState.AwaitingAnswer:
 						SendInputToTFC();
@@ -413,7 +425,7 @@ public class ExperimentConductor : MonoBehaviour {
 		StartScreenFlash();
 	}
 
-	private void StartScreenFlash(double duration = flashTimeSeconds)
+	private void StartScreenFlash(double duration = flashDuration)
 	{
 		flashTimeLeft = duration;
 	}
@@ -429,10 +441,10 @@ public class ExperimentConductor : MonoBehaviour {
 	private void StartUserObserving()
 	{
 		gazeLogger.Begin();
-		wantedFocusIndicator.SetNormal();
+		//wantedFocusIndicator.SetNormal();
 
 		observationState = ObservationState.UserObserving;
-		observationTimeLeft = timeToObserve;
+		userObservationTimeLeft = userObservationDuration;
 	}
 
 	private void OnUserObservingEnd()
@@ -443,7 +455,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private void UpdateWantedFocusPosition()
 	{
 		GenerateNewWantedFocusPosition();
-		wantedFocusIndicator.LerpTo(wantedFocusPosition, wantedFocusIndicatorLerpTime);
+		wantedFocusIndicator.LerpTo(wantedFocusPosition, wantedFocusIndicatorLerpDuration);
 		gazeLogger.ReferenceLocation = wantedFocusPosition;
 	}
 
@@ -466,11 +478,11 @@ public class ExperimentConductor : MonoBehaviour {
 		// Set marker colour
 		if(args.Observation)
 		{
-			wantedFocusIndicator.SetPositive();
+			wantedFocusIndicator.SetPositive(wantedFocusIndicatorColourFeedbackDuration);
 		}
 		else
 		{
-			wantedFocusIndicator.SetNegative();
+			wantedFocusIndicator.SetNegative(wantedFocusIndicatorColourFeedbackDuration);
 		}	
 
 		// Flash screen	and move marker
@@ -488,8 +500,8 @@ public class ExperimentConductor : MonoBehaviour {
 	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
 	{
 		print("Finished trial and flashTimeLeft is " + flashTimeLeft);
-		//observationState = ObservationState.Resting;
-		//StartScreenFlash(flashTimeForRests);
+		observationState = ObservationState.Resting;
+		StartScreenFlash(flashDurationForRests);
 	}
 
 	void OnApplicationQuit()

@@ -155,6 +155,12 @@ public class GazeLogger
 			System.IO.File.AppendAllText(path,sbHeader.ToString());
 		}
 
+		if(sb == null)
+		{
+			Debug.LogWarning("Tried to flush; nothing to flush.");
+			return;
+		}
+
 		System.IO.File.AppendAllText(path,sb.ToString());
 		sb = null;
 		// Debug.Log("Flushed...");
