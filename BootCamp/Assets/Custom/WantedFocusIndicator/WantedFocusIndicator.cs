@@ -11,9 +11,15 @@ public class WantedFocusIndicator : MonoBehaviour {
 	public float Radius = 6f;
 	public float Thickness = 1f;
 	public Shader circleShader;
+	public Vector2 centre;
 
 	private Material material = null;
 	private Color currentColour;
+
+	private Vector2 lerpTarget;
+	private bool lerping = false;
+	private float lerpDuration;
+	private float lerpTimeLeft;
 
 	// Use this for initialization
 	void Start () {
@@ -21,15 +27,42 @@ public class WantedFocusIndicator : MonoBehaviour {
 		currentColour = NormalColour;
 	}
 
+	public void LerpTo(Vector2 target, float durationSeconds)
+	{
+		print("Lerp from " + centre + " to " + target + " in " + durationSeconds + " s.");
+		this.lerpTarget = target;
+		this.lerpDuration = this.lerpTimeLeft = durationSeconds;
+		lerping = true;
+	}
+
+	void Update()
+	{
+		if(lerpTimeLeft > 0)
+		{
+			lerpTimeLeft -= Time.deltaTime;
+		}
+		else if(lerping)
+		{
+			lerping = false;
+			centre = lerpTarget;
+		}
+	}
+
+	private Vector2 Lerp()
+	{
+		return Vector2.Lerp(centre, lerpTarget, 1 - (lerpTimeLeft / lerpDuration));
+	}
+
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
-		Vector2 centre = FocusProvider.GetScreenCentre();
+		//Vector2 centre = FocusProvider.GetScreenCentre();
+		Vector2 position = lerping ? Lerp() : centre;
 
 		material.SetColor("_Colour", currentColour);
 		material.SetFloat("_Radius", Radius);
 		material.SetFloat("_Thickness", Thickness);
-		material.SetFloat("_X", centre.x);
-		material.SetFloat("_Y", centre.y);
+		material.SetFloat("_X", position.x);
+		material.SetFloat("_Y", position.y);
 
 		Graphics.Blit(source, dest, material);
 	}

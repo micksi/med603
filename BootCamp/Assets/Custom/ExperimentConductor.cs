@@ -163,7 +163,14 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void CheckDebugInput()
 	{
-
+		if(Input.GetKeyDown(KeyCode.Alpha5))
+		{
+			wantedFocusIndicator.LerpTo(FocusProvider.GetMousePosition(), 2f);
+		}
+		else if(Input.GetKeyDown(KeyCode.Alpha6))
+		{
+			StartTrials();
+		}
 	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)

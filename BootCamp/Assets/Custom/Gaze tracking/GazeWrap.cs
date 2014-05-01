@@ -7,6 +7,7 @@ using Assets.Scripts;
 public class GazeWrap : MonoBehaviour, IGazeListener
 {
     private GazeDataValidator gazeUtils;
+    private bool debugSupressWarning = false;
 
 	void Start () 
     {
@@ -44,10 +45,18 @@ public class GazeWrap : MonoBehaviour, IGazeListener
         {
             Application.Quit();
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha7))
+        {
+            debugSupressWarning = !debugSupressWarning;
+        }
+
     }
 
     void OnGUI()
     {
+        if(debugSupressWarning) return;
+        
         if (!GazeManager.Instance.IsConnected)
         {
             GUI.TextArea(GenerateCrazyRect(), "EyeTribe Server not running!");
