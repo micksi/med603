@@ -4,10 +4,21 @@ using TETCSharpClient;
 using TETCSharpClient.Data;
 using Assets.Scripts;
 
+public class GazeUpdateEventArgs : System.EventArgs
+{
+    public readonly Vector3 Position;
+    public GazeUpdateEventArgs(Vector3 p)
+    {
+        Position = p;
+    }
+}
+
 public class GazeWrap : MonoBehaviour, IGazeListener
 {
     private GazeDataValidator gazeUtils;
     private bool debugSupressWarning = false;
+    public event System.EventHandler<GazeUpdateEventArgs> GazeUpdate;
+
 
 	void Start () 
     {
@@ -28,6 +39,10 @@ public class GazeWrap : MonoBehaviour, IGazeListener
     {
         //Add frame to GazeData cache handler
         gazeUtils.Update(gazeData);
+        if(GazeUpdate != null)
+        {
+            GazeUpdate(this, new GazeUpdateEventArgs(GetGazeScreenPosition()));
+        }
     }
 
     public void OnCalibrationStateChanged(bool isCalibrated)

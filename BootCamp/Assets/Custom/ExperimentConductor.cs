@@ -28,7 +28,6 @@ public class ExperimentConductor : MonoBehaviour {
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
-	private const double loggingFrequency = 1.0/60.0; // 60 Hz
 	private const double flashTimeSeconds = 0.7;
 	private const double flashTimeBetweenTrialsSeconds = 15; // TODO Argue for 15 seconds break
 	private double flashTimeLeft = 0.0;
@@ -108,9 +107,9 @@ public class ExperimentConductor : MonoBehaviour {
 		testFramework = GetComponent<TestFramework.TestFramework>();
 
 		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
-		experiment.Begin();		
+		experiment.Begin();
 
-		gazeLogger = new GazeLogger(experiment, thresholdFinderComponent.Finder, loggingFrequency);
+		gazeLogger = new GazeLogger(this, experiment, thresholdFinderComponent.Finder);
 		gazeLogger.ReferenceLocation = FocusProvider.GetScreenCentre();
 
 		wantedFocusIndicator = GetComponent<WantedFocusIndicator>();
@@ -379,7 +378,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 		state = State.RunningTrials;
 		gazeLogger.UpdatePath();
-		gazeLogger.Begin();
 		wantedFocusIndicator.enabled = true;
 	}
 
@@ -430,5 +428,10 @@ public class ExperimentConductor : MonoBehaviour {
 		flashTimeLeft = duration;
 		flashMessage = displayText;
 		isFlashingScreen = true;
+	}
+
+	void OnApplicationQuit()
+	{
+		gazeLogger.Pause();
 	}
 }
