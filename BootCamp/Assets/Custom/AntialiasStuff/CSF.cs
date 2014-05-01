@@ -4,6 +4,9 @@ using System.Collections;
 public class CSF : MonoBehaviour {
 	
 	public Shader CSFShader = null;   
+
+	[HideInInspector]
+	public Vector2 centre = new Vector2(0,0);
 	
 	//[Range(0.01, 30.0)]
 	public float halfResolutionEccentricity = 2.3f;
@@ -53,10 +56,10 @@ public class CSF : MonoBehaviour {
 
 	public void GetContrastSensitivityMap(RenderTexture source, RenderTexture dest)
 	{
-		Vector2 focus = FocusProvider.GetFocusPosition();
+		//Vector2 focus = FocusProvider.GetFocusPosition();
 
-		material.SetFloat("_FocusX", focus.x);
-		material.SetFloat("_FocusY", focus.y);
+		material.SetFloat("_FocusX", centre.x);
+		material.SetFloat("_FocusY", centre.y);
 		
 		material.SetFloat("_HalfResolutionEccentricity", halfResolutionEccentricity);
 		

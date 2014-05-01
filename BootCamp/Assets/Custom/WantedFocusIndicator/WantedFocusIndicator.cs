@@ -53,10 +53,17 @@ public class WantedFocusIndicator : MonoBehaviour {
 		return Vector2.Lerp(centre, lerpTarget, 1 - (lerpTimeLeft / lerpDuration));
 	}
 
+	private Vector2 SmoothLerp()
+	{
+		float linearProgress = 1 - (lerpTimeLeft / lerpDuration);
+		float smoothProgress = (float)(0.5 * Mathf.Cos((1 - linearProgress)*Mathf.PI) + 0.5);
+		return Vector2.Lerp(centre, lerpTarget, smoothProgress);
+	}
+
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
 		//Vector2 centre = FocusProvider.GetScreenCentre();
-		Vector2 position = lerping ? Lerp() : centre;
+		Vector2 position = lerping ? SmoothLerp() : centre;
 
 		material.SetColor("_Colour", currentColour);
 		material.SetFloat("_Radius", Radius);

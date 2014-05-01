@@ -23,17 +23,25 @@ public class ExperimentConductor : MonoBehaviour {
 	private CSF csfGenerator;
 	private WantedFocusIndicator wantedFocusIndicator;
 
-	private enum State { SendToDemographics, SendToCalibration, ShowIntro, RunningTrials, PausingBetweenTrials, EndTrials };
+	private Vector2 wantedFocusPosition;
+
+	private enum State { SendToDemographics, SendToCalibration, ShowIntro, GatheringObservations, RunningTrials, PausingBetweenTrials, EndTrials };
 	private State state = State.SendToDemographics;//ShowIntro; //SendToCalibration;//SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
+	private enum ObservationState { Blinking, UserObserving, AwaitingAnswer, Resting };
+	private ObservationState observationState = ObservationState.Blinking;
 	
 	private const double loggingFrequency = 1.0/60.0; // 60 Hz
-	private const double flashTimeSeconds = 0.7;
+	private const double flashTimeSeconds = 1.5;
 	private const double flashTimeBetweenTrialsSeconds = 15; // TODO Argue for 15 seconds break
 	private double flashTimeLeft = 0.0;
 	private bool isFlashingScreen = false;
 	private string flashMessage = "";
+	private const double timeToObserve = 2.0; // Seconds
+
+
+	private const float wantedFocusIndicatorLerpTime = 1f; // seconds
 
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
@@ -153,13 +161,27 @@ public class ExperimentConductor : MonoBehaviour {
 					+ "Please look at the marker when the next trial starts.", 
 					((int)flashTimeLeft + 1),
 					(thresholdFinderComponent.Finder.GetProgress() * 100.0).ToString("F1"));
-
-
-				/*"Rest your eyes a bit.\r\n"
-					+ ((int)flashTimeLeft + 1) + " seconds till next trial.\r\n"
-					+ "You are " + (thresholdFinderComponent.Finder.GetProgress
-					+ "Please look at the marker when the next trial starts.";
-				*/break;
+				break;
+			case State.GatheringObservations:
+				switch(observationState)
+				{
+					case ObservationState.Blinking:
+						break;
+					case ObservationState.UserObserving:
+						break;
+					case ObservationState.Resting:
+						flashMessage = String.Format("Rest your eyes a bit.\r\n"
+						+ "{0} seconds till next trial.\r\n"
+						+ "You are {1} percent through.\r\n"
+						+ "Please look at the marker when the next trial starts.", 
+						((int)flashTimeLeft + 1),
+						(thresholdFinderComponent.Finder.GetProgress() * 100.0).ToString("F1"));
+						break;
+					case ObservationState.AwaitingAnswer:
+						SendInputToTFC();
+						break;
+				}
+				break;
 		}
 
 		CheckDebugInput();
@@ -184,9 +206,6 @@ public class ExperimentConductor : MonoBehaviour {
 			Graphics.Blit(blackTex, dest);
 			return;
 		}
-
-		// Update FocusProvider to use the latest source
-		FocusProvider.source = focusSource;
 
 		// Obtain CSF map and send it to material
 		csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
@@ -375,12 +394,19 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void StartTrials()
 	{
-		StartScreenFlash(""); // Do not write anything; it is disturbing and keeps the user from the spot they're supposed to look at.
+		StartScreenFlash("");
 
 		state = State.RunningTrials;
 		gazeLogger.UpdatePath();
 		gazeLogger.Begin();
 		wantedFocusIndicator.enabled = true;
+	}
+
+	private void StartScreenFlash(string displayText, double duration = flashTimeSeconds)
+	{
+		flashTimeLeft = duration;
+		flashMessage = displayText;
+		isFlashingScreen = true;
 	}
 
 	private void OnEndScreenFlash()
@@ -392,10 +418,28 @@ public class ExperimentConductor : MonoBehaviour {
 		wantedFocusIndicator.SetNormal();
 	}
 
+	private void UpdateWantedFocusPosition()
+	{
+		GenerateNewWantedFocusPosition();
+		wantedFocusIndicator.LerpTo(wantedFocusPosition, wantedFocusIndicatorLerpTime);
+		gazeLogger.ReferenceLocation = wantedFocusPosition;
+	}
+
+	private void GenerateNewWantedFocusPosition()
+	{
+		// Use uniform distribution for now
+		// TODO implement more proper distribution
+		wantedFocusPosition = FocusProvider.GetScreenResolution();
+		wantedFocusPosition.x *= UnityEngine.Random.value;
+		wantedFocusPosition.y *= UnityEngine.Random.value;
+	}
+
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
 	{
 		// Pause gaze logging
 		gazeLogger.Pause();
+
+		UpdateWantedFocusPosition();
 
 		// Set marker colour
 		if(args.Observation)
@@ -423,12 +467,5 @@ public class ExperimentConductor : MonoBehaviour {
 		gazeLogger.Pause();
 		state = State.PausingBetweenTrials;
 		StartScreenFlash("TRIAL ENDED", flashTimeBetweenTrialsSeconds);
-	}
-
-	private void StartScreenFlash(string displayText, double duration = flashTimeSeconds)
-	{
-		flashTimeLeft = duration;
-		flashMessage = displayText;
-		isFlashingScreen = true;
 	}
 }
