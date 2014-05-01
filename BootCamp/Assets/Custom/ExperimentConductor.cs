@@ -119,6 +119,11 @@ public class ExperimentConductor : MonoBehaviour {
 		csfGenerator = GetComponent<CSF>();
 	}
 
+	void FixedUpdate()
+	{
+		gazeLogger.FixedUpdate();
+	}
+
 	void Update()
 	{
 		if(isFlashingScreen)
@@ -158,7 +163,6 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 
 		CheckDebugInput();
-		gazeLogger.FixedUpdate();
 	}
 
 	private void CheckDebugInput()
