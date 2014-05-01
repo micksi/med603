@@ -54,7 +54,7 @@ namespace ThresholdFinding
 			base.ReportObservation(stimulus, value);
 			RecordObservation(stimulus, value);
 			counter--;
-			if(counter < 0)
+			if(counter <= 0)
 			{
 				Finished = true;
 			}
