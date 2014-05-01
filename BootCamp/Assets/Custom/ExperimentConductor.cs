@@ -159,7 +159,7 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 
 		CheckDebugInput();
-		gazeLogger.Update();
+		gazeLogger.FixedUpdate();
 	}
 
 	private void CheckDebugInput()
