@@ -25,21 +25,21 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private Vector2 wantedFocusPosition;
 
-	private enum State { SendToDemographics, SendToCalibration, ShowIntro, GatheringObservations, RunningTrials, PausingBetweenTrials, EndTrials };
+	private enum State { SendToDemographics, SendToCalibration, ShowIntro, GatheringObservations, EndTrials };
 	private State state = State.SendToDemographics;//ShowIntro; //SendToCalibration;//SendToDemographics;
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
-	private enum ObservationState { Blinking, UserObserving, AwaitingAnswer, Resting };
-	private ObservationState observationState = ObservationState.Blinking;
+	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
+	private ObservationState observationState = ObservationState.Flashing;
 	
 	private const double loggingFrequency = 1.0/60.0; // 60 Hz
 	private const double flashTimeSeconds = 1.5;
-	private const double flashTimeBetweenTrialsSeconds = 15; // TODO Argue for 15 seconds break
+	private const double flashTimeForRests = 15; // TODO Argue for 15 seconds break
 	private double flashTimeLeft = 0.0;
-	private bool isFlashingScreen = false;
-	private string flashMessage = "";
+	//private bool isFlashingScreen = false;
+	private string restMessage = "";
 	private const double timeToObserve = 2.0; // Seconds
-
+	private double observationTimeLeft = 0.0;
 
 	private const float wantedFocusIndicatorLerpTime = 1f; // seconds
 
@@ -134,43 +134,34 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Update()
 	{
-		if(isFlashingScreen)
-		{
-			flashTimeLeft -= Time.deltaTime;
-			if(flashTimeLeft < 0.0)
-			{
-				OnEndScreenFlash();
-			}
-		}
-
 		switch(state)
 		{
-			case State.RunningTrials:
-				if(isFlashingScreen == false) // Only accept input when no flashing is taking place
-				{
-					SendInputToTFC();
-				}
-				break;
 			case State.ShowIntro:
 				HandleIntroInput();
-				break;
-			case State.PausingBetweenTrials:
-				flashMessage = String.Format("Rest your eyes a bit.\r\n"
-					+ "{0} seconds till next trial.\r\n"
-					+ "You are {1} percent through.\r\n"
-					+ "Please look at the marker when the next trial starts.", 
-					((int)flashTimeLeft + 1),
-					(thresholdFinderComponent.Finder.GetProgress() * 100.0).ToString("F1"));
 				break;
 			case State.GatheringObservations:
 				switch(observationState)
 				{
-					case ObservationState.Blinking:
+					case ObservationState.Flashing:
+						flashTimeLeft -= Time.deltaTime;
+						if(flashTimeLeft < 0.0)
+						{
+							observationState = ObservationState.UserObserving;
+							OnScreenFlashEnd();
+						}
 						break;
 					case ObservationState.UserObserving:
+						if(observationTimeLeft > 0)
+						{
+							observationTimeLeft -= Time.deltaTime;
+						}
+						else
+						{
+							OnUserObservingEnd();
+						}
 						break;
 					case ObservationState.Resting:
-						flashMessage = String.Format("Rest your eyes a bit.\r\n"
+						restMessage = String.Format("Rest your eyes a bit.\r\n"
 						+ "{0} seconds till next trial.\r\n"
 						+ "You are {1} percent through.\r\n"
 						+ "Please look at the marker when the next trial starts.", 
@@ -195,14 +186,17 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 		else if(Input.GetKeyDown(KeyCode.Alpha6))
 		{
-			StartTrials();
+			state = State.ShowIntro;
 		}
 	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
-		if(isFlashingScreen)
+		// If screen is flashing, or we're awaiting an answer, draw black screen.
+		if(state == State.GatheringObservations)
 		{
+			if(		observationState == ObservationState.Flashing 
+				||  observationState == ObservationState.AwaitingAnswer)
 			Graphics.Blit(blackTex, dest);
 			return;
 		}
@@ -213,22 +207,18 @@ public class ExperimentConductor : MonoBehaviour {
 		csfGenerator.GetContrastSensitivityMap(source, csf);
 		material.SetTexture("_CSF", csf);
 
-		// Consider whether effect should be full-on or -off regardless of CSF
-		if(state == State.ShowIntro)
-		{	
-			if(introState == IntroState.ShowingFalse) 
+		// Show full-on (true) state by default, unless experiment is really running
+		// or we're demonstrating the full-off (false) state
+		if (state != State.GatheringObservations)
+		{
+			if(state == State.ShowIntro && introState == IntroState.ShowingFalse)
 			{
 				material.SetTexture("_CSF", blackTex);
 			}
-			else // Show true state by default
+			else
 			{
 				material.SetTexture("_CSF", whiteTex);
 			}
-		}
-		else if (state != State.RunningTrials)
-		{
-			// Show true state by default, unless experiment is really running
-			material.SetTexture("_CSF", whiteTex);
 		}
 
 		// Debugging purposes - not to be used by testers
@@ -259,12 +249,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnGUI()
 	{
-		if(isFlashingScreen)
-		{
-			GUI.Label(messageRect, flashMessage);
-			return;
-		}
-
 		switch(state)
 		{
 			case State.SendToDemographics:
@@ -284,12 +268,34 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.ShowIntro:
 				HandleIntroGUI();
 				break;
-			case State.RunningTrials:
-				break;
-			case State.PausingBetweenTrials:
+			case State.GatheringObservations:
+				HandleObservationGUI();
 				break;
 			case State.EndTrials:
 				GUI.Label(messageRect, "Thank you for your participation! You may now approach the test conductor for a short interview.");
+				break;
+		}
+	}
+
+	private void HandleObservationGUI()
+	{
+		switch(observationState)
+		{
+			case ObservationState.Flashing:
+				GUI.Label(messageRect, "");
+				break;
+			case ObservationState.UserObserving:
+				break;
+			case ObservationState.Resting:
+				GUI.Label(messageRect, restMessage);
+				break;
+			case ObservationState.AwaitingAnswer:
+				GUI.Label(messageRect, "Please press the " 
+					+ trueButtonDescription	+ " keyboard button if it looked "
+					+ "like it should, or the "	+ falseButtonDescription 
+					+ " keyboard button if it did not.\r\n"
+					+ "Take care to keep your eyes on the marker.");
+				SendInputToTFC();
 				break;
 		}
 	}
@@ -394,28 +400,44 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void StartTrials()
 	{
-		StartScreenFlash("");
+		//state = State.RunningTrials;
+		state = State.GatheringObservations;
 
-		state = State.RunningTrials;
 		gazeLogger.UpdatePath();
-		gazeLogger.Begin();
 		wantedFocusIndicator.enabled = true;
+		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
+
+		UpdateWantedFocusPosition();
+		StartScreenFlash();
 	}
 
-	private void StartScreenFlash(string displayText, double duration = flashTimeSeconds)
+	private void StartScreenFlash(double duration = flashTimeSeconds)
 	{
+		observationState = ObservationState.Flashing;
 		flashTimeLeft = duration;
-		flashMessage = displayText;
-		isFlashingScreen = true;
 	}
 
-	private void OnEndScreenFlash()
+	private void OnScreenFlashEnd()
 	{
-		isFlashingScreen = false;
-		if(state != State.EndTrials)
-			state = State.RunningTrials;
+		//isFlashingScreen = false;
+		if(state == State.GatheringObservations)
+		{
+			StartUserObserving();
+		}
+	}
+
+	private void StartUserObserving()
+	{
 		gazeLogger.Begin();
 		wantedFocusIndicator.SetNormal();
+
+		observationState = ObservationState.UserObserving;
+		observationTimeLeft = timeToObserve;
+	}
+
+	private void OnUserObservingEnd()
+	{
+		observationState = ObservationState.AwaitingAnswer;
 	}
 
 	private void UpdateWantedFocusPosition()
@@ -439,8 +461,6 @@ public class ExperimentConductor : MonoBehaviour {
 		// Pause gaze logging
 		gazeLogger.Pause();
 
-		UpdateWantedFocusPosition();
-
 		// Set marker colour
 		if(args.Observation)
 		{
@@ -451,8 +471,9 @@ public class ExperimentConductor : MonoBehaviour {
 			wantedFocusIndicator.SetNegative();
 		}	
 
-		// Flash screen	
-		StartScreenFlash(""); 
+		// Flash screen	and move marker
+		StartScreenFlash(); 
+		UpdateWantedFocusPosition();
 	}
 
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
@@ -465,7 +486,8 @@ public class ExperimentConductor : MonoBehaviour {
 	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
 	{
 		gazeLogger.Pause();
-		state = State.PausingBetweenTrials;
-		StartScreenFlash("TRIAL ENDED", flashTimeBetweenTrialsSeconds);
+		//state = State.PausingBetweenTrials;
+		observationState = ObservationState.Resting;
+		StartScreenFlash(flashTimeForRests);
 	}
 }
