@@ -196,7 +196,8 @@ public class ExperimentConductor : MonoBehaviour {
 		if(state == State.GatheringObservations)
 		{
 			if(		observationState == ObservationState.Flashing 
-				||  observationState == ObservationState.AwaitingAnswer)
+				||  observationState == ObservationState.AwaitingAnswer
+				||  observationState == ObservationState.Resting)
 			Graphics.Blit(blackTex, dest);
 			return;
 		}
@@ -408,18 +409,17 @@ public class ExperimentConductor : MonoBehaviour {
 		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
 
 		UpdateWantedFocusPosition();
+		observationState = ObservationState.Flashing;
 		StartScreenFlash();
 	}
 
 	private void StartScreenFlash(double duration = flashTimeSeconds)
 	{
-		observationState = ObservationState.Flashing;
 		flashTimeLeft = duration;
 	}
 
 	private void OnScreenFlashEnd()
 	{
-		//isFlashingScreen = false;
 		if(state == State.GatheringObservations)
 		{
 			StartUserObserving();
@@ -458,6 +458,8 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
 	{
+		print("Reported observation");
+
 		// Pause gaze logging
 		gazeLogger.Pause();
 
@@ -472,23 +474,22 @@ public class ExperimentConductor : MonoBehaviour {
 		}	
 
 		// Flash screen	and move marker
+		observationState = ObservationState.Flashing;
 		StartScreenFlash(); 
 		UpdateWantedFocusPosition();
 	}
 
 	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
 	{
-		gazeLogger.Pause(); // Just to be sure.
 		wantedFocusIndicator.enabled = false;
 		state = State.EndTrials;
 	}
 
 	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
 	{
-		gazeLogger.Pause();
-		//state = State.PausingBetweenTrials;
-		observationState = ObservationState.Resting;
-		StartScreenFlash(flashTimeForRests);
+		print("Finished trial and flashTimeLeft is " + flashTimeLeft);
+		//observationState = ObservationState.Resting;
+		//StartScreenFlash(flashTimeForRests);
 	}
 
 	void OnApplicationQuit()
