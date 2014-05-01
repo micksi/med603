@@ -5,8 +5,6 @@ using System.IO;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO Maybe instruct user on the visual feedback?
-
 // TODO Test on groupmates
 // TODO Pilot test on passerby
 
@@ -30,6 +28,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private IntroState introState = IntroState.ShowingTrue;
 	
+	private const double loggingFrequency = 1.0/60.0; // 60 Hz
 	private const double flashTimeSeconds = 0.7;
 	private const double flashTimeBetweenTrialsSeconds = 15; // TODO Argue for 15 seconds break
 	private double flashTimeLeft = 0.0;
@@ -111,7 +110,7 @@ public class ExperimentConductor : MonoBehaviour {
 		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
 		experiment.Begin();		
 
-		gazeLogger = new GazeLogger(experiment, thresholdFinderComponent.Finder, 0.1); // TODO decide logging frequency
+		gazeLogger = new GazeLogger(experiment, thresholdFinderComponent.Finder, loggingFrequency);
 		gazeLogger.ReferenceLocation = FocusProvider.GetScreenCentre();
 
 		wantedFocusIndicator = GetComponent<WantedFocusIndicator>();
@@ -164,7 +163,14 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void CheckDebugInput()
 	{
-
+		if(Input.GetKeyDown(KeyCode.Alpha5))
+		{
+			wantedFocusIndicator.LerpTo(FocusProvider.GetMousePosition(), 2f);
+		}
+		else if(Input.GetKeyDown(KeyCode.Alpha6))
+		{
+			StartTrials();
+		}
 	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
@@ -272,26 +278,26 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingTrue:
 				GUI.Label(messageRect, "This is how the screen should appear to you."
 						+ " When it looks like this during the test, press the " + trueButtonDescription 
-						+ " button."
-						+ " For now, press the " + trueButtonDescription + " button to go on.");
+						+ " keyboard button."
+						+ " For now, press the " + trueButtonDescription + " keyboard button to go on.");
 				break;
 			case IntroState.ShowingFalse:
 				GUI.Label(messageRect, "This is how the screen should NOT appear to you."
 						+ " When it looks like this during the test, press the " + falseButtonDescription 
-						+ " button."
-						+ " For now, press the " + trueButtonDescription + " button to go on,"
-						+ " or the " + falseButtonDescription + " button to go back.");
+						+ " keyboard button."
+						+ " For now, press the " + trueButtonDescription + " keyboard button to go on,"
+						+ " or the " + falseButtonDescription + " keyboard button to go back.");
 				break;
 			case IntroState.ShowingExplanation:
 				GUI.Label(messageRect, 
 					"In the following few minutes, you must use the " + trueButtonDescription + " and " 
-					+ falseButtonDescription + " buttons to indicate whether the screen looks like it should " 
+					+ falseButtonDescription + " keyboard buttons to indicate whether the screen looks like it should " 
 					+ "or not, respectively. Feel free to take the time you need.\n"
 					+ "Note that you must look at the marker in the centre of the screen, not anywhere else."
 					+ " The marker is shown on the next screen.\n"
-					+ "The screen will blink for a short duration when you have pressed one of the buttons."
-					+ "\nPress the " + trueButtonDescription + " button to see the marker, or the "
-					+ falseButtonDescription + " button to go back."
+					+ "The screen will blink for a short duration when you have pressed one of the keyboard buttons."
+					+ "\nPress the " + trueButtonDescription + " keyboard button to see the marker, or the "
+					+ falseButtonDescription + " keyboard button to go back."
 				);
 				break;
 			case IntroState.ShowingMarker:
@@ -299,8 +305,8 @@ public class ExperimentConductor : MonoBehaviour {
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
 					+ "\nIt will turn green when you respond that the scene looks like it should, and"
 					+ " red when you respond that the scene doesn't look like it should."
-					+ "\nPress the " + trueButtonDescription + " button to start the test, or the "
-					+ falseButtonDescription + " button to go back."
+					+ "\nPress the " + trueButtonDescription + " keyboard button to start the test, or the "
+					+ falseButtonDescription + " keyboard button to go back."
 				);
 				break;
 		}

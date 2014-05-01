@@ -7,6 +7,7 @@ using Assets.Scripts;
 public class GazeWrap : MonoBehaviour, IGazeListener
 {
     private GazeDataValidator gazeUtils;
+    private bool debugSupressWarning = false;
 
 	void Start () 
     {
@@ -44,20 +45,38 @@ public class GazeWrap : MonoBehaviour, IGazeListener
         {
             Application.Quit();
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha7))
+        {
+            debugSupressWarning = !debugSupressWarning;
+        }
+
     }
 
     void OnGUI()
     {
-        int padding = 10;
-
+        if(debugSupressWarning) return;
+        
         if (!GazeManager.Instance.IsConnected)
         {
-            GUI.TextArea(new Rect(padding, padding, 200, 20), "EyeTribe Server not running!");
+            GUI.TextArea(GenerateCrazyRect(), "EyeTribe Server not running!");
         }
         else if (!GazeManager.Instance.IsCalibrated)
         {
-            GUI.TextArea(new Rect(padding, padding, 200, 20), "EyeTribe Server not calibrated!");
+            GUI.TextArea(GenerateCrazyRect(), "EyeTribe Server not calibrated!");
         }
+    }
+
+    private Rect GenerateCrazyRect()
+    {
+        Vector2 screensize = FocusProvider.GetScreenResolution();
+        int deviation = (int)(screensize.x / 12);
+        int x = (int)(screensize.x / 3) + (int)(Random.value * deviation - deviation / 2);
+        int y = (int)(screensize.y / 3) + (int)(Random.value * deviation - deviation / 2);
+        int w = (int)(screensize.x / 3);
+        int h = (int)(screensize.y / 3);
+
+        return new Rect(x, y, w, h);
     }
 
     void OnApplicationQuit()
