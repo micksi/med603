@@ -15,7 +15,6 @@
 		_UserDistance("User distance in cm", Float) = 70
 		_DPCM("Dots per centimeter - screen resolution", Float) = 279 // dpcm = 110 dpi * 2.54 cm/i
 		_DPI("Dots per inch - screen resolution", Float) = 110
-		
 	}
 	
 	CGINCLUDE
@@ -48,6 +47,7 @@
 	};
 	
 	// receives eccentricity IN DEGREES
+	// This is the formula from our report
 	float getResolvableCyclesPerDegreeAt(float angleInDegrees)
 	{
 		float nominator = _HalfResolutionEccentricity
@@ -100,22 +100,29 @@
 	
 	float csf2(FragmentInput input)
 	{
+		// Fragment position in pixels
 		float2 pixelPos = float2(input.uvcoords.x * _ScreenWidth,
 			input.uvcoords.y * _ScreenHeight);
-		float distanceFromMouseInPixels = distance(float2(_FocusX, _FocusY), pixelPos);
-		float distanceFromCenterInPixels = distance(float2(_ScreenWidth/2, _ScreenHeight/2), pixelPos);
+		float distanceFromFocusInPixels = distance(float2(_FocusX, _FocusY), pixelPos);
 		
+		// This is the maximum resolution the screen can present to the eye at the given distance
 		float maxCyclesPerDegForScreen = degree2pixel(1.0f); // About 53 c/d on Thorbjørn's screen (110 DPI)
 		
-		float fragmentEccentricityDeg = pixel2degree(distanceFromMouseInPixels);
-		//float fragmentEccentricityDeg = pixel2degree(distanceFromCenterInPixels);
+		// Assuming the user is perfectly perpendicular to the focus point,
+		// this is the eccentrcitiy of the current fragment on the user's retina
+		float fragmentEccentricityDeg = pixel2degree(distanceFromFocusInPixels);
+
+		// Use the CSF formula from our report
 		float fragmentCyclesPerDeg = getResolvableCyclesPerDegreeAt(fragmentEccentricityDeg);
-		float maxCyclesPerDeg = getResolvableCyclesPerDegreeAt(0.0);
+
+		// Clip to 1
 		if(fragmentCyclesPerDeg > maxCyclesPerDegForScreen)
 		{
 			return 1;
 		}
-		
+
+		// Scale the output by maxCyclesPerDeg to acheive the range [0;1]
+		float maxCyclesPerDeg = getResolvableCyclesPerDegreeAt(0.0);
 		return fragmentCyclesPerDeg / maxCyclesPerDeg;
 	}
 	

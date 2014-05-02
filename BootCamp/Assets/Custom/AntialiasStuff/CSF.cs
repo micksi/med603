@@ -4,12 +4,10 @@ using System.Collections;
 public class CSF : MonoBehaviour {
 	
 	public Shader CSFShader = null;   
+	public float halfResolutionEccentricity = 2.3f;
 
 	[HideInInspector]
 	public Vector2 centre = new Vector2(0,0);
-	
-	//[Range(0.01, 30.0)]
-	public float halfResolutionEccentricity = 2.3f;
 	
 	private static Camera _cam = null;
 	private static Camera cam
@@ -35,29 +33,23 @@ public class CSF : MonoBehaviour {
 	{
 		DPI = GetDPI();
 
-		CSFShader = Shader.Find("Custom/CSFShader");
+		// Removed: You had better put a shader in the inspector, otherwise the build won't work.
+		//CSFShader = Shader.Find("Custom/CSFShader"); 
 	}
-	
-	/*void OnRenderImage(RenderTexture source, RenderTexture dest)
-	{
-		GetContrastSensitivityMap(source, dest);
-	}*/
 	
 	private float GetDPI()
 	{
-		Resolution[] resolutions = Screen.resolutions;
-		Resolution highestResolution = resolutions[resolutions.Length - 1];
+		// Calculate DPI based on the current resolution
+		Resolution currentResolution =  Screen.currentResolution;
 
-		int w = highestResolution.width;
-		int h = highestResolution.height;
+		int w = currentResolution.width;
+		int h = currentResolution.height;
 
 		return new Vector2(w, h).magnitude / screenDiag;
 	}
 
 	public void GetContrastSensitivityMap(RenderTexture source, RenderTexture dest)
 	{
-		//Vector2 focus = FocusProvider.GetFocusPosition();
-
 		material.SetFloat("_FocusX", centre.x);
 		material.SetFloat("_FocusY", centre.y);
 		

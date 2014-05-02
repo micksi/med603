@@ -13,7 +13,6 @@ public class ExperimentConductor : MonoBehaviour {
 	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
-	public FocusProvider.Source focusSource;
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
 	public bool debugDrawCSFOnly = false;
@@ -127,6 +126,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 		wantedFocusIndicator = GetComponent<WantedFocusIndicator>();
 		wantedFocusIndicator.enabled = false;
+		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
 
 		csfGenerator = GetComponent<CSF>();
 	}
@@ -204,60 +204,50 @@ public class ExperimentConductor : MonoBehaviour {
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
-		// If screen is flashing, or we're awaiting an answer, draw black screen.
-		if(state == State.GatheringObservations)
-		{
-			if(		observationState == ObservationState.Flashing 
-				||  observationState == ObservationState.AwaitingAnswer
-				||  observationState == ObservationState.Resting)
-			Graphics.Blit(blackTex, dest);
-			return;
-		}
+		RenderTexture csf = null;
 
-		// Obtain CSF map and send it to material
-		csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
-		RenderTexture csf = RenderTexture.GetTemporary(source.width, source.height);
-		csfGenerator.GetContrastSensitivityMap(source, csf);
-		material.SetTexture("_CSF", csf);
-
-		// Show full-on (true) state by default, unless experiment is really running
-		// or we're demonstrating the full-off (false) state
-		if (state != State.GatheringObservations)
+		switch(state)
 		{
-			if(state == State.ShowIntro && introState == IntroState.ShowingFalse)
-			{
-				material.SetTexture("_CSF", blackTex);
-			}
-			else
-			{
+			case State.GatheringObservations:
+				switch(observationState)
+				{
+					case ObservationState.UserObserving:
+						csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
+						csfGenerator.centre = wantedFocusPosition;
+						csf = RenderTexture.GetTemporary(source.width, source.height);
+						csfGenerator.GetContrastSensitivityMap(source, csf);
+						material.SetTexture("_CSF", csf);
+						break;
+					default:
+						Graphics.Blit(blackTex, dest); // Black screen for the other 3 states
+						return;
+				}
+				break;
+			case State.ShowIntro:
+				switch(introState)
+				{
+					case IntroState.ShowingFalse:
+						material.SetTexture("_CSF", blackTex);
+						break;
+					default: // Including ShowingTrue
+						material.SetTexture("_CSF", whiteTex);
+						break;
+				}
+				break;
+			default:
 				material.SetTexture("_CSF", whiteTex);
-			}
-		}
+				break;
 
-		// Debugging purposes - not to be used by testers
-		if(Input.GetKey(KeyCode.Alpha0))
-		{
-			// Use gaze for CSF
-			FocusProvider.source = FocusProvider.Source.Gaze;
-			csfGenerator.GetContrastSensitivityMap(source, csf);
-			material.SetTexture("_CSF", csf);
-		}	
-		else if(Input.GetKey(KeyCode.Alpha1))
-		{
-			// Use white CSF
-			material.SetTexture("_CSF", whiteTex);
-		}
-		else if(Input.GetKey(KeyCode.Alpha2))
-		{
-			// Use black CSF
-			material.SetTexture("_CSF", blackTex);
 		}
 
 		// Draw effect
 		Graphics.Blit(source, dest, material); 
 
 		// Clean up
-		RenderTexture.ReleaseTemporary(csf);
+		if(csf != null)
+		{
+			RenderTexture.ReleaseTemporary(csf);
+		}
 	}
 
 	void OnGUI()
@@ -418,7 +408,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 		gazeLogger.UpdatePath();
 		wantedFocusIndicator.enabled = true;
-		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
 
 		UpdateWantedFocusPosition();
 		observationState = ObservationState.Flashing;

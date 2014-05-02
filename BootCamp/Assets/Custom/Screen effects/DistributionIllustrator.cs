@@ -32,7 +32,7 @@ public class DistributionIllustrator : MonoBehaviour {
 
 		if(Input.GetKeyDown(keyToUpdate))
 		{
-				UpdateTexture();
+			UpdateTexture();
 		}
 	}
 
