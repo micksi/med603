@@ -298,8 +298,8 @@ public class ExperimentConductor : MonoBehaviour {
 				break;
 			case ObservationState.AwaitingAnswer:
 				GUI.Label(messageRect, "Please press the " 
-			        + trueButtonWithColour	+ " keyboard button if it looked "
-			        + "like it should, or the "	+ falseButtonWithColour 
+					+ trueButtonWithColour + " keyboard button if it looked "
+					+ "like it should, or the "	+ falseButtonWithColour 
 					+ " keyboard button if it did not.\r\n"
 					+ "Take care to keep your eyes on the marker.");
 				SendInputToTFC();
@@ -332,13 +332,12 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingExplanation:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, 
-					"In the following few minutes, you must use the " + trueButtonWithColour 
+					"You will be shown the scene for " + userObservationDuration
+					+ " seconds at a time, followed by a dark screen."
+					+ " Once the screen is dark,  use the " + trueButtonWithColour
 					+ " and " + falseButtonWithColour + " keyboard buttons to"
-					+ " indicate whether the screen looks like it should " 
-					+ "or not, respectively. Feel free to take the time you need.\n"
-					+ "Note that you must look at the marker, not anywhere else."
-					+ " The marker is shown on the next screen.\n"
-					+ "The screen will blink for a short duration when you have pressed one of the keyboard buttons."
+					+ " indicate whether the screen looked like it should or"
+					+ " not."
 					+ "\nPress the " + trueButtonWithColour 
 					+ " keyboard button to see the marker, or the "
 					+ falseButtonWithColour + " keyboard button to go back."
@@ -350,6 +349,7 @@ public class ExperimentConductor : MonoBehaviour {
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
 					+ "\nIt will turn green when you respond that the scene looks like it should, and"
 					+ " red when you respond that the scene doesn't look like it should."
+					+ " It will change position every time you answer."
 					+ "\nPress the " + trueButtonWithColour + " keyboard button"
 					+ " to start the test, or the "
 					+ falseButtonWithColour + " keyboard button to go back."
