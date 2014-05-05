@@ -55,6 +55,8 @@ public class ExperimentConductor : MonoBehaviour {
 
 
 	private Rect messageRect;
+	private Rect boxRect;
+	private int boxExtension = 20;
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
 
@@ -112,6 +114,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Set up GUI Rect
 		messageRect = new Rect( Screen.width / 3, Screen.height / 3, Screen.width / 3, Screen.height / 3);
+		boxRect = new Rect( Screen.width / 3 - boxExtension, Screen.height / 3 - boxExtension, Screen.width / 3 + boxExtension*2, Screen.height / 3 + boxExtension*2);
 
 		// Set up listeners
 		thresholdFinderComponent = GetComponent<ThresholdFinderComponent>();
@@ -295,8 +298,8 @@ public class ExperimentConductor : MonoBehaviour {
 				break;
 			case ObservationState.AwaitingAnswer:
 				GUI.Label(messageRect, "Please press the " 
-					+ trueButtonDescription	+ " keyboard button if it looked "
-					+ "like it should, or the "	+ falseButtonDescription 
+			        + trueButtonWithColour	+ " keyboard button if it looked "
+			        + "like it should, or the "	+ falseButtonWithColour 
 					+ " keyboard button if it did not.\r\n"
 					+ "Take care to keep your eyes on the marker.");
 				SendInputToTFC();
@@ -309,13 +312,15 @@ public class ExperimentConductor : MonoBehaviour {
 		switch(introState)
 		{
 			case IntroState.ShowingTrue:
-				GUI.Label(messageRect, "This is how the screen should appear to you."
-						+ " When it looks like this during the test, press the "
-						+ trueButtonWithColour + " keyboard button."
-						+ " For now, press the " + trueButtonWithColour
+				GUI.Box(boxRect, " ");
+				GUI.Label(messageRect, "This is how the screen should appear to you.\n"
+			        	+ " When it looks like this during the test, press the "
+			        	+ trueButtonWithColour + " keyboard button. \n"
+			        	+ " For now, press the " + trueButtonWithColour 
 						+ " keyboard button to go on.");
 				break;
 			case IntroState.ShowingFalse:
+				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, "This is how the screen should NOT appear to you."
 						+ " When it looks like this during the test, press the " 
 						+ falseButtonWithColour + " keyboard button."
@@ -325,6 +330,7 @@ public class ExperimentConductor : MonoBehaviour {
 						+ " keyboard button to go back.");
 				break;
 			case IntroState.ShowingExplanation:
+				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, 
 					"In the following few minutes, you must use the " + trueButtonWithColour 
 					+ " and " + falseButtonWithColour + " keyboard buttons to"
@@ -339,6 +345,7 @@ public class ExperimentConductor : MonoBehaviour {
 				);
 				break;
 			case IntroState.ShowingMarker:
+				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, 
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
 					+ "\nIt will turn green when you respond that the scene looks like it should, and"
