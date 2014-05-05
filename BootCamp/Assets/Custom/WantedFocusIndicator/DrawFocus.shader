@@ -28,6 +28,11 @@ Shader "Custom/DrawFocus"
 		float2 uv : TEXCOORD0;
 	};
 
+	float GetIntensity(float3 p)
+	{
+		return dot(float3(0.33, 0.33, 0.33), p);
+	}
+
 	v2f vert( appdata_img v ) 
 	{
 		v2f o;
@@ -39,8 +44,6 @@ Shader "Custom/DrawFocus"
 		return o;
 	}
 
-	// TODO for some reason not compatible with Windows??
-	// Testing...
 	half4 frag (v2f i) : COLOR 
 	{		 		
 		float x = _X * _MainTex_TexelSize.x;
@@ -71,14 +74,18 @@ Shader "Custom/DrawFocus"
 
 		float aspect = _MainTex_TexelSize.x / _MainTex_TexelSize.y;
 
-		float h = (i.uv.x - x) 			/ _MainTex_TexelSize.x;
-		float v = (i.uv.y - y)          / _MainTex_TexelSize.y; // Ensuring aspect ratio independence
+		float3 differenceVector = origin.xyz - _Colour.xyz;
+		float difference = length(differenceVector);
+		float similarity = 1 - difference;
+
+		float h = (i.uv.x - x) / _MainTex_TexelSize.x;
+		float v = (i.uv.y - y) / _MainTex_TexelSize.y;
 
 
 		if( abs(h) < _Radius && abs(v) < _Thickness ||
 			abs(v) < _Radius && abs(h) < _Thickness)
 		{
-			return float4(lerp(origin.xyz, _Colour.xyz, _Colour.a), 1);
+			return float4(lerp(origin.xyz, (1 + similarity) * _Colour.xyz, _Colour.a), 1);
 		}
 
 		return origin;

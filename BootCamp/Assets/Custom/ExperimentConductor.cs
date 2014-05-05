@@ -50,6 +50,9 @@ public class ExperimentConductor : MonoBehaviour {
 	// Button descriptions
 	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
 	private string falseButtonDescription = "red";
+	private string trueButtonWithColour;
+	private string falseButtonWithColour;
+
 
 	private Rect messageRect;
 	private Texture2D whiteTex = null;
@@ -129,6 +132,9 @@ public class ExperimentConductor : MonoBehaviour {
 		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
 
 		csfGenerator = GetComponent<CSF>();
+
+		trueButtonWithColour =  "<color=" + trueButtonDescription + ">" + trueButtonDescription + "</color>";
+ 		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
 	}
 
 	void Update()
@@ -304,27 +310,32 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			case IntroState.ShowingTrue:
 				GUI.Label(messageRect, "This is how the screen should appear to you."
-						+ " When it looks like this during the test, press the " + trueButtonDescription 
-						+ " keyboard button."
-						+ " For now, press the " + trueButtonDescription + " keyboard button to go on.");
+						+ " When it looks like this during the test, press the "
+						+ trueButtonWithColour + " keyboard button."
+						+ " For now, press the " + trueButtonWithColour
+						+ " keyboard button to go on.");
 				break;
 			case IntroState.ShowingFalse:
 				GUI.Label(messageRect, "This is how the screen should NOT appear to you."
-						+ " When it looks like this during the test, press the " + falseButtonDescription 
-						+ " keyboard button."
-						+ " For now, press the " + trueButtonDescription + " keyboard button to go on,"
-						+ " or the " + falseButtonDescription + " keyboard button to go back.");
+						+ " When it looks like this during the test, press the " 
+						+ falseButtonWithColour + " keyboard button."
+						+ " For now, press the " + trueButtonWithColour 
+						+ " keyboard button to go on,"
+						+ " or the " + falseButtonWithColour 
+						+ " keyboard button to go back.");
 				break;
 			case IntroState.ShowingExplanation:
 				GUI.Label(messageRect, 
-					"In the following few minutes, you must use the " + trueButtonDescription + " and " 
-					+ falseButtonDescription + " keyboard buttons to indicate whether the screen looks like it should " 
+					"In the following few minutes, you must use the " + trueButtonWithColour 
+					+ " and " + falseButtonWithColour + " keyboard buttons to"
+					+ " indicate whether the screen looks like it should " 
 					+ "or not, respectively. Feel free to take the time you need.\n"
-					+ "Note that you must look at the marker in the centre of the screen, not anywhere else."
+					+ "Note that you must look at the marker, not anywhere else."
 					+ " The marker is shown on the next screen.\n"
 					+ "The screen will blink for a short duration when you have pressed one of the keyboard buttons."
-					+ "\nPress the " + trueButtonDescription + " keyboard button to see the marker, or the "
-					+ falseButtonDescription + " keyboard button to go back."
+					+ "\nPress the " + trueButtonWithColour 
+					+ " keyboard button to see the marker, or the "
+					+ falseButtonWithColour + " keyboard button to go back."
 				);
 				break;
 			case IntroState.ShowingMarker:
@@ -332,8 +343,9 @@ public class ExperimentConductor : MonoBehaviour {
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
 					+ "\nIt will turn green when you respond that the scene looks like it should, and"
 					+ " red when you respond that the scene doesn't look like it should."
-					+ "\nPress the " + trueButtonDescription + " keyboard button to start the test, or the "
-					+ falseButtonDescription + " keyboard button to go back."
+					+ "\nPress the " + trueButtonWithColour + " keyboard button"
+					+ " to start the test, or the "
+					+ falseButtonWithColour + " keyboard button to go back."
 				);
 				break;
 		}
