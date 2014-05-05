@@ -305,7 +305,7 @@ public class ExperimentConductor : MonoBehaviour {
 			case ObservationState.AwaitingAnswer:
 				GUI.Label(messageRect, "Please press the " 
 					+ trueButtonWithColour + " keyboard button if it looked "
-					+ "like it should, or the "	+ falseButtonWithColour 
+					+ "antialiased, or the "	+ falseButtonWithColour 
 					+ " keyboard button if it did not.\r\n"
 					+ "Take care to keep your eyes on the marker.");
 				SendInputToTFC();
@@ -319,21 +319,17 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			case IntroState.ShowingTrue:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, "This is how the screen should appear to you.\n"
-			        	+ " When it looks like this during the test, press the "
-			        	+ trueButtonWithColour + " keyboard button. \n"
-			        	+ " For now, press the " + trueButtonWithColour 
-						+ " keyboard button to go on.");
+				GUI.Label(messageRect, "This is an example with antialiasing turned ON.\n"
+    				+ "When it looks like this during the test, press the " 
+    				+ trueButtonWithColour + " keyboard button."
+				);
 				break;
 			case IntroState.ShowingFalse:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, "This is how the screen should NOT appear to you."
-						+ " When it looks like this during the test, press the " 
-						+ falseButtonWithColour + " keyboard button."
-						+ " For now, press the " + trueButtonWithColour 
-						+ " keyboard button to go on,"
-						+ " or the " + falseButtonWithColour 
-						+ " keyboard button to go back.");
+				GUI.Label(messageRect, "This is an example with antialiasing turned OFF."
+					+ " When it looks like this during the test, press the " 
+					+ falseButtonWithColour + " keyboard button."
+				);
 				break;
 			case IntroState.ShowingExplanation:
 				GUI.Box(boxRect, " ");
@@ -342,23 +338,16 @@ public class ExperimentConductor : MonoBehaviour {
 					+ " seconds at a time, followed by a dark screen."
 					+ " Once the screen is dark,  use the " + trueButtonWithColour
 					+ " and " + falseButtonWithColour + " keyboard buttons to"
-					+ " indicate whether the screen looked like it should or"
-					+ " not."
-					+ "\nPress the " + trueButtonWithColour 
-					+ " keyboard button to see the marker, or the "
-					+ falseButtonWithColour + " keyboard button to go back."
+					+ " indicate whether the screen looked like it was antialiased or not."
 				);
 				break;
 			case IntroState.ShowingMarker:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, 
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
-					+ "\nIt will turn green when you respond that the scene looks like it should, and"
-					+ " red when you respond that the scene doesn't look like it should."
 					+ " It will change position every time you answer."
-					+ "\nPress the " + trueButtonWithColour + " keyboard button"
-					+ " to start the test, or the "
-					+ falseButtonWithColour + " keyboard button to go back."
+					+ "\nPress 'Next' when you are ready to start the test, or"
+					+ " 'Back' if you want see the previous information."
 				);
 				break;
 		}
