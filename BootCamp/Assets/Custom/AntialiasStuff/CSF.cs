@@ -15,7 +15,7 @@ public class CSF : MonoBehaviour {
 		get { if(_cam == null) _cam = Camera.main; return _cam; }
 	}
 
-	public float screenDiag = 15.4f; // TBs laptop  15.6f; // Adams laptop
+	public float screenDiag = 24;//Lab screen 	15.4f; // TBs laptop  15.6f; // Adams laptop
 	private float DPI;
 	
 	static Material m_Material = null;
