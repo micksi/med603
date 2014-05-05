@@ -63,6 +63,27 @@ Shader "Custom/DrawFocus"
 		return origin;
 	}
 
+	half4 cross (v2f i) : COLOR 
+	{		 		
+		float x = _X * _MainTex_TexelSize.x;
+		float y = _Y * _MainTex_TexelSize.y;
+		float4 origin = tex2D(_MainTex, i.uv);
+
+		float aspect = _MainTex_TexelSize.x / _MainTex_TexelSize.y;
+
+		float h = (i.uv.x - x) 			/ _MainTex_TexelSize.x;
+		float v = (i.uv.y - y)          / _MainTex_TexelSize.y; // Ensuring aspect ratio independence
+
+
+		if( abs(h) < _Radius && abs(v) < _Thickness ||
+			abs(v) < _Radius && abs(h) < _Thickness)
+		{
+			return float4(lerp(origin.xyz, _Colour.xyz, _Colour.a), 1);
+		}
+
+		return origin;
+	}
+
 	ENDCG	
 
 	SubShader {
@@ -73,7 +94,7 @@ Shader "Custom/DrawFocus"
 			CGPROGRAM
 
 			#pragma vertex vert
-			#pragma fragment frag
+			#pragma fragment cross
 			#pragma target 3.0
 
 			ENDCG

@@ -364,6 +364,7 @@ public class ExperimentConductor : MonoBehaviour {
 				{
 					introState = IntroState.ShowingMarker;
 					wantedFocusIndicator.enabled = true;
+					wantedFocusIndicator.SetPositive(2f);
 				}
 				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
 				{

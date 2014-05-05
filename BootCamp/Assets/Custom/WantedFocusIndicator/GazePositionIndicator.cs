@@ -6,8 +6,8 @@ using System.Collections;
 public class GazePositionIndicator : MonoBehaviour {
 
 	public Color Colour = new Color(1f, 1f, 0f, 1f);
-	private float Radius = 30f;
-	private float Thickness = 10f;
+	public float Radius = 30f;
+	public float Thickness = 10f;
 	public Shader circleShader;
 
 	private Material material = null;
