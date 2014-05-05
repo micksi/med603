@@ -34,29 +34,30 @@ public class ExperimentConductor : MonoBehaviour {
 	private ObservationState observationState = ObservationState.Flashing;
 
 	// Flash properties
-	private const double flashDuration = 1.5;
-	private const double flashDurationForRests = 15; // TODO Argue for 15 seconds break
+	private double flashDuration;
+	private double flashDurationForRests;
 	private double flashTimeLeft = 0.0;
 
 	// WantedFocusIndicator properties
-	private const float wantedFocusIndicatorLerpDuration = 1f; // Seconds
-	private const float wantedFocusIndicatorColourFeedbackDuration = 1f; // Seconds
+	private float wantedFocusIndicatorLerpDuration;
+	private float wantedFocusIndicatorColourFeedbackDuration;
 
 	// Observation properties
-	private const double userObservationDuration = 2.0; // Seconds
+	private double userObservationDuration;
 	private double userObservationTimeLeft = 0.0; // Seconds
 	private string restMessage = "";
 
 	// Button descriptions
-	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
-	private string falseButtonDescription = "red";
+	private string trueButtonDescription; // A description of how the 'true' button appears to the user.
+	private string falseButtonDescription;
 	private string trueButtonWithColour;
 	private string falseButtonWithColour;
 
 
 	private Rect messageRect;
 	private Rect boxRect;
-	private int boxExtension = 20;
+	private int boxExtension;
+
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
 
@@ -101,6 +102,17 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Start()
 	{
+		flashDuration = Double.Parse(ConfigReader.GetValueOf("flashDuration"));
+		flashDurationForRests = Double.Parse(ConfigReader.GetValueOf("flashDurationForRests"));
+		wantedFocusIndicatorLerpDuration = 
+			Single.Parse(ConfigReader.GetValueOf("wantedFocusIndicatorLerpDuration"));
+		wantedFocusIndicatorColourFeedbackDuration = 
+			Single.Parse(ConfigReader.GetValueOf("wantedFocusIndicatorColourFeedbackDuration"));
+		userObservationDuration = Double.Parse(ConfigReader.GetValueOf("userObservationDuration"));
+		trueButtonDescription = ConfigReader.GetValueOf("trueButtonDescription");
+		falseButtonDescription = ConfigReader.GetValueOf("falseButtonDescription");
+		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
+
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
  		blackTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
 
@@ -432,10 +444,10 @@ public class ExperimentConductor : MonoBehaviour {
 
 		UpdateWantedFocusPosition();
 		observationState = ObservationState.Flashing;
-		StartScreenFlash();
+		StartScreenFlash(flashDuration);
 	}
 
-	private void StartScreenFlash(double duration = flashDuration)
+	private void StartScreenFlash(double duration)
 	{
 		flashTimeLeft = duration;
 	}
@@ -499,7 +511,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Flash screen	and move marker
 		observationState = ObservationState.Flashing;
-		StartScreenFlash(); 
+		StartScreenFlash(flashDuration); 
 		UpdateWantedFocusPosition();
 	}
 

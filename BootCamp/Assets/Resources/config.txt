@@ -1,7 +1,3 @@
-KEY=VALUE
-MYKEY=MYVALUE
-AAA=111
-BBB=222
 //ExperimentConductor
 flashDuration=1.5
 flashDurationForRests=10
@@ -11,3 +7,16 @@ userObservationDuration=2.0
 trueButtonDescription=green
 falseButtonDescription=blue
 boxExtension=20
+
+//CSF
+screenDiag=24
+userDistance=65
+
+//ThresholdFinder
+min=0.0
+max=60.0
+trials=4
+resolution=10000
+BestPEST_Stimuli=10
+positiveKey=m
+negativeKey=z
