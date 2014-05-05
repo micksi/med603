@@ -105,7 +105,7 @@ public class GazeLogger
 
 		if(sb == null)
 		{
-			Debug.LogWarning("Tried to flush; nothing to flush.");
+			Debug.Log("Tried to flush; nothing to flush.");
 			return;
 		}
 
