@@ -16,6 +16,7 @@ public class ExperimentConductor : MonoBehaviour {
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
 	public bool debugDrawCSFOnly = false;
+	//public bool showCursor = true;
 
 	private Experiment experiment;
 	private ThresholdFinderComponent thresholdFinderComponent;
@@ -35,7 +36,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	// Flash properties
 	private const double flashDuration = 1.5;
-	private const double flashDurationForRests = 15; // TODO Argue for 15 seconds break
+	private const double flashDurationForRests = 10; // TODO Argue for 10 seconds break
 	private double flashTimeLeft = 0.0;
 
 	// WantedFocusIndicator properties
@@ -140,8 +141,10 @@ public class ExperimentConductor : MonoBehaviour {
  		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
 	}
 
+
 	void Update()
 	{
+
 		switch(state)
 		{
 			case State.ShowIntro:
@@ -279,6 +282,7 @@ public class ExperimentConductor : MonoBehaviour {
 				}
 				break;
 			case State.ShowIntro:
+				Screen.showCursor = false;
 				HandleIntroGUI();
 				break;
 			case State.GatheringObservations:
