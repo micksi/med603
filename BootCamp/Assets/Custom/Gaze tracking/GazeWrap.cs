@@ -5,7 +5,7 @@ using TETCSharpClient.Data;
 using Assets.Scripts;
 
 public class GazeUpdateEventArgs : System.EventArgs
-{
+{	
     public readonly Vector3 Position;
     public GazeUpdateEventArgs(Vector3 p)
     {
@@ -18,7 +18,7 @@ public class GazeWrap : MonoBehaviour, IGazeListener
     private GazeDataValidator gazeUtils;
     private bool debugSupressWarning = false;
     public event System.EventHandler<GazeUpdateEventArgs> GazeUpdate;
-
+	public bool crazyRect = true;
 
 	void Start () 
     {
@@ -72,14 +72,17 @@ public class GazeWrap : MonoBehaviour, IGazeListener
     {
         if(debugSupressWarning) return;
         
-        if (!GazeManager.Instance.IsConnected)
-        {
-            GUI.TextArea(GenerateCrazyRect(), "EyeTribe Server not running!");
-        }
-        else if (!GazeManager.Instance.IsCalibrated)
-        {
-            GUI.TextArea(GenerateCrazyRect(), "EyeTribe Server not calibrated!");
-        }
+		if(crazyRect)
+		{
+	        if (!GazeManager.Instance.IsConnected)
+	        {
+	            GUI.TextArea(GenerateCrazyRect(), "EyeTribe Server not running!");
+	        }
+	        else if (!GazeManager.Instance.IsCalibrated)
+	        {
+	            GUI.TextArea(GenerateCrazyRect(), "EyeTribe Server not calibrated!");
+	        }
+		}
     }
 
     private Rect GenerateCrazyRect()

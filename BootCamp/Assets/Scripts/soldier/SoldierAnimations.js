@@ -38,6 +38,11 @@ class SoldierAnimations extends MonoBehaviour
 	
 	function Update()
 	{
+	
+	}
+	/*
+	function Update()
+	{
 		CheckSoldierState();
 		
 		if (crouch)
@@ -138,8 +143,9 @@ class SoldierAnimations extends MonoBehaviour
 		{
 			animation.CrossFade("FireM203");
 		}
+		
 	}
-	
+	*/
 	function CrossFadeUp (weight : float, fadeTime : float) : float {
 		return Mathf.Clamp01(weight + Time.deltaTime / fadeTime);
 	}
