@@ -26,7 +26,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private GazeLogger gazeLogger = null;
 
 	// States
-	private enum State { SendToDemographics, SendToCalibration, ShowIntro, GatheringObservations, EndTrials };
+	private enum State { SendToDemographics, SendToFilm, SendToCalibration, ShowIntro, GatheringObservations, EndTrials };
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
 	private State state = State.SendToDemographics;
@@ -261,9 +261,15 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.SendToDemographics:
 				if(GUI.Button(messageRect, "Click here to start with a questionnaire!"))
 				{
-					state = State.SendToCalibration;
+					state = State.SendToFilm;
 					uint participantNumber = experiment.ActiveParticipant.Id;
 					Application.OpenURL("https://docs.google.com/forms/d/1-5mbG7bUA0DbApVJEbzrx8IDEuFlJvgUA4pccmDkvy4/viewform?entry.1375030606=" + participantNumber);
+				}
+				break;
+			case State.SendToFilm:
+				if(GUI.Button(messageRect, "Click here when you have seen the introductory film."))
+				{
+					state = State.SendToCalibration;
 				}
 				break;
 			case State.SendToCalibration:
