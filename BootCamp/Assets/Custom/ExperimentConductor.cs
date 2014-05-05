@@ -49,12 +49,14 @@ public class ExperimentConductor : MonoBehaviour {
 
 	// Button descriptions
 	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
-	private string falseButtonDescription = "red";
+	private string falseButtonDescription = "cyan";
 	private string trueButtonWithColour;
 	private string falseButtonWithColour;
 
 
 	private Rect messageRect;
+	private Rect mouseRectLeft;
+	private Rect mouseRectRight;
 	private Rect boxRect;
 	private int boxExtension = 20;
 	private Texture2D whiteTex = null;
@@ -114,6 +116,8 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Set up GUI Rect
 		messageRect = new Rect( Screen.width / 3, Screen.height / 3, Screen.width / 3, Screen.height / 3);
+		mouseRectLeft = new Rect( Screen.width / 3, ((Screen.height / 3)*2)+boxExtension, Screen.width / 10, Screen.height / 10);
+		mouseRectRight = new Rect( ((Screen.width / 3)*2)-(Screen.width / 10), ((Screen.height / 3)*2)+boxExtension, Screen.width / 10, Screen.height / 10);
 		boxRect = new Rect( Screen.width / 3 - boxExtension, Screen.height / 3 - boxExtension, Screen.width / 3 + boxExtension*2, Screen.height / 3 + boxExtension*2);
 
 		// Set up listeners
@@ -145,7 +149,7 @@ public class ExperimentConductor : MonoBehaviour {
 		switch(state)
 		{
 			case State.ShowIntro:
-				HandleIntroInput();
+				//HandleIntroInput(); //This is old, used to hand key events when switching in intro sequence.
 				break;
 			case State.GatheringObservations:
 				switch(observationState)
@@ -305,7 +309,7 @@ public class ExperimentConductor : MonoBehaviour {
 			case ObservationState.AwaitingAnswer:
 				GUI.Label(messageRect, "Please press the " 
 					+ trueButtonWithColour + " keyboard button if it looked "
-					+ "antialiased, or the "	+ falseButtonWithColour 
+					+ "antialiased, or the " + falseButtonWithColour 
 					+ " keyboard button if it did not.\r\n"
 					+ "Take care to keep your eyes on the marker.");
 				SendInputToTFC();
@@ -351,6 +355,7 @@ public class ExperimentConductor : MonoBehaviour {
 				);
 				break;
 		}
+		HandleIntroInput();
 	}
 
 	private void HandleIntroInput()
@@ -358,39 +363,39 @@ public class ExperimentConductor : MonoBehaviour {
 		switch(introState)
 		{
 			case IntroState.ShowingTrue:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					introState = IntroState.ShowingFalse;
 				}
 				break;
 			case IntroState.ShowingFalse:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					introState = IntroState.ShowingExplanation;
 				}
-				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingTrue;
 				}
 				break;
 			case IntroState.ShowingExplanation:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					introState = IntroState.ShowingMarker;
 					wantedFocusIndicator.enabled = true;
 					wantedFocusIndicator.SetPositive(2f);
 				}
-				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingFalse;
 				}
 				break;
 			case IntroState.ShowingMarker:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					StartTrials();
 				}
-				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingExplanation;
 					wantedFocusIndicator.enabled = false;
