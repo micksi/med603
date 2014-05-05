@@ -15,9 +15,8 @@ public class GazeLogger
 	private Experiment experiment = null;
 	private string path;
 	private bool logging = false;
-	private const double logInterval = 1.0/60.0;
 
-	private FocusProvider.Source gazeSource = FocusProvider.Source.Mouse;// Gaze; FIXME Debugging lab's windows machine. Set to not use gaze tracker.
+	private FocusProvider.Source gazeSource = FocusProvider.Source.Gaze;
 
 	private StringBuilder sb = null;
 	private StringBuilder sbHeader = null;
@@ -49,53 +48,33 @@ public class GazeLogger
 	{
 		if(logging == true)
 		{
-			throw new InvalidOperationException("Cant begin logging when logging already happens");
+			throw new InvalidOperationException("Can't begin logging when logging already happens");
 		}
+
 		logging = true;
+		
 		if(gazeSource == FocusProvider.Source.Gaze)
 		{
 			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
 			gazeWrap.GazeUpdate += OnGazeUpdate;
 		}
-		// else if(gazeSource == FocusProvider.Source.Mouse)
-		// {
-		// 	component.StartCoroutine(LogMousePosition());
-		// }
 	}
 
 	public void Pause()
 	{
 		if(logging == false)
 		{
-			throw new InvalidOperationException("Cant pause logging when logging is already paused");
+			throw new InvalidOperationException("Can't pause logging when logging is already paused");
 		}
+
 		Flush();
 		logging = false;
+
 		if(gazeSource == FocusProvider.Source.Gaze)
 		{
 			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
 			gazeWrap.GazeUpdate -= OnGazeUpdate;
 		}
-		// else if(gazeSource == FocusProvider.Source.Mouse)
-		// {
-		// 	component.StopAllCoroutines();
-		// }
-	}
-
-	[Obsolete("Mouse is logged in FixedUpdate", true)]
-	public IEnumerator LogMousePosition()
-	{
-		float beginTime = Time.time;
-		while(true)
-		{
-
-			Vector3 mousePos = FocusProvider.GetMousePosition();
-			OnGazeUpdate(this, new GazeUpdateEventArgs(new Vector3(mousePos.x, mousePos.y)));
-			// Debug.Log(Time.time - beginTime);
-			beginTime = Time.time;
-			yield return new WaitForSeconds((float)logInterval);
-		}
-		yield return false;
 	}
 
 	public void OnGazeUpdate(object sender, GazeUpdateEventArgs args)
@@ -114,37 +93,6 @@ public class GazeLogger
 		Trial currenTrial = finder.CurrentTrial;
 		string filename = currenTrial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + " gazelog.csv";
 		path = Path.Combine(folderPath, filename);
-	}
-
-	// Dummy method! FIXME: Delete
-	public void FixedUpdate()
-	{
-		if(logging == true && gazeSource == FocusProvider.Source.Mouse)
-		{
-			Vector3 mousePos = FocusProvider.GetMousePosition();
-			OnGazeUpdate(this, new GazeUpdateEventArgs(new Vector3(mousePos.x, mousePos.y)));
-		}
-	}
-	
-
-	[Obsolete("use Log instead", true)]
-	private void WriteToBuffer()
-	{
-		Vector2 logPosition = new Vector2(0f, 0f);
-		switch(gazeSource)
-		{
-			case FocusProvider.Source.Gaze:
-				logPosition = FocusProvider.GetGazePosition();
-				break;
-			case FocusProvider.Source.Mouse:
-				logPosition = FocusProvider.GetMousePosition();
-				break;
-			case FocusProvider.Source.ScreenCentre:
-				logPosition = FocusProvider.GetScreenCentre();
-				break;
-		}
-
-		Write(DateTime.Now.ToString("HH-mm-ss-fffffff"), logPosition.x, logPosition.y);
 	}
 
 	private void Flush()

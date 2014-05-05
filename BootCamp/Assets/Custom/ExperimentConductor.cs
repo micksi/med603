@@ -131,11 +131,6 @@ public class ExperimentConductor : MonoBehaviour {
 		csfGenerator = GetComponent<CSF>();
 	}
 
-	void FixedUpdate()
-	{
-		gazeLogger.FixedUpdate();
-	}
-
 	void Update()
 	{
 		switch(state)
@@ -452,9 +447,11 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		// Use uniform distribution for now
 		// TODO implement more proper distribution
-		wantedFocusPosition = FocusProvider.GetScreenResolution();
+		/*wantedFocusPosition = FocusProvider.GetScreenResolution();
 		wantedFocusPosition.x *= UnityEngine.Random.value;
-		wantedFocusPosition.y *= UnityEngine.Random.value;
+		wantedFocusPosition.y *= UnityEngine.Random.value;*/
+
+		wantedFocusPosition = CustomRandom.GenerateScreenPoint();
 	}
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
