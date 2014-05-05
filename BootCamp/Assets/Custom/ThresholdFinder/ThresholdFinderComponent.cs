@@ -12,16 +12,16 @@ public class ThresholdFinderComponent : MonoBehaviour
 	public TrialType trialType = TrialType.ConstantStep;
 	public StrategyType strategyType = StrategyType.Alternating;
 
-	public double min = 0.0f;
-	public double max = 1.0f;
-	public int resolution = 10;
-	public int trials = 2;
+	public double min;
+	public double max;
+	public int resolution;
+	public int trials;
 	public int StairCase_reversals = 9; // Only used with trials of type Staircase and InterleavedStaircase
 	public double BestPEST_steepness = 2.0; // Only used with BestPEST
-	public int BestPEST_Stimuli = 10; // Only used with BestPEST
+	public int BestPEST_Stimuli; // Only used with BestPEST
 
-	public string positiveKey = "y";
-	public string negativeKey = "n";
+	public string positiveKey;
+	public string negativeKey;
 
 	public event EventHandler<FinishedEventArgs> FinishedEvent;
 	public event EventHandler<ReportObservationEventArgs> ReportObservationEvent;
@@ -41,6 +41,15 @@ public class ThresholdFinderComponent : MonoBehaviour
 
 	public void Awake()
 	{
+		min = Double.Parse(ConfigReader.GetValueOf("min"));
+		max = Double.Parse(ConfigReader.GetValueOf("max"));
+		resolution =  Int32.Parse(ConfigReader.GetValueOf("resolution"));
+		trials =  Int32.Parse(ConfigReader.GetValueOf("trials"));
+		BestPEST_Stimuli = Int32.Parse(ConfigReader.GetValueOf("BestPEST_Stimuli"));
+
+		positiveKey = ConfigReader.GetValueOf("positiveKey");
+		negativeKey = ConfigReader.GetValueOf("negativeKey");
+
 		ITrialFactory factory = null;
 		Range range = new Range(min, max, resolution);
 		switch(trialType)
