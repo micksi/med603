@@ -12,7 +12,7 @@
 		_SpatialFrequencyDecayConstant("Spatial frequency decay constant (a)", Float) = 0.106
 		_HalfResolutionEccentricity("Half-resolution eccentricity (e_2)", Float) = 2.3 // In degrees. Our variable.
 		
-		_UserDistance("User distance in cm", Float) = 70
+		_UserDistance("User distance in cm", Float) = 65
 		_DPCM("Dots per centimeter - screen resolution", Float) = 279 // dpcm = 110 dpi * 2.54 cm/i
 		_DPI("Dots per inch - screen resolution", Float) = 110
 	}
