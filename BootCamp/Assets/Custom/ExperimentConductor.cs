@@ -13,6 +13,8 @@ public class ExperimentConductor : MonoBehaviour {
 	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
+	public Shader antialiasingShader;
+	public Shader pixelationShader;
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
 	public bool debugDrawCSFOnly = false;
@@ -35,29 +37,36 @@ public class ExperimentConductor : MonoBehaviour {
 	private ObservationState observationState = ObservationState.Flashing;
 
 	// Flash properties
-	private const double flashDuration = 1.5;
-	private const double flashDurationForRests = 10; // TODO Argue for 10 seconds break
+	private double flashDuration;
+	private double flashDurationForRests;
 	private double flashTimeLeft = 0.0;
 
 	// WantedFocusIndicator properties
-	private const float wantedFocusIndicatorLerpDuration = 1f; // Seconds
-	private const float wantedFocusIndicatorColourFeedbackDuration = 1f; // Seconds
+	private float wantedFocusIndicatorLerpDuration;
+	private float wantedFocusIndicatorColourFeedbackDuration;
 
 	// Observation properties
-	private const double userObservationDuration = 2.0; // Seconds
+	private double userObservationDuration;
 	private double userObservationTimeLeft = 0.0; // Seconds
 	private string restMessage = "";
 
+	private string guiTextAwaitingAnswer;
+	private string guiTextShowingTrue;
+	private string guiTextShowingFalse;
+	private string guiTextShowingExplanation;
+
 	// Button descriptions
-	private string trueButtonDescription = "green"; // A description of how the 'true' button appears to the user.
-	private string falseButtonDescription = "red";
+	private string trueButtonDescription; // A description of how the 'true' button appears to the user.
+	private string falseButtonDescription;
 	private string trueButtonWithColour;
 	private string falseButtonWithColour;
 
-
 	private Rect messageRect;
+	private Rect mouseRectLeft;
+	private Rect mouseRectRight;
 	private Rect boxRect;
-	private int boxExtension = 20;
+	private int boxExtension;
+
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
 
@@ -102,6 +111,65 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Start()
 	{
+		flashDuration = Double.Parse(ConfigReader.GetValueOf("flashDuration"));
+		flashDurationForRests = Double.Parse(ConfigReader.GetValueOf("flashDurationForRests"));
+		wantedFocusIndicatorLerpDuration = 
+			Single.Parse(ConfigReader.GetValueOf("wantedFocusIndicatorLerpDuration"));
+		wantedFocusIndicatorColourFeedbackDuration = 
+			Single.Parse(ConfigReader.GetValueOf("wantedFocusIndicatorColourFeedbackDuration"));
+		userObservationDuration = Double.Parse(ConfigReader.GetValueOf("userObservationDuration"));
+		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
+
+		trueButtonDescription = ConfigReader.GetValueOf("trueButtonDescription");
+		falseButtonDescription = ConfigReader.GetValueOf("falseButtonDescription");
+		trueButtonWithColour =  "<color=" + trueButtonDescription + ">" + trueButtonDescription + "</color>";
+ 		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
+
+		string mode = ConfigReader.GetValueOf("mode");
+		string on = "ON";
+		string off = "OFF";
+		bool flip = false;
+		Debug.Log("mode: " + mode);
+		switch(mode)
+		{
+			case "pixelation":
+				csfUser = pixelationShader;
+				flip = true;
+				break;
+			case "antialiasing":
+				csfUser = antialiasingShader;
+				flip = false;
+				break;
+			default:
+				throw new InvalidOperationException("Cannot understand 'mode' value in config file: " + mode);
+		}
+		experimentName += " " + mode;
+		guiTextAwaitingAnswer =
+			"Please press the " 
+			+ (flip ? falseButtonWithColour : trueButtonWithColour)
+			+ " keyboard button if it looked like " + mode + ", or the " 
+			+ (flip ? trueButtonWithColour : falseButtonWithColour)
+			+ " keyboard button if it did not.\r\n"
+			+ "Take care to keep your eyes on the marker.";
+		guiTextShowingTrue =
+			"This is an example with " + mode + " turned " +  (flip ? off : on) + ".\n"
+			+ "When it looks like this during the test, press the " 
+			+ trueButtonWithColour + " keyboard button.";
+		guiTextShowingFalse =
+			"This is an example with " + mode + " turned " +  (flip ? on : off) + "."
+			+ " When it looks like this during the test, press the " 
+			+ falseButtonWithColour + " keyboard button.";
+		guiTextShowingExplanation =
+			"You will be shown the scene for " + userObservationDuration
+			+ " seconds at a time, followed by a dark screen."
+			+ " Once the screen is dark, use the " 
+			+ (flip ? falseButtonWithColour : trueButtonWithColour)
+			+ " and " 
+			+ (flip ? trueButtonWithColour : falseButtonWithColour)
+			+ " keyboard buttons to indicate whether the screen was"
+			+ " subject to " + mode + " or not.";
+
+
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
  		blackTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
 
@@ -115,6 +183,8 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Set up GUI Rect
 		messageRect = new Rect( Screen.width / 3, Screen.height / 3, Screen.width / 3, Screen.height / 3);
+		mouseRectLeft = new Rect( Screen.width / 3, ((Screen.height / 3)*2)+boxExtension, Screen.width / 10, Screen.height / 10);
+		mouseRectRight = new Rect( ((Screen.width / 3)*2)-(Screen.width / 10), ((Screen.height / 3)*2)+boxExtension, Screen.width / 10, Screen.height / 10);
 		boxRect = new Rect( Screen.width / 3 - boxExtension, Screen.height / 3 - boxExtension, Screen.width / 3 + boxExtension*2, Screen.height / 3 + boxExtension*2);
 
 		// Set up listeners
@@ -136,9 +206,6 @@ public class ExperimentConductor : MonoBehaviour {
 		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
 
 		csfGenerator = GetComponent<CSF>();
-
-		trueButtonWithColour =  "<color=" + trueButtonDescription + ">" + trueButtonDescription + "</color>";
- 		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
 	}
 
 
@@ -148,9 +215,10 @@ public class ExperimentConductor : MonoBehaviour {
 		switch(state)
 		{
 			case State.ShowIntro:
-				HandleIntroInput();
+				//HandleIntroInput(); //This is old, used to hand key events when switching in intro sequence.
 				break;
 			case State.GatheringObservations:
+				Screen.showCursor = false;
 				switch(observationState)
 				{
 					case ObservationState.Flashing:
@@ -307,11 +375,7 @@ public class ExperimentConductor : MonoBehaviour {
 				GUI.Label(messageRect, restMessage);
 				break;
 			case ObservationState.AwaitingAnswer:
-				GUI.Label(messageRect, "Please press the " 
-					+ trueButtonWithColour + " keyboard button if it looked "
-					+ "like it should, or the "	+ falseButtonWithColour 
-					+ " keyboard button if it did not.\r\n"
-					+ "Take care to keep your eyes on the marker.");
+				GUI.Label(messageRect, guiTextAwaitingAnswer);
 				SendInputToTFC();
 				break;
 		}
@@ -323,49 +387,27 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			case IntroState.ShowingTrue:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, "This is how the screen should appear to you.\n"
-			        	+ " When it looks like this during the test, press the "
-			        	+ trueButtonWithColour + " keyboard button. \n"
-			        	+ " For now, press the " + trueButtonWithColour 
-						+ " keyboard button to go on.");
+				GUI.Label(messageRect, guiTextShowingTrue);
 				break;
 			case IntroState.ShowingFalse:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, "This is how the screen should NOT appear to you."
-						+ " When it looks like this during the test, press the " 
-						+ falseButtonWithColour + " keyboard button."
-						+ " For now, press the " + trueButtonWithColour 
-						+ " keyboard button to go on,"
-						+ " or the " + falseButtonWithColour 
-						+ " keyboard button to go back.");
+				GUI.Label(messageRect, guiTextShowingFalse);
 				break;
 			case IntroState.ShowingExplanation:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, 
-					"You will be shown the scene for " + userObservationDuration
-					+ " seconds at a time, followed by a dark screen."
-					+ " Once the screen is dark,  use the " + trueButtonWithColour
-					+ " and " + falseButtonWithColour + " keyboard buttons to"
-					+ " indicate whether the screen looked like it should or"
-					+ " not."
-					+ "\nPress the " + trueButtonWithColour 
-					+ " keyboard button to see the marker, or the "
-					+ falseButtonWithColour + " keyboard button to go back."
-				);
+				GUI.Label(messageRect, guiTextShowingExplanation);
 				break;
 			case IntroState.ShowingMarker:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, 
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
-					+ "\nIt will turn green when you respond that the scene looks like it should, and"
-					+ " red when you respond that the scene doesn't look like it should."
 					+ " It will change position every time you answer."
-					+ "\nPress the " + trueButtonWithColour + " keyboard button"
-					+ " to start the test, or the "
-					+ falseButtonWithColour + " keyboard button to go back."
+					+ "\nPress 'Next' when you are ready to start the test, or"
+					+ " 'Back' if you want see the previous information."
 				);
 				break;
 		}
+		HandleIntroInput();
 	}
 
 	private void HandleIntroInput()
@@ -373,39 +415,39 @@ public class ExperimentConductor : MonoBehaviour {
 		switch(introState)
 		{
 			case IntroState.ShowingTrue:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					introState = IntroState.ShowingFalse;
 				}
 				break;
 			case IntroState.ShowingFalse:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					introState = IntroState.ShowingExplanation;
 				}
-				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingTrue;
 				}
 				break;
 			case IntroState.ShowingExplanation:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					introState = IntroState.ShowingMarker;
 					wantedFocusIndicator.enabled = true;
 					wantedFocusIndicator.SetPositive(2f);
 				}
-				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingFalse;
 				}
 				break;
 			case IntroState.ShowingMarker:
-				if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
+				if(GUI.Button(mouseRectRight,"Next"))
 				{
 					StartTrials();
 				}
-				if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
+				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingExplanation;
 					wantedFocusIndicator.enabled = false;
@@ -436,10 +478,10 @@ public class ExperimentConductor : MonoBehaviour {
 
 		UpdateWantedFocusPosition();
 		observationState = ObservationState.Flashing;
-		StartScreenFlash();
+		StartScreenFlash(flashDuration);
 	}
 
-	private void StartScreenFlash(double duration = flashDuration)
+	private void StartScreenFlash(double duration)
 	{
 		flashTimeLeft = duration;
 	}
@@ -503,7 +545,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Flash screen	and move marker
 		observationState = ObservationState.Flashing;
-		StartScreenFlash(); 
+		StartScreenFlash(flashDuration); 
 		UpdateWantedFocusPosition();
 	}
 

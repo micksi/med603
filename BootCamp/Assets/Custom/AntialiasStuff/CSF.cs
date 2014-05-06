@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class CSF : MonoBehaviour {
 	
@@ -15,8 +16,9 @@ public class CSF : MonoBehaviour {
 		get { if(_cam == null) _cam = Camera.main; return _cam; }
 	}
 
-	public float screenDiag = 24;//Lab screen 	15.4f; // TBs laptop  15.6f; // Adams laptop
+	public float screenDiag;
 	private float DPI;
+	private float userDistance;
 	
 	static Material m_Material = null;
 	protected Material material {
@@ -31,10 +33,9 @@ public class CSF : MonoBehaviour {
 
 	void Awake()
 	{
+		screenDiag = Single.Parse(ConfigReader.GetValueOf("screenDiag"));
+		userDistance = Single.Parse(ConfigReader.GetValueOf("userDistance"));
 		DPI = GetDPI();
-
-		// Removed: You had better put a shader in the inspector, otherwise the build won't work.
-		//CSFShader = Shader.Find("Custom/CSFShader"); 
 	}
 	
 	private float GetDPI()
@@ -58,6 +59,7 @@ public class CSF : MonoBehaviour {
 		material.SetFloat("_ScreenWidth", cam.pixelWidth);
 		material.SetFloat("_ScreenHeight", cam.pixelHeight);
 		material.SetFloat("_DPI", DPI);
+		material.SetFloat("_UserDistance", userDistance);
 		
 		Graphics.Blit(source, dest, material);
 	}
