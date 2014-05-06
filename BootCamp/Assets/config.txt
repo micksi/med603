@@ -1,4 +1,4 @@
-mode=pixelation
+mode=antialiasing
 
 //ExperimentConductor
 flashDuration=1.5

@@ -52,6 +52,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private string guiTextAwaitingAnswer;
 	private string guiTextShowingTrue;
 	private string guiTextShowingFalse;
+	private string guiTextShowingExplanation;
 
 	// Button descriptions
 	private string trueButtonDescription; // A description of how the 'true' button appears to the user.
@@ -116,24 +117,27 @@ public class ExperimentConductor : MonoBehaviour {
 		wantedFocusIndicatorColourFeedbackDuration = 
 			Single.Parse(ConfigReader.GetValueOf("wantedFocusIndicatorColourFeedbackDuration"));
 		userObservationDuration = Double.Parse(ConfigReader.GetValueOf("userObservationDuration"));
+		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
+
 		trueButtonDescription = ConfigReader.GetValueOf("trueButtonDescription");
 		falseButtonDescription = ConfigReader.GetValueOf("falseButtonDescription");
-		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
+		trueButtonWithColour =  "<color=" + trueButtonDescription + ">" + trueButtonDescription + "</color>";
+ 		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
 
 		string mode = ConfigReader.GetValueOf("mode");
 		string on = "ON";
 		string off = "OFF";
-		bool flipOnOff = false;
+		bool flip = false;
 		print("mode: " + mode);
 		switch(mode)
 		{
 			case "pixelation":
 				csfUser = pixelationShader;
-				flipOnOff = true;
+				flip = true;
 				break;
 			case "antialiasing":
 				csfUser = antialiasingShader;
-				flipOnOff = false;
+				flip = false;
 				break;
 			default:
 				throw new InvalidOperationException("Cannot understand 'mode' value in config file");
@@ -141,18 +145,29 @@ public class ExperimentConductor : MonoBehaviour {
 		experimentName += " " + mode;
 		guiTextAwaitingAnswer =
 			"Please press the " 
-			+ trueButtonWithColour + " keyboard button if it looked like "
-			+ mode + ", or the " + falseButtonWithColour 
+			+ (flip ? falseButtonWithColour : trueButtonWithColour)
+			+ " keyboard button if it looked like " + mode + ", or the " 
+			+ (flip ? trueButtonWithColour : falseButtonWithColour)
 			+ " keyboard button if it did not.\r\n"
 			+ "Take care to keep your eyes on the marker.";
 		guiTextShowingTrue =
-			"This is an example with " + mode + " turned " +  (flipOnOff ? off : on) + ".\n"
+			"This is an example with " + mode + " turned " +  (flip ? off : on) + ".\n"
 			+ "When it looks like this during the test, press the " 
 			+ trueButtonWithColour + " keyboard button.";
 		guiTextShowingFalse =
-			"This is an example with " + mode + " turned " +  (flipOnOff ? on : off) + "."
+			"This is an example with " + mode + " turned " +  (flip ? on : off) + "."
 			+ " When it looks like this during the test, press the " 
 			+ falseButtonWithColour + " keyboard button.";
+		guiTextShowingExplanation =
+			"You will be shown the scene for " + userObservationDuration
+			+ " seconds at a time, followed by a dark screen."
+			+ " Once the screen is dark, use the " 
+			+ (flip ? falseButtonWithColour : trueButtonWithColour)
+			+ " and " 
+			+ (flip ? trueButtonWithColour : falseButtonWithColour)
+			+ " keyboard buttons to indicate whether the screen was"
+			+ " subject to " + mode + " or not.";
+
 
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
  		blackTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
@@ -190,9 +205,6 @@ public class ExperimentConductor : MonoBehaviour {
 		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
 
 		csfGenerator = GetComponent<CSF>();
-
-		trueButtonWithColour =  "<color=" + trueButtonDescription + ">" + trueButtonDescription + "</color>";
- 		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
 	}
 
 	void Update()
@@ -379,13 +391,7 @@ public class ExperimentConductor : MonoBehaviour {
 				break;
 			case IntroState.ShowingExplanation:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, 
-					"You will be shown the scene for " + userObservationDuration
-					+ " seconds at a time, followed by a dark screen."
-					+ " Once the screen is dark,  use the " + trueButtonWithColour
-					+ " and " + falseButtonWithColour + " keyboard buttons to"
-					+ " indicate whether the screen looked like it was antialiased or not."
-				);
+				GUI.Label(messageRect, guiTextShowingExplanation);
 				break;
 			case IntroState.ShowingMarker:
 				GUI.Box(boxRect, " ");
