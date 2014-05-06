@@ -49,6 +49,33 @@ public static class CustomRandom {
 		return screenSpace;
 	}
 
+	public static Vector2 GenerateEdgeThirdPoint()
+	{
+		Vector2 screenSize = FocusProvider.GetScreenResolution();
+		float x;
+		float y;
+
+		if(Random.value > 0.5)
+		{
+			x = Random.Range(0f, screenSize.x/3);
+		}
+		else
+		{
+			x = Random.Range(2 * screenSize.x/3, screenSize.x);
+		}
+
+		if(Random.value > 0.5)
+		{
+			y = Random.Range(0f, screenSize.y/3);
+		}
+		else
+		{
+			y = Random.Range(2 * screenSize.y/3, screenSize.y);
+		}
+
+		return new Vector2(x,y);
+	}
+
 	// May overflow edge of screen
 	// Assumes p.x, p.y are in range [-1;1]
 	private static Vector2 ConvertToCenteredScreenSpace(Vector2 p, bool aspectIndependent)

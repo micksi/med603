@@ -350,7 +350,6 @@ public class ExperimentConductor : MonoBehaviour {
 				}
 				break;
 			case State.ShowIntro:
-				Screen.showCursor = false;
 				HandleIntroGUI();
 				break;
 			case State.GatheringObservations:
@@ -436,6 +435,7 @@ public class ExperimentConductor : MonoBehaviour {
 					introState = IntroState.ShowingMarker;
 					wantedFocusIndicator.enabled = true;
 					wantedFocusIndicator.SetPositive(2f);
+					wantedFocusIndicator.lerpRandomly = true;
 				}
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
@@ -445,12 +445,14 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingMarker:
 				if(GUI.Button(mouseRectRight,"Next"))
 				{
+					wantedFocusIndicator.lerpRandomly = false;
 					StartTrials();
 				}
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingExplanation;
 					wantedFocusIndicator.enabled = false;
+					wantedFocusIndicator.lerpRandomly = true;
 				}
 				break;
 		}

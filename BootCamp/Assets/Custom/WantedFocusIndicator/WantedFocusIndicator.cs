@@ -2,7 +2,6 @@
 using System.Collections;
 
 // Shows and wraps a neat modifiable circle at the centre of the screen.
-// Can easily be generalized to centre the circle elsewhere.
 public class WantedFocusIndicator : MonoBehaviour {
 
 	public Color NormalColour = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -24,15 +23,18 @@ public class WantedFocusIndicator : MonoBehaviour {
 	private float abnormalColourDuration;
 	private bool isAbnormal = false;
 
+	public bool lerpRandomly = false;
+
+
 	// Use this for initialization
 	void Start () {
-		material = new Material(circleShader);//Shader.Find("Custom/DrawFocus"));
+		material = new Material(circleShader);
 		currentColour = NormalColour;
 	}
 
 	public void LerpTo(Vector2 target, float durationSeconds)
 	{
-		print("Lerp from " + centre + " to " + target + " in " + durationSeconds + " s.");
+		//print("Lerp from " + centre + " to " + target + " in " + durationSeconds + " s.");
 		this.lerpTarget = target;
 		this.lerpDuration = this.lerpTimeLeft = durationSeconds;
 		lerping = true;
@@ -59,6 +61,11 @@ public class WantedFocusIndicator : MonoBehaviour {
 				SetNormal();
 			}
 		}
+
+		if(lerpRandomly && (lerping == false))
+		{
+			LerpTo(CustomRandom.GenerateEdgeThirdPoint(), Random.Range(1f, 3f));
+		}
 	}
 
 	private Vector2 Lerp()
@@ -75,7 +82,6 @@ public class WantedFocusIndicator : MonoBehaviour {
 
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
-		//Vector2 centre = FocusProvider.GetScreenCentre();
 		Vector2 position = lerping ? SmoothLerp() : centre;
 
 		material.SetColor("_Colour", currentColour);
