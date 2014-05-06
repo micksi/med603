@@ -164,6 +164,7 @@ public class ExperimentConductor : MonoBehaviour {
 				//HandleIntroInput(); //This is old, used to hand key events when switching in intro sequence.
 				break;
 			case State.GatheringObservations:
+				Screen.showCursor = false;
 				switch(observationState)
 				{
 					case ObservationState.Flashing:
