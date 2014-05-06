@@ -81,7 +81,7 @@ namespace ThresholdFinding
 
 		private void SaveObservationsToDisk(Trial trial, string dir)
 		{
-			string filepath = Path.Combine(dir, trial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".txt");
+			string filepath = Path.Combine(dir, trial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".csv");
 
 			if(Directory.Exists(Path.GetDirectoryName(filepath)) == false)
 			{

@@ -128,7 +128,7 @@ public class ExperimentConductor : MonoBehaviour {
 		string on = "ON";
 		string off = "OFF";
 		bool flip = false;
-		print("mode: " + mode);
+		Debug.Log("mode: " + mode);
 		switch(mode)
 		{
 			case "pixelation":
@@ -140,7 +140,7 @@ public class ExperimentConductor : MonoBehaviour {
 				flip = false;
 				break;
 			default:
-				throw new InvalidOperationException("Cannot understand 'mode' value in config file");
+				throw new InvalidOperationException("Cannot understand 'mode' value in config file: " + mode);
 		}
 		experimentName += " " + mode;
 		guiTextAwaitingAnswer =

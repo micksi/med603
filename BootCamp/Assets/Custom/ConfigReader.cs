@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.IO;
+using System;
 
 // Use: string value = ConfigReader.GetValueOf(key);
 public static class ConfigReader {
@@ -33,13 +34,20 @@ public static class ConfigReader {
 		string line;
 		using(StringReader file = new StringReader(contents))
 		{
+			bool found = false;
 			while((line = file.ReadLine()) != null)
 			{
 				if(line.Contains(key))
 				{
 					line = line.Substring(line.IndexOf(delimiter) + 1);
+					found = true;
 					break;
 				}
+			}
+
+			if(found == false)
+			{
+				throw new InvalidOperationException("Couldn't find key '" + key + "' in config!");
 			}
 		}
 
