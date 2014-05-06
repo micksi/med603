@@ -1,3 +1,5 @@
+mode=pixelation
+
 //ExperimentConductor
 flashDuration=1.5
 flashDurationForRests=10

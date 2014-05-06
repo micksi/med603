@@ -13,6 +13,8 @@ public class ExperimentConductor : MonoBehaviour {
 	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
+	public Shader antialiasShader;
+	public Shader pixelationShader;
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
 	public bool debugDrawCSFOnly = false;
@@ -114,6 +116,21 @@ public class ExperimentConductor : MonoBehaviour {
 		trueButtonDescription = ConfigReader.GetValueOf("trueButtonDescription");
 		falseButtonDescription = ConfigReader.GetValueOf("falseButtonDescription");
 		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
+
+		string mode = ConfigReader.GetValueOf("mode");
+		print("mode: " + mode);
+		switch(mode)
+		{
+			case "pixelation":
+				csfUser = pixelationShader;
+				break;
+			case "antialias":
+				csfUser = antialiasShader;
+				break;
+			default:
+				throw new InvalidOperationException("Cannot understand 'mode' value in config file");
+		}
+		experimentName += " " + mode;
 
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
  		blackTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
