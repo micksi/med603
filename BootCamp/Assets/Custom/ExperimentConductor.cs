@@ -13,7 +13,7 @@ public class ExperimentConductor : MonoBehaviour {
 	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
-	public Shader antialiasShader;
+	public Shader antialiasingShader;
 	public Shader pixelationShader;
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
@@ -49,12 +49,15 @@ public class ExperimentConductor : MonoBehaviour {
 	private double userObservationTimeLeft = 0.0; // Seconds
 	private string restMessage = "";
 
+	private string guiTextAwaitingAnswer;
+	private string guiTextShowingTrue;
+	private string guiTextShowingFalse;
+
 	// Button descriptions
 	private string trueButtonDescription; // A description of how the 'true' button appears to the user.
 	private string falseButtonDescription;
 	private string trueButtonWithColour;
 	private string falseButtonWithColour;
-
 
 	private Rect messageRect;
 	private Rect mouseRectLeft;
@@ -118,19 +121,38 @@ public class ExperimentConductor : MonoBehaviour {
 		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
 
 		string mode = ConfigReader.GetValueOf("mode");
+		string on = "ON";
+		string off = "OFF";
+		bool flipOnOff = false;
 		print("mode: " + mode);
 		switch(mode)
 		{
 			case "pixelation":
 				csfUser = pixelationShader;
+				flipOnOff = true;
 				break;
-			case "antialias":
-				csfUser = antialiasShader;
+			case "antialiasing":
+				csfUser = antialiasingShader;
+				flipOnOff = false;
 				break;
 			default:
 				throw new InvalidOperationException("Cannot understand 'mode' value in config file");
 		}
 		experimentName += " " + mode;
+		guiTextAwaitingAnswer =
+			"Please press the " 
+			+ trueButtonWithColour + " keyboard button if it looked like "
+			+ mode + ", or the " + falseButtonWithColour 
+			+ " keyboard button if it did not.\r\n"
+			+ "Take care to keep your eyes on the marker.";
+		guiTextShowingTrue =
+			"This is an example with " + mode + " turned " +  (flipOnOff ? off : on) + ".\n"
+			+ "When it looks like this during the test, press the " 
+			+ trueButtonWithColour + " keyboard button.";
+		guiTextShowingFalse =
+			"This is an example with " + mode + " turned " +  (flipOnOff ? on : off) + "."
+			+ " When it looks like this during the test, press the " 
+			+ falseButtonWithColour + " keyboard button.";
 
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
  		blackTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
@@ -337,11 +359,7 @@ public class ExperimentConductor : MonoBehaviour {
 				GUI.Label(messageRect, restMessage);
 				break;
 			case ObservationState.AwaitingAnswer:
-				GUI.Label(messageRect, "Please press the " 
-					+ trueButtonWithColour + " keyboard button if it looked "
-					+ "antialiased, or the " + falseButtonWithColour 
-					+ " keyboard button if it did not.\r\n"
-					+ "Take care to keep your eyes on the marker.");
+				GUI.Label(messageRect, guiTextAwaitingAnswer);
 				SendInputToTFC();
 				break;
 		}
@@ -353,17 +371,11 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			case IntroState.ShowingTrue:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, "This is an example with antialiasing turned ON.\n"
-    				+ "When it looks like this during the test, press the " 
-    				+ trueButtonWithColour + " keyboard button."
-				);
+				GUI.Label(messageRect, guiTextShowingTrue);
 				break;
 			case IntroState.ShowingFalse:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, "This is an example with antialiasing turned OFF."
-					+ " When it looks like this during the test, press the " 
-					+ falseButtonWithColour + " keyboard button."
-				);
+				GUI.Label(messageRect, guiTextShowingFalse);
 				break;
 			case IntroState.ShowingExplanation:
 				GUI.Box(boxRect, " ");
