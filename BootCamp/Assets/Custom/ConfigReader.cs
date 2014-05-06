@@ -1,18 +1,37 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.IO;
 
 // Use: string value = ConfigReader.GetValueOf(key);
 public static class ConfigReader {
 
-	private static readonly string path = "config.txt";
+	private static readonly string filename = "config.txt";
 	private static readonly string delimiter = "=";
-	private static string config = ((TextAsset)Resources.Load("config", typeof(TextAsset))).text;
-
+	private static string contents = "";
 
 	public static string GetValueOf(string key)
 	{
+		if(contents.Length == 0)
+		{
+			string path = Application.dataPath; // Data folder, or Assets folder
+			
+			if(Application.isEditor == false) // We're in a build
+			{
+				path = Path.GetDirectoryName(path); // cd ..
+				path = Path.GetDirectoryName(path); // cd ..
+			}
+			
+			path = Path.Combine(path, filename);
+			Debug.Log("Gonna read config from " + path);
+
+			using(StreamReader file = new StreamReader(path))
+			{
+				contents = file.ReadToEnd();
+			}
+		}
+
 		string line;
-		using(System.IO.StringReader file = new System.IO.StringReader(config))
+		using(StringReader file = new StringReader(contents))
 		{
 			while((line = file.ReadLine()) != null)
 			{
