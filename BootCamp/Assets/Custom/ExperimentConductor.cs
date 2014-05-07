@@ -49,6 +49,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private double userObservationTimeLeft = 0.0; // Seconds
 	private string restMessage = "";
 
+	// GUI texts
 	private string guiTextAwaitingAnswer;
 	private string guiTextShowingTrue;
 	private string guiTextShowingFalse;
@@ -61,6 +62,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private string trueButtonWithColour;
 	private string falseButtonWithColour;
 
+	// GUI layout
 	private Rect messageRect;
 	private Rect mouseRectLeft;
 	private Rect mouseRectRight;
@@ -339,17 +341,17 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.SendToDemographics:
 				if(GUI.Button(messageRect, "Click here to start with a questionnaire!"))
 				{
-					state = State.SendToFilm;
+					state = State.SendToCalibration;
 					uint participantNumber = experiment.ActiveParticipant.Id;
 					Application.OpenURL("https://docs.google.com/forms/d/1-5mbG7bUA0DbApVJEbzrx8IDEuFlJvgUA4pccmDkvy4/viewform?entry.1375030606=" + participantNumber);
 				}
 				break;
-			case State.SendToFilm:
+			/*case State.SendToFilm:
 				if(GUI.Button(messageRect, "Click here when you have seen the introductory film."))
 				{
 					state = State.SendToCalibration;
 				}
-				break;
+				break;*/
 			case State.SendToCalibration:
 				if(GUI.Button(messageRect, "Click here when the gaze tracker has been calibrated to 5/5!"))
 				{
