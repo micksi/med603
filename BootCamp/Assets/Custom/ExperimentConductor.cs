@@ -18,7 +18,6 @@ public class ExperimentConductor : MonoBehaviour {
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
 	public bool debugDrawCSFOnly = false;
-	//public bool showCursor = true;
 
 	private Experiment experiment;
 	private ThresholdFinderComponent thresholdFinderComponent;
@@ -54,6 +53,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private string guiTextShowingTrue;
 	private string guiTextShowingFalse;
 	private string guiTextShowingExplanation;
+	private int guiFontSize;
 
 	// Button descriptions
 	private string trueButtonDescription; // A description of how the 'true' button appears to the user.
@@ -124,6 +124,8 @@ public class ExperimentConductor : MonoBehaviour {
 		falseButtonDescription = ConfigReader.GetValueOf("falseButtonDescription");
 		trueButtonWithColour =  "<color=" + trueButtonDescription + ">" + trueButtonDescription + "</color>";
  		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
+
+ 		guiFontSize = Int32.Parse(ConfigReader.GetValueOf("fontSize"));
 
 		string mode = ConfigReader.GetValueOf("mode");
 		string on = "ON";
@@ -327,6 +329,11 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnGUI()
 	{
+ 		GUI.skin.button.fontSize = guiFontSize;
+ 		GUI.skin.label.fontSize = guiFontSize;
+ 		GUI.skin.button.wordWrap = true;
+ 		GUI.skin.label.wordWrap = true;
+
 		switch(state)
 		{
 			case State.SendToDemographics:
