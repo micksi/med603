@@ -18,7 +18,7 @@ public class ExperimentConductor : MonoBehaviour {
 	public bool debugToggleEffectOnV = false;
 	public bool debugShowHalfvalueCSF = false;
 	public bool debugDrawCSFOnly = false;
-	//public bool showCursor = true;
+	public GUISkin	boxSkin;
 
 	private Experiment experiment;
 	private ThresholdFinderComponent thresholdFinderComponent;
@@ -65,6 +65,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private Rect mouseRectLeft;
 	private Rect mouseRectRight;
 	private Rect boxRect;
+
 	private int boxExtension;
 
 	private Texture2D whiteTex = null;
@@ -126,6 +127,10 @@ public class ExperimentConductor : MonoBehaviour {
  		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
 
 		string mode = ConfigReader.GetValueOf("mode");
+		boxSkin.label.fontSize = int.Parse(ConfigReader.GetValueOf("fontSize"));
+		boxSkin.button.fontSize = int.Parse(ConfigReader.GetValueOf("fontSize"));
+		//print ("Test: " + boxSkin.label.fontSize );
+
 		string on = "ON";
 		string off = "OFF";
 		bool flip = false;
@@ -175,7 +180,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// set the pixel values
 		whiteTex.SetPixel(0, 0, Color.white);
-		blackTex.SetPixel(0, 0, Color.black);
+		blackTex.SetPixel(0, 0, Color.grey);
  
 		// Apply all SetPixel calls
 		whiteTex.Apply();
@@ -183,8 +188,8 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Set up GUI Rect
 		messageRect = new Rect( Screen.width / 3, Screen.height / 3, Screen.width / 3, Screen.height / 3);
-		mouseRectLeft = new Rect( Screen.width / 3, ((Screen.height / 3)*2)+boxExtension, Screen.width / 10, Screen.height / 10);
-		mouseRectRight = new Rect( ((Screen.width / 3)*2)-(Screen.width / 10), ((Screen.height / 3)*2)+boxExtension, Screen.width / 10, Screen.height / 10);
+		mouseRectLeft = new Rect( Screen.width / 3, ((Screen.height / 3)*2)+boxExtension+20, Screen.width / 10, Screen.height / 10);
+		mouseRectRight = new Rect( ((Screen.width / 3)*2)-(Screen.width / 10), ((Screen.height / 3)*2)+boxExtension+20, Screen.width / 10, Screen.height / 10);
 		boxRect = new Rect( Screen.width / 3 - boxExtension, Screen.height / 3 - boxExtension, Screen.width / 3 + boxExtension*2, Screen.height / 3 + boxExtension*2);
 
 		// Set up listeners
@@ -327,22 +332,24 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnGUI()
 	{
+		GUI.skin = boxSkin;
+
 		switch(state)
 		{
 			case State.SendToDemographics:
 				if(GUI.Button(messageRect, "Click here to start with a questionnaire!"))
 				{
-					state = State.SendToFilm;
+					state = State.SendToCalibration;
 					uint participantNumber = experiment.ActiveParticipant.Id;
 					Application.OpenURL("https://docs.google.com/forms/d/1-5mbG7bUA0DbApVJEbzrx8IDEuFlJvgUA4pccmDkvy4/viewform?entry.1375030606=" + participantNumber);
 				}
 				break;
-			case State.SendToFilm:
+			/*case State.SendToFilm:
 				if(GUI.Button(messageRect, "Click here when you have seen the introductory film."))
 				{
 					state = State.SendToCalibration;
 				}
-				break;
+				break;*/
 			case State.SendToCalibration:
 				if(GUI.Button(messageRect, "Click here when the gaze tracker has been calibrated to 5/5!"))
 				{
@@ -356,7 +363,7 @@ public class ExperimentConductor : MonoBehaviour {
 				HandleObservationGUI();
 				break;
 			case State.EndTrials:
-				GUI.Label(messageRect, "Thank you for your participation! You may now approach the test conductor for a short interview.");
+			GUI.Label(messageRect, "Thank you for your participation! You may now approach the test conductor for a short interview.");
 				break;
 		}
 	}

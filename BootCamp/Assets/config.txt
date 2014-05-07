@@ -22,3 +22,4 @@ resolution=10000
 BestPEST_Stimuli=10
 positiveKey=m
 negativeKey=z
+fontSize = 24
