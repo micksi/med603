@@ -49,6 +49,10 @@ public class ExperimentConductor : MonoBehaviour {
 	private double userObservationTimeLeft = 0.0; // Seconds
 	private string restMessage = "";
 
+	private float demonstrationHalfEccentricity;
+	private float demonstrationNormalizedX;
+	private float demonstrationNormalizedY;	
+
 	// GUI texts
 	private string guiTextAwaitingAnswer;
 	private string guiTextShowingTrue;
@@ -129,6 +133,10 @@ public class ExperimentConductor : MonoBehaviour {
 
  		guiFontSize = Int32.Parse(ConfigReader.GetValueOf("fontSize"));
 
+ 		demonstrationHalfEccentricity = Single.Parse(ConfigReader.GetValueOf("demonstrationHalfEccentricity"));
+		demonstrationNormalizedX = Single.Parse(ConfigReader.GetValueOf("demonstrationNormalizedX"));
+		demonstrationNormalizedY = Single.Parse(ConfigReader.GetValueOf("demonstrationNormalizedY"));
+
 		string mode = ConfigReader.GetValueOf("mode");
 		string on = "ON";
 		string off = "OFF";
@@ -157,11 +165,11 @@ public class ExperimentConductor : MonoBehaviour {
 			+ "Take care to keep your eyes on the marker.";
 		guiTextShowingTrue =
 			"This is an example with " + mode + " turned " +  (flip ? off : on) + ".\n"
-			+ "When it looks like this during the test, press the " 
+			+ "When you think it looks like this during the test, press the " 
 			+ trueButtonWithColour + " keyboard button.";
 		guiTextShowingFalse =
 			"This is an example with " + mode + " turned " +  (flip ? on : off) + "."
-			+ " When it looks like this during the test, press the " 
+			+ " When you think it looks like this during the test, press the " 
 			+ falseButtonWithColour + " keyboard button.";
 		guiTextShowingExplanation =
 			"You will be shown the scene for " + userObservationDuration
@@ -306,7 +314,12 @@ public class ExperimentConductor : MonoBehaviour {
 				switch(introState)
 				{
 					case IntroState.ShowingFalse:
-						material.SetTexture("_CSF", blackTex);
+						Vector2 screenSize = FocusProvider.GetScreenResolution();
+						csfGenerator.halfResolutionEccentricity = demonstrationHalfEccentricity;
+						csfGenerator.centre = new Vector2(demonstrationNormalizedX * screenSize.x, demonstrationNormalizedY * screenSize.y);
+						csf = RenderTexture.GetTemporary(source.width, source.height);
+						csfGenerator.GetContrastSensitivityMap(source, csf);
+						material.SetTexture("_CSF", csf);
 						break;
 					default: // Including ShowingTrue
 						material.SetTexture("_CSF", whiteTex);
@@ -410,8 +423,6 @@ public class ExperimentConductor : MonoBehaviour {
 				GUI.Label(messageRect, 
 					"This is the marker, indicating where you must look during the test. Please stick to it!"
 					+ " It will change position every time you answer."
-					+ "\nPress 'Next' when you are ready to start the test, or"
-					+ " 'Back' if you want see the previous information."
 				);
 				break;
 		}
@@ -452,7 +463,7 @@ public class ExperimentConductor : MonoBehaviour {
 				}
 				break;
 			case IntroState.ShowingMarker:
-				if(GUI.Button(mouseRectRight,"Next"))
+				if(GUI.Button(mouseRectRight,"Start test"))
 				{
 					wantedFocusIndicator.lerpRandomly = false;
 					StartTrials();
@@ -481,7 +492,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void StartTrials()
 	{
-		//state = State.RunningTrials;
 		state = State.GatheringObservations;
 
 		gazeLogger.UpdatePath();
@@ -508,7 +518,6 @@ public class ExperimentConductor : MonoBehaviour {
 	private void StartUserObserving()
 	{
 		gazeLogger.Begin();
-		//wantedFocusIndicator.SetNormal();
 
 		observationState = ObservationState.UserObserving;
 		userObservationTimeLeft = userObservationDuration;
@@ -521,20 +530,20 @@ public class ExperimentConductor : MonoBehaviour {
 
 	private void UpdateWantedFocusPosition()
 	{
-		GenerateNewWantedFocusPosition();
-		wantedFocusIndicator.LerpTo(wantedFocusPosition, wantedFocusIndicatorLerpDuration);
-		gazeLogger.ReferenceLocation = wantedFocusPosition;
+		Vector2 newPos = GenerateNewWantedFocusPosition();
+		SetWantedFocusPosition(newPos);
 	}
 
-	private void GenerateNewWantedFocusPosition()
+	private void SetWantedFocusPosition(Vector2 position)
 	{
-		// Use uniform distribution for now
-		// TODO implement more proper distribution
-		/*wantedFocusPosition = FocusProvider.GetScreenResolution();
-		wantedFocusPosition.x *= UnityEngine.Random.value;
-		wantedFocusPosition.y *= UnityEngine.Random.value;*/
+		wantedFocusPosition = position;
+		wantedFocusIndicator.LerpTo(position, wantedFocusIndicatorLerpDuration);
+		gazeLogger.ReferenceLocation = position;
+	}
 
-		wantedFocusPosition = CustomRandom.GenerateScreenPoint();
+	private Vector2 GenerateNewWantedFocusPosition()
+	{
+		return CustomRandom.GenerateScreenPoint();
 	}
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
