@@ -165,11 +165,11 @@ public class ExperimentConductor : MonoBehaviour {
 			+ "Take care to keep your eyes on the marker.";
 		guiTextShowingTrue =
 			"This is an example with " + mode + " turned " +  (flip ? off : on) + ".\n"
-			+ "When you think it looks like this during the test, press the " 
+			+ "When you think the picture looks like this during the test, press the " 
 			+ trueButtonWithColour + " keyboard button.";
 		guiTextShowingFalse =
-			"This is an example with " + mode + " turned " +  (flip ? on : off) + "."
-			+ " When you think it looks like this during the test, press the " 
+			"This is an example with " + mode + " turned " +  (flip ? on : off) + ".\n"
+			+ "When you think the picture looks like this during the test, press the " 
 			+ falseButtonWithColour + " keyboard button.";
 		guiTextShowingExplanation =
 			"You will be shown the scene for " + userObservationDuration
@@ -421,8 +421,10 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingMarker:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, 
-					"This is the marker, indicating where you must look during the test. Please stick to it!"
-					+ " It will change position every time you answer."
+			          "This is the marker, indicating where you must look during the test. PLEASE KEEP YOUR VISUAL FOCUS AT IT.\n"
+					+ "It will change position every time you answer."
+					+ "\nPress 'Next' when you are ready to start the test, or"
+					+ " 'Back' if you want see the previous information."
 				);
 				break;
 		}
