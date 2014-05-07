@@ -180,7 +180,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// set the pixel values
 		whiteTex.SetPixel(0, 0, Color.white);
-		blackTex.SetPixel(0, 0, Color.grey);
+		blackTex.SetPixel(0, 0, Color.black);
  
 		// Apply all SetPixel calls
 		whiteTex.Apply();
