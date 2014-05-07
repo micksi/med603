@@ -74,18 +74,27 @@ Shader "Custom/DrawFocus"
 
 		float aspect = _MainTex_TexelSize.x / _MainTex_TexelSize.y;
 
-		float3 differenceVector = origin.xyz - _Colour.xyz;
+		/*float3 differenceVector = origin.xyz - _Colour.xyz;
 		float difference = length(differenceVector);
-		float similarity = 1 - difference;
+		float similarity = 1 - difference;*/
+
+		float bgIntensity = GetIntensity(origin.xyz);
 
 		float h = (i.uv.x - x) / _MainTex_TexelSize.x;
 		float v = (i.uv.y - y) / _MainTex_TexelSize.y;
 
-
 		if( abs(h) < _Radius && abs(v) < _Thickness ||
 			abs(v) < _Radius && abs(h) < _Thickness)
 		{
-			return float4(lerp(origin.xyz, (1 + similarity) * _Colour.xyz, _Colour.a), 1);
+			if(bgIntensity > 0.5)
+			{
+				return float4(0,0,0,1);
+			}
+			else
+			{
+				return float4(1,1,1,1);
+			}
+			//return float4(lerp(origin.xyz, (1 + similarity) * _Colour.xyz, _Colour.a), 1);
 		}
 
 		return origin;
