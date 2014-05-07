@@ -129,7 +129,7 @@ class SoldierController extends MonoBehaviour
 	
 	function Update()
 	{
-		return; // Turned off for Experiment 1
+//		return; // Turned off for Experiment 1
 		if(GameManager.pause || GameManager.scores)
 		{
 			moveDir = Vector3.zero;
@@ -182,7 +182,7 @@ class SoldierController extends MonoBehaviour
 	
 	function GetUserInputs()
 	{
-		return; // Turned off for experiment 1 
+//		return; // Turned off for experiment 1 
 
 		//Check if the user if firing the weapon
 		fire = Input.GetButton("Fire1") && weaponSystem.currentGun.freeToShoot && !dead && !inAir;
