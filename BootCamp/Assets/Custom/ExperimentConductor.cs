@@ -29,7 +29,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	// States
 	private enum State { SendToDemographics, SendToFilm, SendToCalibration, ShowIntro, GatheringObservations, EndTrials };
-	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
+	private enum IntroState { ShowingTrue, ShowingFalse, ShowingCSF, ShowingExplanation, ShowingMarker };
 	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
 	private State state = State.SendToDemographics;
 	private IntroState introState = IntroState.ShowingTrue;
@@ -50,13 +50,13 @@ public class ExperimentConductor : MonoBehaviour {
 	private string restMessage = "";
 
 	private float demonstrationHalfEccentricity;
-	private float demonstrationNormalizedX;
-	private float demonstrationNormalizedY;	
+	private float demonstrationJitterStrength;
 
 	// GUI texts
 	private string guiTextAwaitingAnswer;
 	private string guiTextShowingTrue;
 	private string guiTextShowingFalse;
+	private string guiTextShowingCSF;
 	private string guiTextShowingExplanation;
 	private int guiFontSize;
 
@@ -115,6 +115,21 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
+	private Vector2 _demoPositionNormalized;
+	private Vector2 demoPosition
+	{
+		get
+		{
+			Vector2 screenSize = FocusProvider.GetScreenResolution();
+			return new Vector2(_demoPositionNormalized.x * screenSize.x, _demoPositionNormalized.y * screenSize.y);
+		}
+
+		set
+		{
+			_demoPositionNormalized = value;
+		}
+	}
+
 	void Start()
 	{
 		flashDuration = Double.Parse(ConfigReader.GetValueOf("flashDuration"));
@@ -134,8 +149,10 @@ public class ExperimentConductor : MonoBehaviour {
  		guiFontSize = Int32.Parse(ConfigReader.GetValueOf("fontSize"));
 
  		demonstrationHalfEccentricity = Single.Parse(ConfigReader.GetValueOf("demonstrationHalfEccentricity"));
-		demonstrationNormalizedX = Single.Parse(ConfigReader.GetValueOf("demonstrationNormalizedX"));
-		demonstrationNormalizedY = Single.Parse(ConfigReader.GetValueOf("demonstrationNormalizedY"));
+		float demonstrationNormalizedX = Single.Parse(ConfigReader.GetValueOf("demonstrationNormalizedX"));
+		float demonstrationNormalizedY = Single.Parse(ConfigReader.GetValueOf("demonstrationNormalizedY"));
+		demoPosition = new Vector2(demonstrationNormalizedX, demonstrationNormalizedY);
+		demonstrationJitterStrength = Single.Parse(ConfigReader.GetValueOf("demonstrationJitterStrength"));
 
 		string mode = ConfigReader.GetValueOf("mode");
 		string on = "ON";
@@ -164,15 +181,24 @@ public class ExperimentConductor : MonoBehaviour {
 			+ " keyboard button if it did not.\r\n"
 			+ "Take care to keep your eyes on the marker.";
 		guiTextShowingTrue =
-			"This is an example with " + mode + " turned " +  (flip ? off : on) + ".\n"
+			"This is an example with " + mode + " turned " +  (flip ? off : on) 
+			+ ".\n"
 			+ "When you think the picture looks like this during the test, press the " 
 			+ trueButtonWithColour + " keyboard button.";
 		guiTextShowingFalse =
-			"This is an example with " + mode + " turned " +  (flip ? on : off) + ".\n"
+			"This is an extreme example with " + mode + " turned " +  (flip ? on : off) 
+			+ ".\n"
 			+ "When you think the picture looks like this during the test, press the " 
 			+ falseButtonWithColour + " keyboard button.";
+		guiTextShowingCSF =
+			"This is an example with " + mode + " applied to the picture as it"
+			+ " may be during the test.\n"
+			+ "You will be looking at the centre of the effect, marked by the"
+			+ " crosshair.\n"
+			+ "If you perceive any pixelation at all during the test, press the " // Yes, I know, I hardcoded it. Damn. -TB 
+			+ falseButtonWithColour + " keyboard button.";
 		guiTextShowingExplanation =
-			"You will be shown the scene for " + userObservationDuration
+			"You will be shown the picture for " + userObservationDuration
 			+ " seconds at a time, followed by a dark screen."
 			+ " Once the screen is dark, use the " 
 			+ (flip ? falseButtonWithColour : trueButtonWithColour)
@@ -314,12 +340,17 @@ public class ExperimentConductor : MonoBehaviour {
 				switch(introState)
 				{
 					case IntroState.ShowingFalse:
+						material.SetTexture("_CSF", blackTex);
+						break;
+					case IntroState.ShowingCSF:
 						Vector2 screenSize = FocusProvider.GetScreenResolution();
 						csfGenerator.halfResolutionEccentricity = demonstrationHalfEccentricity;
-						csfGenerator.centre = new Vector2(demonstrationNormalizedX * screenSize.x, demonstrationNormalizedY * screenSize.y);
+						csfGenerator.centre = demoPosition;
 						csf = RenderTexture.GetTemporary(source.width, source.height);
 						csfGenerator.GetContrastSensitivityMap(source, csf);
 						material.SetTexture("_CSF", csf);
+
+						wantedFocusIndicator.centre = demoPosition + Jitter(demonstrationJitterStrength);
 						break;
 					default: // Including ShowingTrue
 						material.SetTexture("_CSF", whiteTex);
@@ -414,6 +445,10 @@ public class ExperimentConductor : MonoBehaviour {
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, guiTextShowingFalse);
 				break;
+			case IntroState.ShowingCSF:
+				GUI.Box(boxRect, " ");
+				GUI.Label(messageRect, guiTextShowingCSF);
+				break;
 			case IntroState.ShowingExplanation:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect, guiTextShowingExplanation);
@@ -444,16 +479,31 @@ public class ExperimentConductor : MonoBehaviour {
 			case IntroState.ShowingFalse:
 				if(GUI.Button(mouseRectRight,"Next"))
 				{
-					introState = IntroState.ShowingExplanation;
+					introState = IntroState.ShowingCSF;
+					wantedFocusIndicator.enabled = true;
+					wantedFocusIndicator.centre = demoPosition;
 				}
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					introState = IntroState.ShowingTrue;
 				}
 				break;
+			case IntroState.ShowingCSF:
+				if(GUI.Button(mouseRectRight,"Next"))
+				{
+					introState = IntroState.ShowingExplanation;
+					wantedFocusIndicator.enabled = false;
+				}
+				if(GUI.Button(mouseRectLeft,"Back"))
+				{
+					introState = IntroState.ShowingFalse;
+					wantedFocusIndicator.enabled = false;
+				}
+				break;
 			case IntroState.ShowingExplanation:
 				if(GUI.Button(mouseRectRight,"Next"))
 				{
+					Debug.Log("Going to IntroState.ShowingMarker");
 					introState = IntroState.ShowingMarker;
 					wantedFocusIndicator.enabled = true;
 					wantedFocusIndicator.SetPositive(2f);
@@ -461,17 +511,22 @@ public class ExperimentConductor : MonoBehaviour {
 				}
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
-					introState = IntroState.ShowingFalse;
+					Debug.Log("Going back to IntroState.ShowingCSF");
+					introState = IntroState.ShowingCSF;
+					wantedFocusIndicator.enabled = true;
+					wantedFocusIndicator.centre = demoPosition;
 				}
 				break;
 			case IntroState.ShowingMarker:
 				if(GUI.Button(mouseRectRight,"Start test"))
 				{
+					Debug.Log("Going to start the test");
 					wantedFocusIndicator.lerpRandomly = false;
 					StartTrials();
 				}
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
+					Debug.Log("Going back to IntroState.ShowingExplanation");
 					introState = IntroState.ShowingExplanation;
 					wantedFocusIndicator.enabled = false;
 					wantedFocusIndicator.lerpRandomly = true;
@@ -587,5 +642,10 @@ public class ExperimentConductor : MonoBehaviour {
 	void OnApplicationQuit()
 	{
 		gazeLogger.Pause();
+	}
+
+	private Vector2 Jitter(float maxMagnitude)
+	{
+		return UnityEngine.Random.insideUnitCircle * maxMagnitude;
 	}
 }

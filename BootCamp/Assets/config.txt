@@ -1,9 +1,9 @@
 mode=pixelation
 
 //ExperimentConductor
-flashDuration=1.5
-flashDurationForRests=10
-wantedFocusIndicatorLerpDuration=1
+flashDuration=3.5
+flashDurationForRests=8
+wantedFocusIndicatorLerpDuration=3
 wantedFocusIndicatorColourFeedbackDuration=1
 userObservationDuration=2.0
 trueButtonDescription=green
@@ -12,11 +12,11 @@ boxExtension=20
 
 //CSF
 screenDiag=24
-userDistance=65
+userDistance=70
 
 //ThresholdFinder
 min=0.0
-max=60.0
+max=140.0
 trials=4
 resolution=10000
 BestPEST_Stimuli=10
@@ -28,3 +28,4 @@ fontSize=24
 demonstrationHalfEccentricity = 30
 demonstrationNormalizedX = 0.2
 demonstrationNormalizedY = 0.2
+demonstrationJitterStrength = 2
