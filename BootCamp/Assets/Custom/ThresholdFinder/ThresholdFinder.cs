@@ -9,9 +9,6 @@ namespace ThresholdFinding
 	TODO: Seems to be working, but needs more rigorous testing
 	TODO: Find and clean up useless methods (if any)
 	TODO: Document eeeeeverryything
-	TODO: Make sure that the new refactoring to use Ranges did not cause any problems
-	TODO: Create more implementations in order to figure out if the interface is OK
-	TODO: Finish implementing and testing BestPestTrial along with ObservationsProvider (maybe)
 	*/
 
 	public class ThresholdFinder
@@ -20,7 +17,7 @@ namespace ThresholdFinding
 		protected int index = 0;
 		private bool finished = false;
 		public event EventHandler<FinishedEventArgs> FinishedEvent;
-		public event EventHandler<FinishedTrialArgs> FinishedTrial;
+		public event EventHandler<FinishedTrialEventArgs> FinishedTrialEvent;
 
 		public ThresholdFinder(ITrialStrategy strategy)
 		{
@@ -49,7 +46,7 @@ namespace ThresholdFinding
 
 					if(Finished == false)
 					{
-						FinishedTrial(this, new FinishedTrialArgs(this));
+						FinishedTrialEvent(this, new FinishedTrialEventArgs(this));
 					}
 				}
 				return trial.Stimulus;
@@ -197,10 +194,10 @@ namespace ThresholdFinding
 		}
 	}
 
-	public class FinishedTrialArgs : EventArgs
+	public class FinishedTrialEventArgs : EventArgs
 	{
 		public readonly ThresholdFinder Finder;
-		public FinishedTrialArgs	(ThresholdFinder finder)
+		public FinishedTrialEventArgs	(ThresholdFinder finder)
 		{
 			Finder = finder;
 		}
