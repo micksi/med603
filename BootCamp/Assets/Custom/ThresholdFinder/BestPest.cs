@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ThresholdFinding
 {
 
-	public class BestPest
+	public static class BestPest
 	{
 
 		public static double ProbabilityOf50Percent(double stim, bool obs, double meas,
