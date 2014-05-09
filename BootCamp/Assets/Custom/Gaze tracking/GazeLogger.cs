@@ -34,7 +34,7 @@ public class GazeLogger
 		this.experiment = experiment;
 		this.finder = finder;
 
-		this.finder.FinishedTrial += OnFinishedTrialEvent;
+		this.finder.FinishedTrialEvent += OnFinishedTrialEvent;
 	}
 
 	public GazeLogger(MonoBehaviour component, Experiment experiment, ThresholdFinder finder, 
@@ -148,7 +148,7 @@ public class GazeLogger
 		Write(arg1, arg2.ToString(), arg3.ToString());
 	}
 
-	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
+	private void OnFinishedTrialEvent(object source, FinishedTrialEventArgs args)
 	{
 		// Start over in a new file, in order to match the structure of the other logs
 		Flush();

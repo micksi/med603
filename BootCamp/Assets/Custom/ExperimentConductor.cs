@@ -229,7 +229,7 @@ public class ExperimentConductor : MonoBehaviour {
 		thresholdFinderComponent = GetComponent<ThresholdFinderComponent>();
 		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
 		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
-		thresholdFinderComponent.Finder.FinishedTrial += OnFinishedTrialEvent;
+		thresholdFinderComponent.Finder.FinishedTrialEvent += OnFinishedTrialEvent;
 
 		testFramework = GetComponent<TestFramework.TestFramework>();
 
@@ -632,7 +632,7 @@ public class ExperimentConductor : MonoBehaviour {
 		state = State.EndTrials;
 	}
 
-	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
+	private void OnFinishedTrialEvent(object source, FinishedTrialEventArgs args)
 	{
 		print("Finished trial and flashTimeLeft is " + flashTimeLeft);
 		observationState = ObservationState.Resting;
