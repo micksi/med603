@@ -102,7 +102,7 @@ class SoldierController extends MonoBehaviour
 	{
         if(radarObject != null)
         {
-           // radarObject.SetActiveRecursively(true);
+//            radarObject.SetActiveRecursively(true);
         }
 
         moveDir = Vector3.zero;
@@ -117,7 +117,7 @@ class SoldierController extends MonoBehaviour
 	{
         if(radarObject != null)
         {
-           // radarObject.SetActiveRecursively(false);
+//            radarObject.SetActiveRecursively(false);
         }
 
         moveDir = Vector3.zero;

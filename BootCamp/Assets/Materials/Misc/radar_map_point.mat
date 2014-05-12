@@ -23,8 +23,12 @@ Material:
     m_Floats:
       data:
         first:
+          name: _Cutoff
+        second: .5
+      data:
+        first:
           name: _Shininess
-        second: .699999988
+        second: .197854623
     m_Colors:
       data:
         first:
@@ -37,7 +41,7 @@ Material:
       data:
         first:
           name: _Emission
-        second: {r: .483734101, g: .50746268, b: .386277556, a: 1}
+        second: {r: .601544678, g: .629988968, b: .482418627, a: 1}
 --- !u!1002 &2100001
 EditorExtensionImpl:
   serializedVersion: 6

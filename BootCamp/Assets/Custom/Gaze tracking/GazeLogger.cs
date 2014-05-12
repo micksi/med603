@@ -57,6 +57,7 @@ public class GazeLogger
 		{
 			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
 			gazeWrap.GazeUpdate += OnGazeUpdate;
+			Debug.Log("subscribing");
 		}
 	}
 
@@ -74,6 +75,7 @@ public class GazeLogger
 		{
 			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
 			gazeWrap.GazeUpdate -= OnGazeUpdate;
+			Debug.Log("unsubscribing");
 		}
 	}
 
