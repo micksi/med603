@@ -1,14 +1,14 @@
-function samples = plot_bp_sequence(range, sequence)
+function samples = plot_bp_sequence(Range, sequence, B)
     % Initialize
-    samples = [0 -1; 1 1];
-    [probs, next] = next_thresh_est(range, samples);
-    plot(range, probs)
+    samples = [min(Range) -1;max(Range) 1];
+    [probs, next] = next_thresh_est(Range, samples, B);
+    plot(Range, probs)
     hold on;
     scatter(next, max(probs));
     for i = 1:length(sequence)
         samples(i+2, :) = [next, sequence(i)];
-        [probs, next] = next_thresh_est(range, samples);
-        plot(range, probs)
+        [probs, next] = next_thresh_est(Range, samples, B);
+        plot(Range, probs)
         scatter(next, max(probs));
     end
     
