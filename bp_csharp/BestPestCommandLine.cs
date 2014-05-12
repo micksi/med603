@@ -4,7 +4,8 @@ using System.IO;
 using ThresholdFinding;
 
 // TODO: Creates a file sharing violation when piped to file
-
+// Usage:
+//  make build;mono .\BestPestCommandLine.exe .\testdata.csv | % {$_ + ",1"} | out-file -append .\testdata.csv -enc utf8
 public class BestPestCommandLine
 {
 
@@ -74,34 +75,35 @@ public class CSVReader
 			result.Add(Headers[i], new List<string>());
 		}
 
-		StreamReader reader = null;
-		try
+		using (StreamReader reader = new StreamReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
 		{
-			reader = new StreamReader(File.OpenRead(filename));
-
-			char[] DelAsCharArray = Del.ToCharArray();
-			reader.ReadLine(); // Read past first line
-
-			while(reader.EndOfStream == false)
+			try
 			{
-				string line = reader.ReadLine();
-				string[] values = line.Split(DelAsCharArray);
-				for(int i = 0; i < values.Length; i++)
+
+				char[] DelAsCharArray = Del.ToCharArray();
+				reader.ReadLine(); // Read past first line
+
+				while(reader.EndOfStream == false)
 				{
-					result[Headers[i]].Add(values[i]);
+					string line = reader.ReadLine();
+					string[] values = line.Split(DelAsCharArray);
+					for(int i = 0; i < values.Length; i++)
+					{
+						result[Headers[i]].Add(values[i]);
+					}
 				}
+
+				return result;
+			}
+			catch (Exception e)
+			{
+				throw e;
+			}
+			finally
+			{
+				reader.Close();
 			}
 
-			return result;
-		}
-		catch (Exception e)
-		{
-			throw e;
-		}
-		finally
-		{
-			if(reader != null)
-				reader.Close();
 		}
 	}
 }
