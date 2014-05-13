@@ -1,7 +1,8 @@
 mode=pixelation
 
 //ExperimentConductor
-flashDuration=3.5
+
+flashDuration=4
 flashDurationForRests=8
 wantedFocusIndicatorLerpDuration=3
 wantedFocusIndicatorColourFeedbackDuration=1
@@ -16,7 +17,7 @@ userDistance=70
 
 //ThresholdFinder
 min=0.0
-max=140.0
+max=140
 trials=4
 resolution=10000
 BestPEST_Stimuli=10
@@ -25,7 +26,7 @@ negativeKey=z
 
 fontSize=24
 
-demonstrationHalfEccentricity = 30
-demonstrationNormalizedX = 0.2
-demonstrationNormalizedY = 0.2
-demonstrationJitterStrength = 2
+demonstrationHalfEccentricity=30
+demonstrationNormalizedX=0.2
+demonstrationNormalizedY=0.2
+demonstrationJitterStrength=2
