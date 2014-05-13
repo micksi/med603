@@ -1,17 +1,22 @@
 
+bin = bin/
+output = $(bin)BestPestCommandLine.exe
+sources = BestPestCommandLine.cs BestPest.cs Range.cs
+
 .PHONY: test
 
-build: BestPestCommandLine.exe
-	
+build: $(output)
+	@echo '$(output) built successfully'
 
-test: BestPestCommandLine.exe
+test: $(output)
 	@mono $< testdata.csv
 
 clean:
-	@rm -f *.exe
+	@rm -f -r bin
 
-BestPestCommandLine.exe: BestPestCommandLine.cs BestPest.cs
-	mcs -pkg:mono-options *.cs -out:BestPestCommandLine.exe
+$(output): $(sources)
+	mkdir bin
+	mcs $(sources) -out:$(output)
 
 
 
