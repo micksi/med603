@@ -2,7 +2,7 @@
 #pragma implicit
 #pragma downcast
 
-class SoldierCamera extends MonoBehaviour
+public class SoldierCamera extends MonoBehaviour
 {
 	public var target : Transform;
 	public var soldier : Transform;
