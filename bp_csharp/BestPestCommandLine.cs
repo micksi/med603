@@ -3,9 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using ThresholdFinding;
 
-// TODO: Creates a file sharing violation when piped to file
-// Usage:
+// Test (windows):
 //  make build;mono .\BestPestCommandLine.exe .\testdata.csv | % {$_ + ",1"} | out-file -append .\testdata.csv -enc utf8
+//
+// Test on all testdata (windows):
+//  ls .\testdata\*0* -rec -excl *gazelog* | % {mono bin/BestPestCommandLine.exe $_}
+//
+// Test on all testdata (unix):
+//  make build; find testdata -name "*.csv" -not -name "*gazelog*" -not -path "*OUTPUT*" -not -name "*demographic*" | xargs -ifile mono bin/BestPestCommandLine.exe file
+//
+// Apply to all csv files (windows powershell)
+//  ls .\testdata\0002 -rec -excl *gazelog* | % {add-content $_ $($(mono bin/BestPestCommandLine.exe $_) + ",0")}
+
 public class BestPestCommandLine
 {
 
@@ -20,7 +29,9 @@ public class BestPestCommandLine
 		string del =  ",";
 		if(args.Length > 1 && String.IsNullOrEmpty(args[1]) == false)
 			del = args[1];
-		string filename = args[0];
+		string filename = args[0].Replace("/ ", " ");
+		// Console.WriteLine(filename);
+		// return;
 
 		Range range = new Range(0, 140, 1000);
 		double B = 2.0;
