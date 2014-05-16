@@ -28,7 +28,7 @@ public class ObjectiveDialog : MonoBehaviour {
 
 	public void activateCamera()
 	{
-		print ("Activating camera");
+		// print ("Activating camera");
 		CameraShot.SetActive(true);
 	}
 
