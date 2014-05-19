@@ -14,7 +14,7 @@ public class OffsetRecordedEventArgs : EventArgs
 public class FocusPoint : MonoBehaviour
 {
 	public Vector2 Position;
-	public Vector2 Offset;
+	public Vector2 Inset;
 
 	private FocusOffsetRecord record = null;
 
@@ -47,10 +47,7 @@ public class FocusPoint : MonoBehaviour
 				GetComponent<SpriteRenderer>().sprite = InactiveSprite;
 			}
 		}
-		get
-		{
-			return (GetComponent<SpriteRenderer>().sprite == ActiveSprite);
-		}
+		get { return (GetComponent<SpriteRenderer>().sprite == ActiveSprite); }
 	}
 
 	public void Awake()
@@ -99,18 +96,12 @@ public class FocusPoint : MonoBehaviour
 
 	public Sprite sprite
 	{
-		get
-		{
-			return GetComponent<SpriteRenderer>().sprite;
-		}
+		get { return GetComponent<SpriteRenderer>().sprite; }
 	}
 
 	public Bounds bounds
 	{
-		get
-		{
-			return sprite.bounds;
-		}
+		get { return sprite.bounds; }
 	}
 
 }

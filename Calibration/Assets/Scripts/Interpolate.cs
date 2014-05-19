@@ -7,10 +7,29 @@ public static class Interpolate
 	/// </param>
 	public static Vector2 Bilinear(Vector2 p, Vector2[] points, Vector2[] values)
 	{
-		const int BR = 0;
-		const int TR = 1;
-		const int TL = 2;
-		const int BL = 3;
+		int BR, TR, TL, BL;
+		BR = TR = TL = BL = -1;
+		for(int i = 0; i < 4; i++)
+		{
+			Vector2 q = points[i];
+			if(q.x >= p.x) // To the right of point
+			{
+				if(q.y >= p.y) // Above point
+					TR = i;
+				else // below point
+					BR = i;
+			}
+			else // left of point
+			{
+				if(q.y >= p.y) // Above point
+					TL = i;
+				else // below point
+					BL = i;
+			}
+		}
+		if(BR == -1 || TR == -1 || TL == -1 || BL == -1)
+			throw new System.InvalidOperationException("Points not ordered properly");
+
 		float x = p.x,
 		      y = p.y,
 			  x1 = points[TL].x,

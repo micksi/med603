@@ -19,10 +19,18 @@ public class Calibrator : MonoBehaviour
 	private FocusOffsetRecord[] records;
 	private Vector2[] offsets;
 
+	private enum Place {TL, TM, TR, ML, MM, MR, BL, BM, BR};
+	private CalibrationRect[] rects = new CalibrationRect[4];
+
 	void Start()
 	{
 		cam = Camera.main;
 		GameObject[] fps = GameObject.FindGameObjectsWithTag("FocusPoint");
+
+		if(fps.Length < 1)
+		{
+			throw new InvalidOperationException("No FocusPoints found!");
+		}
 
 		records = new FocusOffsetRecord[fps.Length];
 		offsets = new Vector2[fps.Length];
@@ -53,22 +61,48 @@ public class Calibrator : MonoBehaviour
 			};
 		}
 
-		if(focusPoints.Length < 1)
-		{
-			throw new InvalidOperationException("No FocusPoints found!");
-		}
+		Array.Sort(focusPoints, (a, b) => {
+			return a.gameObject.name.CompareTo(b.gameObject.name);
+		});
+
+		rects[0] = new CalibrationRect(
+			focusPoints[(int)Place.TL],
+			focusPoints[(int)Place.TM],
+			focusPoints[(int)Place.ML],
+			focusPoints[(int)Place.MM]);
+
+		rects[1] = new CalibrationRect(
+			focusPoints[(int)Place.TM],
+			focusPoints[(int)Place.TR],
+			focusPoints[(int)Place.MM],
+			focusPoints[(int)Place.MR]);
+
+		rects[2] = new CalibrationRect(
+			focusPoints[(int)Place.ML],
+			focusPoints[(int)Place.MM],
+			focusPoints[(int)Place.BL],
+			focusPoints[(int)Place.BM]);
+
+		rects[3] = new CalibrationRect(
+			focusPoints[(int)Place.MM],
+			focusPoints[(int)Place.MR],
+			focusPoints[(int)Place.BM],
+			focusPoints[(int)Place.BR]);
+
 
 		LayoutFocusPoints();
 		CurrentFocusPoint.Active = true;
 	}
 	
+	
+
 	void Update()
 	{
 		if(focusPoints == null)
 			return;
 
 		
-		if(Finished == false)
+		if(false && Finished == false)
 		{
 			if(Input.GetKeyDown(ReportKey))
 			{
@@ -81,12 +115,24 @@ public class Calibrator : MonoBehaviour
 		}
 		else
 		{
-			Vector2 offset = Interpolate.Bilinear(GetFocusPosition(), GetReferencePoints(records), offsets);
-			Vector2 offsetPos = GetFocusPosition() + offset;
-			Debug.DrawLine(
-				cam.ScreenToWorldPoint((Vector3)GetFocusPosition()) + Vector3.forward,
-				cam.ScreenToWorldPoint((Vector3)offsetPos) + Vector3.forward,
-				Color.red);
+
+			foreach(var point in focusPoints)
+				point.Active = false;
+
+			Vector2 fp = GetFocusPosition();
+			
+			if(fp == null) return;
+
+			foreach(var rect in rects)
+			{
+				if(rect.Contains(fp))
+				{
+					foreach(var p in rect.Points)
+					{
+						p.Active = true;
+					}
+				}
+			}
 		}
 
 		if(Input.GetKeyDown("d"))
@@ -95,13 +141,50 @@ public class Calibrator : MonoBehaviour
 		}
 	}
 
-	private Vector2[] GetReferencePoints(FocusOffsetRecord[] records)
+	private void Correct()
+	{
+		Vector2 fp = GetFocusPosition();
+		Vector2[] refPoints = GetReferencePoints(records, fp);
+		Vector2 offset = Interpolate.Bilinear(fp, refPoints, offsets);
+		Vector2 offsetPos = fp + offset;
+		Debug.DrawLine(
+			cam.ScreenToWorldPoint((Vector3)fp) + Vector3.forward,
+			cam.ScreenToWorldPoint((Vector3)offsetPos) + Vector3.forward,
+			Color.red);
+	}
+
+	[Obsolete("Uses lambda method instead")]
+	private class DistanceComparer : System.Collections.Generic.IComparer<Vector2>
+	{
+		public Vector2 pos;
+		public DistanceComparer(Vector2 pos)
+		{
+			this.pos = pos;
+		}
+
+		public int Compare(Vector2 a, Vector2 b)
+		{
+			float adist = Vector2.Distance(a, pos);
+			float bdist = Vector2.Distance(b, pos);
+			return adist.CompareTo(bdist);
+		}
+	}
+
+	private Vector2[] GetReferencePoints(FocusOffsetRecord[] records, Vector2 pos)
 	{
 		Vector2[] result = new Vector2[records.Length];
 		for(int i = 0; i < records.Length; i++)
 		{
 			result[i] = records[i].ReferencePoint;
 		}
+		// Array.Sort(result, new DistanceComparer(pos));
+		Array.Sort(result, (a, b) =>
+			{
+				float adist = Vector2.Distance(a, pos);
+				float bdist = Vector2.Distance(b, pos);
+				return adist.CompareTo(bdist);		
+			}
+		);
 		return result;
 	}
 
@@ -109,18 +192,12 @@ public class Calibrator : MonoBehaviour
 
 	public FocusPoint CurrentFocusPoint
 	{
-		get
-		{
-			return focusPoints[index];
-		}
+		get { return focusPoints[index]; }
 	}
 
 	public bool Finished
 	{
-		get
-		{
-			return (index >= focusPoints.Length);
-		}
+		get { return (index >= focusPoints.Length); }
 	}
 
 	public void LayoutFocusPoints()
@@ -130,7 +207,7 @@ public class Calibrator : MonoBehaviour
 			
 			Vector3 pos = new Vector3(fp.Position.x, fp.Position.y, 1); // z = 0 makes them invisible
 			Vector3 worldPos = cam.ViewportToWorldPoint(pos);
-			Vector3 worldOffset = Vector3.Scale(fp.sprite.bounds.size, ((Vector3)(fp.Offset)));
+			Vector3 worldOffset = Vector3.Scale(fp.sprite.bounds.size, ((Vector3)(fp.Inset)));
 
 			print("worldPos: " + worldPos + ", worldOffset: " + worldOffset);
 
