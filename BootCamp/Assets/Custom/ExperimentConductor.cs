@@ -10,6 +10,9 @@ using ThresholdFinding;
 
 public class ExperimentConductor : MonoBehaviour {
 
+	public GameObject Soldier;
+	ObjectiveController obScript;
+
 	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
@@ -29,10 +32,10 @@ public class ExperimentConductor : MonoBehaviour {
 	private GazeLogger gazeLogger = null;
 
 	// States
-	private enum State { SendToDemographics, SendToFilm, SendToCalibration, ShowIntro, GatheringObservations, EndTrials };
+	private enum State { SendToDemographics, SendToFilm, SendToCalibration, ShowIntro, GatheringObservations, GameInstructions, ReadyForTesting, PlayingGame, EndTrials };
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
-	private State state = State.SendToDemographics;
+	private State state = State.SendToCalibration;
 	private IntroState introState = IntroState.ShowingTrue;
 	private ObservationState observationState = ObservationState.Flashing;
 
@@ -109,8 +112,22 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
+	IEnumerator disableCamera()
+	{
+		yield return new WaitForSeconds(0.1f);
+
+		((MonoBehaviour)GetComponent("SoldierCamera")).enabled = false;
+	}
+		
 	void Start()
 	{
+		obScript = Soldier.GetComponent<ObjectiveController>();
+		obScript.enabled = false;
+
+		StartCoroutine(disableCamera());
+		((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
+		
+
 		flashDuration = Double.Parse(ConfigReader.GetValueOf("flashDuration"));
 		flashDurationForRests = Double.Parse(ConfigReader.GetValueOf("flashDurationForRests"));
 		wantedFocusIndicatorLerpDuration = 
@@ -211,7 +228,10 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Update()
 	{
-
+		if(Input.GetKey(KeyCode.O))
+		{
+			((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
+		}
 		switch(state)
 		{
 			case State.ShowIntro:
@@ -329,38 +349,81 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		switch(state)
 		{
+			/*
 			case State.SendToDemographics:
-				if(GUI.Button(messageRect, "Click here to start with a questionnaire!"))
-				{
-					state = State.SendToFilm;
-					uint participantNumber = experiment.ActiveParticipant.Id;
-					Application.OpenURL("https://docs.google.com/forms/d/1-5mbG7bUA0DbApVJEbzrx8IDEuFlJvgUA4pccmDkvy4/viewform?entry.1375030606=" + participantNumber);
-				}
-				break;
+			break;
+			*/
+			/*
 			case State.SendToFilm:
 				if(GUI.Button(messageRect, "Click here when you have seen the introductory film."))
 				{
 					state = State.SendToCalibration;
 				}
 				break;
+				*/
 			case State.SendToCalibration:
 				if(GUI.Button(messageRect, "Click here when the gaze tracker has been calibrated to 5/5!"))
 				{
-					state = State.ShowIntro;
+					state = State.GameInstructions;
 				}
 				break;
+			/*
 			case State.ShowIntro:
 				HandleIntroGUI();
 				break;
 			case State.GatheringObservations:
 				HandleObservationGUI();
 				break;
+				*/
+			case State.GameInstructions:
+				GUI.Box(boxRect, " ");
+				GUI.Label(messageRect,"Your mission in the game is move to different check points. " + 
+			          "\n At each check point, you will be presented with information about the next check point" +
+			          "\n The descriptions will both involve text instructions and a visual representation of the path you must follow (purple arrows points in the desired direction)");
+				if(GUI.Button(mouseRectLeft,"Back"))
+				{
+					state = State.SendToCalibration;
+				}
+				if(GUI.Button(mouseRectRight,"Next"))
+				{
+					state = State.ReadyForTesting;
+				}
+			break;
+
+			case State.ReadyForTesting:
+				GUI.Box(boxRect, " ");
+				GUI.Label(messageRect ," It seems that you are ready for test? Please press the \"START\" button to start the game");
+				if(GUI.Button(mouseRectRight,"START"))
+				{
+					state = State.PlayingGame;
+					((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
+				}
+			break;
+
+			case State.PlayingGame:
+				if(obScript.enabled == false)
+				{
+					obScript.enabled = true;
+				}
+			break;
+			
 			case State.EndTrials:
-				GUI.Label(messageRect, "Thank you for your participation! You may now approach the test conductor for a short interview.");
-				break;
+				GUI.Box(boxRect, " ");
+				if(GUI.Button(messageRect, "Thank you for your participation! Click here to start with a questionnaire!"))
+				{
+					state = State.SendToCalibration;
+					uint participantNumber = experiment.ActiveParticipant.Id;
+					Application.OpenURL("https://docs.google.com/forms/d/1Mg9WF5vQzBSCZIw4ooT1K5NcNmyO6SHNcmgIZUI_pF4/viewform?entry.1204578343=" + participantNumber);
+				}
+			break;
 		}
 	}
+	
+	// #################################################################################
+	// #################################################################################
+	// #################################################################################
 
+	
 	private void HandleObservationGUI()
 	{
 		switch(observationState)
@@ -521,12 +584,13 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		// Use uniform distribution for now
 		// TODO implement more proper distribution
-		/*wantedFocusPosition = FocusProvider.GetScreenResolution();
-		wantedFocusPosition.x *= UnityEngine.Random.value;
-		wantedFocusPosition.y *= UnityEngine.Random.value;*/
+		//wantedFocusPosition = FocusProvider.GetScreenResolution();
+		//wantedFocusPosition.x *= UnityEngine.Random.value;
+		//wantedFocusPosition.y *= UnityEngine.Random.value;
 
 		wantedFocusPosition = CustomRandom.GenerateScreenPoint();
 	}
+	
 
 	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
 	{
@@ -568,4 +632,5 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		gazeLogger.Pause();
 	}
+
 }

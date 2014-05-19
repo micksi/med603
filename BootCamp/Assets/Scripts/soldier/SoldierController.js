@@ -96,6 +96,8 @@ class SoldierController extends MonoBehaviour
 
 		controller = gameObject.GetComponent("CharacterController");
 		motor = gameObject.GetComponent("CharacterMotor");
+		//this.enabled = false;
+		
 	}
 	
 	function OnEnable()

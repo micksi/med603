@@ -2,7 +2,9 @@
 using System.Collections;
 
 public class ObjectiveController : MonoBehaviour {
-	
+
+	public GameObject soldier_cam;
+
 	public GameObject[] checkpoint = null;
 	public static int getNextObjective = 0;
 	
@@ -71,18 +73,34 @@ public class ObjectiveController : MonoBehaviour {
 		boxSize = bigBox;
 		boxPos 	= bigPos;
 	}
-	
+
+	void freezeSoldier()
+	{
+		((MonoBehaviour)GetComponent("CharacterMotor")).enabled = false;
+		((MonoBehaviour)GetComponent("SoldierController")).enabled = false;
+		((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = false;
+	}
+
+	void unFreezeSoldier()
+	{
+		((MonoBehaviour)GetComponent("CharacterMotor")).enabled = true;
+		((MonoBehaviour)GetComponent("SoldierController")).enabled = true;
+		((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = true;
+	}
+
 	void OnGUI()
 	{
 		dialogRect 	= new Rect(boxPos.x + labelOffset, boxPos.y + labelOffset,boxSize.x - labelOffset*2,boxSize.y - labelOffset*2);
 		GUI.Box(new Rect(boxPos.x,boxPos.y,boxSize.x,boxSize.y)," ");
 		if(isBig)
 		{
+			freezeSoldier();
 			currentObjective.GetComponent<ObjectiveDialog>().activateCamera();
 			GoBig();
-			GUI.Label(dialogRect, "Press \"" + key + "\" on the keyboad to minimize", fontStyle2);
+			GUI.Label(dialogRect, "You are at the red square. \nPress \"" + key + "\" on the keyboad to minimize", fontStyle2);
 			if(Input.GetKeyDown(key))
 			{
+				unFreezeSoldier();
 				currentObjective.GetComponent<ObjectiveDialog>().deactivateCamera();
 				counter = 0;
 				isBig = false;
