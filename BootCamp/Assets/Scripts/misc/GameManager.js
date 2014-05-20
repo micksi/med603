@@ -23,7 +23,7 @@ class GameManager extends MonoBehaviour
 	{
 		TrainingStatistics.ResetStatistics();
 		
-		Screen.lockCursor = false;//true;
+		Screen.lockCursor = true;
 		
 		running = false;
 		pause = false;
