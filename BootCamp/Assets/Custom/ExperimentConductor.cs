@@ -225,6 +225,8 @@ public class ExperimentConductor : MonoBehaviour {
 		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
 
 		csfGenerator = GetComponent<CSF>();
+
+
 	}
 
 
@@ -305,6 +307,16 @@ public class ExperimentConductor : MonoBehaviour {
 
 		switch(state)
 		{
+
+			case State.PlayingGame:
+				csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
+				csfGenerator.centre = FocusProvider.GetFocusPosition();
+				csf = RenderTexture.GetTemporary(source.width, source.height);
+				csfGenerator.GetContrastSensitivityMap(source, csf);
+				material.SetTexture("_CSF", csf);
+				break;
+
+		
 			case State.GatheringObservations:
 				switch(observationState)
 				{

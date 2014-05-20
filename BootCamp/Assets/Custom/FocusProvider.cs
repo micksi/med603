@@ -7,7 +7,7 @@ public static class FocusProvider {
 	private const float CmToInch = 0.393701f;
 
 	public enum Source { Mouse, ScreenCentre, Gaze };
-	public static Source source = Source.ScreenCentre;
+	public static Source source = Source.Mouse;
 
 	private static Camera _cam = null;
 	private static Camera cam
