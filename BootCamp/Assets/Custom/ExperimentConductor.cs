@@ -309,11 +309,12 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 
 			case State.PlayingGame:
-				csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
-				csfGenerator.centre = FocusProvider.GetFocusPosition();
-				csf = RenderTexture.GetTemporary(source.width, source.height);
-				csfGenerator.GetContrastSensitivityMap(source, csf);
-				material.SetTexture("_CSF", csf);
+				// !! UNCOMMENT TO START PIXELATION !! //
+				// csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
+				// csfGenerator.centre = FocusProvider.GetFocusPosition();
+				// csf = RenderTexture.GetTemporary(source.width, source.height);
+				// csfGenerator.GetContrastSensitivityMap(source, csf);
+				// material.SetTexture("_CSF", csf);
 				break;
 
 		
