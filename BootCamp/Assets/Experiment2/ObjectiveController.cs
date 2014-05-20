@@ -18,7 +18,7 @@ public class ObjectiveController : MonoBehaviour {
 	Vector2 boxPos		= new Vector2(0,0); 
 	
 	Vector2 smallPos	= new Vector2(Screen.width-170,Screen.height/2-20);
-	Vector2 smallBox 	= new Vector2(200, 150);
+	Vector2 smallBox 	= new Vector2(200, 200);
 	Vector2 bigPos		= new Vector2(100,100);
 	Vector2 bigBox;
 
@@ -114,7 +114,8 @@ public class ObjectiveController : MonoBehaviour {
 		else
 		{
 			GoBig();
-			GUI.Label(dialogRect,"No more objectives.\n Thank you for participating!", fontStyle);
+			//GUI.Label(dialogRect,"No more objectives.\n Thank you for participating!", fontStyle);
+			soldier_cam.GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
 		}
 		fontStyle2.fontSize = fontStyle.fontSize;
 	}

@@ -13,6 +13,8 @@ public class ExperimentConductor : MonoBehaviour {
 	public GameObject Soldier;
 	ObjectiveController obScript;
 
+	public GUISkin font;
+
 	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
@@ -32,10 +34,10 @@ public class ExperimentConductor : MonoBehaviour {
 	private GazeLogger gazeLogger = null;
 
 	// States
-	private enum State { SendToDemographics, SendToFilm, SendToCalibration, ShowIntro, GatheringObservations, GameInstructions, ReadyForTesting, PlayingGame, EndTrials };
+	public enum State { SendToDemographics, SendToFilm, SendToCalibration, ShowIntro, GatheringObservations, GameInstructions, ReadyForTesting, PlayingGame, EndTrials };
 	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
 	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
-	private State state = State.SendToCalibration;
+	public State state = State.SendToCalibration;
 	private IntroState introState = IntroState.ShowingTrue;
 	private ObservationState observationState = ObservationState.Flashing;
 
@@ -347,6 +349,10 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnGUI()
 	{
+		GUI.skin = font;
+		font.label.fontSize = 24;
+		font.button.fontSize = 24;
+
 		switch(state)
 		{
 			/*
@@ -378,8 +384,8 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.GameInstructions:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect,"Your mission in the game is move to different check points. " + 
-			          "\n At each check point, you will be presented with information about the next check point" +
-			          "\n The descriptions will both involve text instructions and a visual representation of the path you must follow (purple arrows points in the desired direction)");
+			          "\nAt each check point, you will be presented with information about the next check point" +
+			          "\nThe descriptions will both involve text instructions and a visual representation of the path you must follow (purple arrows points in the desired direction)");
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					state = State.SendToCalibration;
@@ -393,6 +399,10 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.ReadyForTesting:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect ," It seems that you are ready for test? Please press the \"START\" button to start the game");
+				if(GUI.Button(mouseRectLeft,"Back"))
+				{
+					state = State.GameInstructions;
+				}
 				if(GUI.Button(mouseRectRight,"START"))
 				{
 					state = State.PlayingGame;
@@ -409,7 +419,7 @@ public class ExperimentConductor : MonoBehaviour {
 			
 			case State.EndTrials:
 				GUI.Box(boxRect, " ");
-				if(GUI.Button(messageRect, "Thank you for your participation! Click here to start with a questionnaire!"))
+			if(GUI.Button(messageRect, "No more objectives.\n Thank you for participating!\n\nClick here to start with a questionnaire!"))
 				{
 					state = State.SendToCalibration;
 					uint participantNumber = experiment.ActiveParticipant.Id;
