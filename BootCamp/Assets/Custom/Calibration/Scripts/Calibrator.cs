@@ -67,6 +67,13 @@ public class Calibrator : MonoBehaviour
 	
 	void Update()
 	{
+		/*
+		if(Input.GetKeyDown("2"))
+		{
+			Application.loadedLevel("Experiment2");
+		}
+		*/
+
 		if(focusPoints == null || ui.ShowInstructions)
 			return;
 
@@ -86,8 +93,8 @@ public class Calibrator : MonoBehaviour
 		{
 			if(Input.GetKeyDown(ReportKey))
 			{
-				ui.Loading = Application.LoadLevelAsync("Experiment2");
 				ui.ShowLoading = true;
+				Application.LoadLevel("Experiment2");
 			}
 			Vector2 offset = Interpolate.Bilinear(GetFocusPosition(), GetReferencePoints(records), offsets);
 			Vector2 offsetPos = GetFocusPosition() - offset;
@@ -200,7 +207,7 @@ Click here to start the procedure.", calibrator.ReportKey);
 				}
 				
 			}
-			else if(ShowLoading && Loading != null && Loading.isDone == false)
+			else if(ShowLoading)
 			{
 				GUI.Button(CenteredRect(.2f, .2f), "Loading next procedure...");
 			}

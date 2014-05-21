@@ -285,10 +285,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Update()
 	{
-		if(Input.GetKey(KeyCode.O))
-		{
-			//((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
-		}
+		
 		switch(state)
 		{
 			case State.ShowIntro:
