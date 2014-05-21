@@ -3,6 +3,9 @@ using System.Collections;
 
 public class ObjectiveController : MonoBehaviour {
 
+	static bool isSoldier = true;
+
+	public GameObject ParentSoldier;
 	public GameObject soldier_cam;
 
 	public GameObject[] checkpoint = null;
@@ -35,6 +38,7 @@ public class ObjectiveController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		//isSoldier = false;
 		bigBox = new Vector2((Screen.width-bigPos.x*2)/2, Screen.height-bigPos.y*2);
 		smallLetters = Screen.width/100.0f;
 		bigLetters = Screen.width/40.0f;
@@ -46,6 +50,38 @@ public class ObjectiveController : MonoBehaviour {
 		}
 	}
 
+	void freeze()
+	{
+		//print (isSoldier);
+		if(isSoldier)
+		{
+			print ("hey");
+			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = false;
+			((MonoBehaviour)GetComponent("SoldierController")).enabled = false;
+			//((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = false;
+		}
+		else
+		{
+			print ("næ hey");
+			ParentSoldier.GetComponent<MouseLook>().enabled = false;
+			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = false;
+		}
+	}
+	
+	void unfreeze()
+	{
+		if(isSoldier)
+		{
+			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = true;
+			((MonoBehaviour)GetComponent("SoldierController")).enabled = true;
+			//((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = true;
+		}
+		else
+		{
+			ParentSoldier.GetComponent<MouseLook>().enabled = true;
+			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = true;
+		}
+	}
 
 	void Update()
 	{
@@ -74,33 +110,19 @@ public class ObjectiveController : MonoBehaviour {
 		boxPos 	= bigPos;
 	}
 
-	void freezeSoldier()
-	{
-		((MonoBehaviour)GetComponent("CharacterMotor")).enabled = false;
-		((MonoBehaviour)GetComponent("SoldierController")).enabled = false;
-		((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = false;
-	}
-
-	void unFreezeSoldier()
-	{
-		((MonoBehaviour)GetComponent("CharacterMotor")).enabled = true;
-		((MonoBehaviour)GetComponent("SoldierController")).enabled = true;
-		((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = true;
-	}
-
 	void OnGUI()
 	{
 		dialogRect 	= new Rect(boxPos.x + labelOffset, boxPos.y + labelOffset,boxSize.x - labelOffset*2,boxSize.y - labelOffset*2);
 		GUI.Box(new Rect(boxPos.x,boxPos.y,boxSize.x,boxSize.y)," ");
 		if(isBig)
 		{
-			freezeSoldier();
+			freeze();
 			currentObjective.GetComponent<ObjectiveDialog>().activateCamera();
 			GoBig();
 			GUI.Label(dialogRect, "You are at the red square. \nPress \"" + key + "\" on the keyboad to minimize", fontStyle2);
 			if(Input.GetKeyDown(key))
 			{
-				unFreezeSoldier();
+				unfreeze();
 				currentObjective.GetComponent<ObjectiveDialog>().deactivateCamera();
 				counter = 0;
 				isBig = false;

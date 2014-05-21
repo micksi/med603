@@ -90,7 +90,7 @@ public class Calibrator : MonoBehaviour
 				ui.ShowLoading = true;
 			}
 			Vector2 offset = Interpolate.Bilinear(GetFocusPosition(), GetReferencePoints(records), offsets);
-			Vector2 offsetPos = GetFocusPosition() + offset;
+			Vector2 offsetPos = GetFocusPosition() - offset;
 			Debug.DrawLine(
 				cam.ScreenToWorldPoint((Vector3)GetFocusPosition()) + Vector3.forward,
 				cam.ScreenToWorldPoint((Vector3)offsetPos) + Vector3.forward,

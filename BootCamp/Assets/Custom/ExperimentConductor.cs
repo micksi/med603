@@ -10,6 +10,9 @@ using ThresholdFinding;
 
 public class ExperimentConductor : MonoBehaviour {
 
+	public static bool isSoldier;
+	public GameObject ParentSoldier;
+
 	public GameObject Soldier;
 	ObjectiveController obScript;
 
@@ -118,16 +121,48 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		yield return new WaitForSeconds(0.1f);
 
-		((MonoBehaviour)GetComponent("SoldierCamera")).enabled = false;
+		//((MonoBehaviour)GetComponent("SoldierCamera")).enabled = false;
 	}
-		
+
+	void freeze()
+	{
+		if(isSoldier)
+		{
+			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = false;
+			((MonoBehaviour)GetComponent("SoldierController")).enabled = false;
+		}
+		else
+		{
+			ParentSoldier.GetComponent<MouseLook>().enabled = false;
+			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = false;
+		}
+	}
+	
+	void unfreeze()
+	{
+		if(isSoldier)
+		{
+			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = true;
+			((MonoBehaviour)GetComponent("SoldierController")).enabled = true;
+		}
+		else
+		{
+			ParentSoldier.GetComponent<MouseLook>().enabled = true;
+			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = true;
+		}
+	}
+
 	void Start()
 	{
+		isSoldier = false;
+		ParentSoldier = GameObject.FindGameObjectWithTag("Player");
+		freeze();
+
 		obScript = Soldier.GetComponent<ObjectiveController>();
 		obScript.enabled = false;
 
 		StartCoroutine(disableCamera());
-		((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
+		//((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
 		
 
 		flashDuration = Double.Parse(ConfigReader.GetValueOf("flashDuration"));
@@ -234,7 +269,7 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		if(Input.GetKey(KeyCode.O))
 		{
-			((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
+			//((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
 		}
 		switch(state)
 		{
@@ -419,7 +454,8 @@ public class ExperimentConductor : MonoBehaviour {
 				if(GUI.Button(mouseRectRight,"START"))
 				{
 					state = State.PlayingGame;
-					((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
+					unfreeze();
+					//((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
 				}
 			break;
 
