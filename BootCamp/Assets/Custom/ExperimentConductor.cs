@@ -139,6 +139,8 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			ParentSoldier.GetComponent<MouseLook>().enabled = false;
 			//((MonoBehaviour)ParentSoldier.GetComponent("FPS Input Controller")).enabled = false;
+			//ParentSoldier.SetActive(false);
+			ParentSoldier.SendMessage("disableMotor");
 		}
 	}
 	
@@ -154,17 +156,27 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			ParentSoldier.GetComponent<MouseLook>().enabled = true;
 			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = true;
+			//ParentSoldier.SetActive(true);
+			ParentSoldier.SendMessage("enableMotor");
 		}
 	}
 
 	void Start()
 	{
+		//transform.parent = null;
 		ParentSoldier = GameObject.FindGameObjectWithTag("Player");
 		freeze();
 
-		obScript = Soldier.GetComponent<ObjectiveController>();
-		obScript.enabled = false;
-
+		if(isSoldier)
+		{
+			obScript = Soldier.GetComponent<ObjectiveController>();
+			obScript.enabled = false;
+		}
+		else
+		{
+			obScript = ParentSoldier.GetComponent<ObjectiveController>();
+			obScript.enabled = false;
+		}
 		StartCoroutine(disableCamera());
 		if(isSoldier)
 		{

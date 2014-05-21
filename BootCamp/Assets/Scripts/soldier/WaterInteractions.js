@@ -1,7 +1,7 @@
 class WaterInteractions extends MonoBehaviour
 {
 	public var soldier : Transform;
-	private var controller : SoldierController;
+	//private var controller : SoldierController;
 	
 	private var emitMovement : boolean;
 	public var movementContainer : Transform;
@@ -46,10 +46,10 @@ class WaterInteractions extends MonoBehaviour
 	
 	function Start()
 	{
-		controller = soldier.GetComponent("SoldierController");
+		//controller = soldier.GetComponent("SoldierController");
 		
 		currentAmount = 1.0;
-		
+		/*
 		runSpeed = controller.runSpeed;
 		runStrafeSpeed = controller.runStrafeSpeed;
 		walkSpeed = controller.walkSpeed;
@@ -58,14 +58,14 @@ class WaterInteractions extends MonoBehaviour
 		crouchRunStrafeSpeed = controller.crouchRunStrafeSpeed;
 		crouchWalkSpeed = controller.crouchWalkSpeed;
 		crouchWalkStrafeSpeed = controller.crouchWalkStrafeSpeed;
-		
+		*/
 		jumpTimer = 0.0;	 
 		emitMovement = false;
 		jumped = false;
 		var i : int;
 
 		movementContainer.parent = null;
-		movementContainer.audio.volume = 0.0;
+		//movementContainer.audio.volume = 0.0;
 		for(i = 0; i < movementEmitters.Length; i++)
 		{
 			movementEmitters[i].emit = false;
@@ -98,6 +98,7 @@ class WaterInteractions extends MonoBehaviour
 			jumped = Input.GetButtonDown("Jump");
 		}
 		
+		/*
 		if(!controller.inAir)
 		{
 			jumpTimer = 0.0;
@@ -107,6 +108,7 @@ class WaterInteractions extends MonoBehaviour
 		{
 			jumpTimer += Time.deltaTime;
 		}
+		*/
 		
 		if(Physics.Raycast(thisT.position, -Vector3.up, hitInfo, Mathf.Infinity, affectedLayers))
 		{
@@ -121,6 +123,7 @@ class WaterInteractions extends MonoBehaviour
 					ChangeSpeed(1.0);
 				}
 				
+				/*
 				if(controller.inAir)
 				{
 					if(hitInfo.distance < jumpHitDistance && !emittedHit && jumpTimer > 0.5)
@@ -155,6 +158,7 @@ class WaterInteractions extends MonoBehaviour
 						}
 					}
 				}
+				*/
 			}
 			else 
 			{
@@ -170,6 +174,7 @@ class WaterInteractions extends MonoBehaviour
 			ChangeStandingState(false);
 		}
 		
+		/*
 		if(emitMovement)
 		{
 			if(movementContainer.audio.volume < 0.65)
@@ -197,6 +202,7 @@ class WaterInteractions extends MonoBehaviour
 				}
 			}
 		}
+		*/
 	}
 	
 	function ChangeSpeed(amount : float)
@@ -204,7 +210,7 @@ class WaterInteractions extends MonoBehaviour
 		if(currentAmount == amount) return;
 		
 		currentAmount = amount;
-		
+		/*
 		controller.runSpeed = runSpeed * amount;
 		controller.runStrafeSpeed = runStrafeSpeed * amount;
 		controller.walkSpeed = walkSpeed * amount;
@@ -213,6 +219,7 @@ class WaterInteractions extends MonoBehaviour
 		controller.crouchRunStrafeSpeed = crouchRunStrafeSpeed * amount;
 		controller.crouchWalkSpeed = crouchWalkSpeed * amount;
 		controller.crouchWalkStrafeSpeed = crouchWalkStrafeSpeed * amount;
+		*/
 	}
 	
 	function EmitJumpParticles(b : boolean, hitInfo : RaycastHit)

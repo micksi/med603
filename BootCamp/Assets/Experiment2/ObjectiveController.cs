@@ -38,7 +38,6 @@ public class ObjectiveController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//isSoldier = false;
 		bigBox = new Vector2((Screen.width-bigPos.x*2)/2, Screen.height-bigPos.y*2);
 		smallLetters = Screen.width/100.0f;
 		bigLetters = Screen.width/40.0f;
@@ -52,7 +51,6 @@ public class ObjectiveController : MonoBehaviour {
 
 	void freeze()
 	{
-		//print (isSoldier);
 		if(isSoldier)
 		{
 			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = false;
@@ -62,7 +60,9 @@ public class ObjectiveController : MonoBehaviour {
 		else
 		{
 			ParentSoldier.GetComponent<MouseLook>().enabled = false;
-			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = false;
+			//((MonoBehaviour)ParentSoldier.GetComponent("TestScript")).enabled = false;
+			//ParentSoldier.SetActive(false);
+			ParentSoldier.SendMessage("disableMotor");
 		}
 	}
 	
@@ -78,6 +78,9 @@ public class ObjectiveController : MonoBehaviour {
 		{
 			ParentSoldier.GetComponent<MouseLook>().enabled = true;
 			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = true;
+			//ParentSoldier.SetActive(true);
+			//this.transform.parent = ParentSoldier.transform;
+			ParentSoldier.SendMessage("enableMotor");
 		}
 	}
 
@@ -114,6 +117,7 @@ public class ObjectiveController : MonoBehaviour {
 		GUI.Box(new Rect(boxPos.x,boxPos.y,boxSize.x,boxSize.y)," ");
 		if(isBig)
 		{
+			//this.transform.parent = null;
 			freeze();
 			currentObjective.GetComponent<ObjectiveDialog>().activateCamera();
 			GoBig();
@@ -135,7 +139,14 @@ public class ObjectiveController : MonoBehaviour {
 		{
 			GoBig();
 			//GUI.Label(dialogRect,"No more objectives.\n Thank you for participating!", fontStyle);
-			soldier_cam.GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
+			if(isSoldier)
+			{
+				soldier_cam.GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
+			}
+			else
+			{
+				GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
+			}
 		}
 		fontStyle2.fontSize = fontStyle.fontSize;
 	}

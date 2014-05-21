@@ -7,6 +7,16 @@ var canControl : boolean = true;
 
 var useFixedUpdate : boolean = true;
 
+function disableMotor()
+{
+	canControl = false;
+}
+
+function enableMotor()
+{
+	canControl = true;
+}
+
 // For the next variables, @System.NonSerialized tells Unity to not serialize the variable or show it in the inspector view.
 // Very handy for organization!
 
@@ -18,12 +28,30 @@ var inputMoveDirection : Vector3 = Vector3.zero;
 // for the jump button directly so this script can also be used by AIs.
 @System.NonSerialized
 var inputJump : boolean = false;
+	/*
+	public var maxForwardSpeed;
+	public var maxSidewaysSpeed;
+	public var maxBackwardsSpeed;
+	*/
 
 class CharacterMotorMovement {
+	
+	/*
+	maxForwardSpeed = 10.0;
+	maxSidewaysSpeed = 10.0;
+	maxBackwardsSpeed = 10.0;
+	*/
 	// The maximum horizontal speed when moving
+	
 	var maxForwardSpeed : float = 10.0;
 	var maxSidewaysSpeed : float = 10.0;
 	var maxBackwardsSpeed : float = 10.0;
+	
+	function penis()
+	{
+		maxForwardSpeed = 0;
+		//this.enabled = false;
+	}
 	
 	// Curve for multiplying speed based on slope (negative = downwards)
 	var slopeSpeedMultiplier : AnimationCurve = AnimationCurve(Keyframe(-90, 1), Keyframe(0, 1), Keyframe(90, 0));
