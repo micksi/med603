@@ -145,7 +145,7 @@ public class ObjectiveController : MonoBehaviour {
 			}
 			else
 			{
-				GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
+				soldier_cam.GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
 			}
 		}
 		fontStyle2.fontSize = fontStyle.fontSize;

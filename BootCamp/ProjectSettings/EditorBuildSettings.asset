@@ -8,6 +8,6 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/MovieScene.unity
   - enabled: 1
-    path: Assets/Custom/Calibration/Scenes/Main.unity
-  - enabled: 1
     path: Assets/Experiment2.unity
+  - enabled: 1
+    path: Assets/Custom/Calibration/Scenes/Main.unity
