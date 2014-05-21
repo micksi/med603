@@ -3,7 +3,7 @@ using System.Collections;
 
 public class ObjectiveController : MonoBehaviour {
 
-	static bool isSoldier = true;
+	public bool isSoldier;
 
 	public GameObject ParentSoldier;
 	public GameObject soldier_cam;
@@ -55,14 +55,12 @@ public class ObjectiveController : MonoBehaviour {
 		//print (isSoldier);
 		if(isSoldier)
 		{
-			print ("hey");
 			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = false;
 			((MonoBehaviour)GetComponent("SoldierController")).enabled = false;
-			//((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = false;
+			((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = false;
 		}
 		else
 		{
-			print ("næ hey");
 			ParentSoldier.GetComponent<MouseLook>().enabled = false;
 			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = false;
 		}
@@ -74,7 +72,7 @@ public class ObjectiveController : MonoBehaviour {
 		{
 			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = true;
 			((MonoBehaviour)GetComponent("SoldierController")).enabled = true;
-			//((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = true;
+			((MonoBehaviour)soldier_cam.GetComponent("SoldierCamera")).enabled = true;
 		}
 		else
 		{

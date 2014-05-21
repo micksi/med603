@@ -10,7 +10,9 @@ using ThresholdFinding;
 
 public class ExperimentConductor : MonoBehaviour {
 
-	public static bool isSoldier;
+	public MonoBehaviour myScript;
+
+	public  bool isSoldier;
 	public GameObject ParentSoldier;
 
 	public GameObject Soldier;
@@ -120,21 +122,23 @@ public class ExperimentConductor : MonoBehaviour {
 	IEnumerator disableCamera()
 	{
 		yield return new WaitForSeconds(0.1f);
-
-		//((MonoBehaviour)GetComponent("SoldierCamera")).enabled = false;
+		if(isSoldier)
+		{
+			((MonoBehaviour)GetComponent("SoldierCamera")).enabled = false;
+		}
 	}
 
 	void freeze()
 	{
 		if(isSoldier)
 		{
-			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = false;
-			((MonoBehaviour)GetComponent("SoldierController")).enabled = false;
+			((MonoBehaviour)Soldier.GetComponent("CharacterMotor")).enabled = false;
+			((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
 		}
 		else
 		{
 			ParentSoldier.GetComponent<MouseLook>().enabled = false;
-			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = false;
+			//((MonoBehaviour)ParentSoldier.GetComponent("FPS Input Controller")).enabled = false;
 		}
 	}
 	
@@ -142,8 +146,9 @@ public class ExperimentConductor : MonoBehaviour {
 	{
 		if(isSoldier)
 		{
-			((MonoBehaviour)GetComponent("CharacterMotor")).enabled = true;
-			((MonoBehaviour)GetComponent("SoldierController")).enabled = true;
+			((MonoBehaviour)Soldier.GetComponent("CharacterMotor")).enabled = true;
+			((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = true;
+			((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
 		}
 		else
 		{
@@ -154,7 +159,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Start()
 	{
-		isSoldier = false;
 		ParentSoldier = GameObject.FindGameObjectWithTag("Player");
 		freeze();
 
@@ -162,8 +166,10 @@ public class ExperimentConductor : MonoBehaviour {
 		obScript.enabled = false;
 
 		StartCoroutine(disableCamera());
-		//((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
-		
+		if(isSoldier)
+		{
+			((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
+		}
 
 		flashDuration = Double.Parse(ConfigReader.GetValueOf("flashDuration"));
 		flashDurationForRests = Double.Parse(ConfigReader.GetValueOf("flashDurationForRests"));
@@ -455,7 +461,7 @@ public class ExperimentConductor : MonoBehaviour {
 				{
 					state = State.PlayingGame;
 					unfreeze();
-					//((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
+					
 				}
 			break;
 
