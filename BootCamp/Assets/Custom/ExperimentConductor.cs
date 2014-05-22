@@ -10,66 +10,29 @@ using ThresholdFinding;
 
 public class ExperimentConductor : MonoBehaviour {
 
-	public MonoBehaviour myScript;
 
-	public  bool isSoldier;
-	public GameObject ParentSoldier;
-
-	public GameObject Soldier;
 	ObjectiveController obScript;
 
 	public GUISkin font;
+	public Texture bs;
 
 	// Main inspector elements
 	public string experimentName;
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
 	public Shader antialiasingShader;
 	public Shader pixelationShader;
-	public bool debugToggleEffectOnV = false;
-	public bool debugShowHalfvalueCSF = false;
-	public bool debugDrawCSFOnly = false;
+	public float halfResolutionEccentricity = 26.32f;
 	//public bool showCursor = true;
 
 	private Experiment experiment;
 	private ThresholdFinderComponent thresholdFinderComponent;
 	private TestFramework.TestFramework testFramework;
 	private CSF csfGenerator;
-	private WantedFocusIndicator wantedFocusIndicator;
-	private Vector2 wantedFocusPosition;
 	private GazeLogger gazeLogger = null;
 
 	// States
-	public enum State { SendToDemographics, SendToFilm, SendToCalibration, ShowIntro, GatheringObservations, GameInstructions, ReadyForTesting, PlayingGame, EndTrials };
-	private enum IntroState { ShowingTrue, ShowingFalse, ShowingExplanation, ShowingMarker };
-	private enum ObservationState { Flashing, UserObserving, AwaitingAnswer, Resting };
+	public enum State { SendToCalibration, GameInstructions, ReadyForTesting, PlayingGame, EndTrials };
 	public State state = State.SendToCalibration;
-	private IntroState introState = IntroState.ShowingTrue;
-	private ObservationState observationState = ObservationState.Flashing;
-
-	// Flash properties
-	private double flashDuration;
-	private double flashDurationForRests;
-	private double flashTimeLeft = 0.0;
-
-	// WantedFocusIndicator properties
-	private float wantedFocusIndicatorLerpDuration;
-	private float wantedFocusIndicatorColourFeedbackDuration;
-
-	// Observation properties
-	private double userObservationDuration;
-	private double userObservationTimeLeft = 0.0; // Seconds
-	private string restMessage = "";
-
-	private string guiTextAwaitingAnswer;
-	private string guiTextShowingTrue;
-	private string guiTextShowingFalse;
-	private string guiTextShowingExplanation;
-
-	// Button descriptions
-	private string trueButtonDescription; // A description of how the 'true' button appears to the user.
-	private string falseButtonDescription;
-	private string trueButtonWithColour;
-	private string falseButtonWithColour;
 
 	private Rect messageRect;
 	private Rect mouseRectLeft;
@@ -93,154 +56,39 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
-	private Material _showRequiredAttentionSpot = null;
-	private Material showRequiredAttentionSpot
-	{
-		get 
-		{
-			if(_showRequiredAttentionSpot == null)
-			{
-				_showRequiredAttentionSpot = new Material(Shader.Find("Custom/DrawFocus"));
-			}
-			return _showRequiredAttentionSpot;
-		}
-	}
-
-	private Material _showHalfCSF = null;
-	private Material showHalfCSF
-	{
-		get 
-		{
-			if(_showHalfCSF == null)
-			{
-				_showHalfCSF = new Material(Shader.Find("Custom/DrawCircle"));
-			}
-			return _showHalfCSF;
-		}
-	}
-
-	IEnumerator disableCamera()
-	{
-		yield return new WaitForSeconds(0.1f);
-		if(isSoldier)
-		{
-			((MonoBehaviour)GetComponent("SoldierCamera")).enabled = false;
-		}
-	}
-
 	void freeze()
 	{
-		if(isSoldier)
-		{
-			((MonoBehaviour)Soldier.GetComponent("CharacterMotor")).enabled = false;
-			((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
-		}
-		else
-		{
-			ParentSoldier.GetComponent<MouseLook>().enabled = false;
-			//((MonoBehaviour)ParentSoldier.GetComponent("FPS Input Controller")).enabled = false;
-			//ParentSoldier.SetActive(false);
-			ParentSoldier.SendMessage("disableMotor");
-		}
+        obScript.Freeze();
 	}
 	
 	void unfreeze()
 	{
-		if(isSoldier)
-		{
-			((MonoBehaviour)Soldier.GetComponent("CharacterMotor")).enabled = true;
-			((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = true;
-			((MonoBehaviour)GetComponent("SoldierCamera")).enabled = true;
-		}
-		else
-		{
-			ParentSoldier.GetComponent<MouseLook>().enabled = true;
-			//((MonoBehaviour)ParentSoldier.GetComponent("CharacterMotor")).enabled = true;
-			//ParentSoldier.SetActive(true);
-			ParentSoldier.SendMessage("enableMotor");
-		}
+        obScript.Unfreeze();
 	}
 
 	void Start()
 	{
-		//transform.parent = null;
-		ParentSoldier = GameObject.FindGameObjectWithTag("Player");
-		freeze();
-
-		if(isSoldier)
-		{
-			obScript = Soldier.GetComponent<ObjectiveController>();
-			obScript.enabled = false;
-		}
-		else
-		{
-			obScript = ParentSoldier.GetComponent<ObjectiveController>();
-			obScript.enabled = false;
-		}
-		StartCoroutine(disableCamera());
-		if(isSoldier)
-		{
-			((MonoBehaviour)Soldier.GetComponent("SoldierController")).enabled = false;
-		}
-
-		flashDuration = Double.Parse(ConfigReader.GetValueOf("flashDuration"));
-		flashDurationForRests = Double.Parse(ConfigReader.GetValueOf("flashDurationForRests"));
-		wantedFocusIndicatorLerpDuration = 
-			Single.Parse(ConfigReader.GetValueOf("wantedFocusIndicatorLerpDuration"));
-		wantedFocusIndicatorColourFeedbackDuration = 
-			Single.Parse(ConfigReader.GetValueOf("wantedFocusIndicatorColourFeedbackDuration"));
-		userObservationDuration = Double.Parse(ConfigReader.GetValueOf("userObservationDuration"));
+        obScript = transform.parent.GetComponent<ObjectiveController>();
+        obScript.enabled = false;
+        freeze();
+    		
 		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
 
-		trueButtonDescription = ConfigReader.GetValueOf("trueButtonDescription");
-		falseButtonDescription = ConfigReader.GetValueOf("falseButtonDescription");
-		trueButtonWithColour =  "<color=" + trueButtonDescription + ">" + trueButtonDescription + "</color>";
- 		falseButtonWithColour =  "<color=" + falseButtonDescription + ">" + falseButtonDescription + "</color>";
-
 		string mode = ConfigReader.GetValueOf("mode");
-		string on = "ON";
-		string off = "OFF";
-		bool flip = false;
+
 		Debug.Log("mode: " + mode);
 		switch(mode)
 		{
 			case "pixelation":
 				csfUser = pixelationShader;
-				flip = true;
 				break;
 			case "antialiasing":
 				csfUser = antialiasingShader;
-				flip = false;
 				break;
 			default:
 				throw new InvalidOperationException("Cannot understand 'mode' value in config file: " + mode);
 		}
 		experimentName += " " + mode;
-		guiTextAwaitingAnswer =
-			"Please press the " 
-			+ (flip ? falseButtonWithColour : trueButtonWithColour)
-			+ " keyboard button if it looked like " + mode + ", or the " 
-			+ (flip ? trueButtonWithColour : falseButtonWithColour)
-			+ " keyboard button if it did not.\r\n"
-			+ "Take care to keep your eyes on the marker.";
-		guiTextShowingTrue =
-			"This is an example with " + mode + " turned " +  (flip ? off : on) + ".\n"
-			+ "When it looks like this during the test, press the " 
-			+ trueButtonWithColour + " keyboard button.";
-		guiTextShowingFalse =
-			"This is an example with " + mode + " turned " +  (flip ? on : off) + "."
-			+ " When it looks like this during the test, press the " 
-			+ falseButtonWithColour + " keyboard button.";
-		guiTextShowingExplanation =
-			"You will be shown the scene for " + userObservationDuration
-			+ " seconds at a time, followed by a dark screen."
-			+ " Once the screen is dark, use the " 
-			+ (flip ? falseButtonWithColour : trueButtonWithColour)
-			+ " and " 
-			+ (flip ? trueButtonWithColour : falseButtonWithColour)
-			+ " keyboard buttons to indicate whether the screen was"
-			+ " subject to " + mode + " or not.";
-
 
 		whiteTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
  		blackTex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
@@ -261,9 +109,6 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Set up listeners
 		thresholdFinderComponent = GetComponent<ThresholdFinderComponent>();
-		thresholdFinderComponent.ReportObservationEvent += OnReportObservationEvent;
-		thresholdFinderComponent.Finder.FinishedEvent += OnFinishedThresholdFindingEvent;
-		thresholdFinderComponent.Finder.FinishedTrial += OnFinishedTrialEvent;
 
 		testFramework = GetComponent<TestFramework.TestFramework>();
 
@@ -273,82 +118,13 @@ public class ExperimentConductor : MonoBehaviour {
 		gazeLogger = new GazeLogger(this, experiment, thresholdFinderComponent.Finder);
 		gazeLogger.ReferenceLocation = FocusProvider.GetScreenCentre();
 
-		wantedFocusIndicator = GetComponent<WantedFocusIndicator>();
-		wantedFocusIndicator.enabled = false;
-		wantedFocusIndicator.centre = FocusProvider.GetScreenCentre();
-
 		csfGenerator = GetComponent<CSF>();
-
-
 	}
 
 
 	void Update()
 	{
-		
-		switch(state)
-		{
-			case State.ShowIntro:
-				//HandleIntroInput(); //This is old, used to hand key events when switching in intro sequence.
-				break;
-			case State.GatheringObservations:
-				Screen.showCursor = false;
-				switch(observationState)
-				{
-					case ObservationState.Flashing:
-						flashTimeLeft -= Time.deltaTime;
-						if(flashTimeLeft < 0.0)
-						{
-							observationState = ObservationState.UserObserving;
-							OnScreenFlashEnd();
-						}
-						break;
-					case ObservationState.UserObserving:
-						if(userObservationTimeLeft > 0)
-						{
-							userObservationTimeLeft -= Time.deltaTime;
-						}
-						else
-						{
-							OnUserObservingEnd();
-						}
-						break;
-					case ObservationState.Resting:
-						if(flashTimeLeft > 0)
-						{
-							flashTimeLeft -= Time.deltaTime;
-							restMessage = String.Format("Rest your eyes a bit.\r\n"
-							+ "{0} seconds till next trial.\r\n"
-							+ "You are {1} percent through.\r\n"
-							+ "Please look at the marker when the next trial starts.", 
-							((int)flashTimeLeft + 1),
-							(thresholdFinderComponent.Finder.GetProgress() * 100.0).ToString("F1"));
-						}
-						else
-						{
-							StartUserObserving();
-						}						
-						break;
-					case ObservationState.AwaitingAnswer:
-						SendInputToTFC();
-						break;
-				}
-				break;
-		}
-
-		CheckDebugInput();
-	}
-
-	private void CheckDebugInput()
-	{
-		if(Input.GetKeyDown(KeyCode.Alpha5))
-		{
-			wantedFocusIndicator.LerpTo(FocusProvider.GetMousePosition(), 2f);
-		}
-		else if(Input.GetKeyDown(KeyCode.Alpha6))
-		{
-			state = State.ShowIntro;
-		}
+		//print ("State: " + state);
 	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
@@ -357,47 +133,17 @@ public class ExperimentConductor : MonoBehaviour {
 
 		switch(state)
 		{
-
 			case State.PlayingGame:
 				// !! UNCOMMENT TO START PIXELATION !! //
-				// csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
-				// csfGenerator.centre = FocusProvider.GetFocusPosition();
-				// csf = RenderTexture.GetTemporary(source.width, source.height);
-				// csfGenerator.GetContrastSensitivityMap(source, csf);
-				// material.SetTexture("_CSF", csf);
-				break;
-
-		
-			case State.GatheringObservations:
-				switch(observationState)
-				{
-					case ObservationState.UserObserving:
-						csfGenerator.halfResolutionEccentricity = (float)thresholdFinderComponent.Stimulus;
-						csfGenerator.centre = wantedFocusPosition;
-						csf = RenderTexture.GetTemporary(source.width, source.height);
-						csfGenerator.GetContrastSensitivityMap(source, csf);
-						material.SetTexture("_CSF", csf);
-						break;
-					default:
-						Graphics.Blit(blackTex, dest); // Black screen for the other 3 states
-						return;
-				}
-				break;
-			case State.ShowIntro:
-				switch(introState)
-				{
-					case IntroState.ShowingFalse:
-						material.SetTexture("_CSF", blackTex);
-						break;
-					default: // Including ShowingTrue
-						material.SetTexture("_CSF", whiteTex);
-						break;
-				}
+				csfGenerator.halfResolutionEccentricity = halfResolutionEccentricity;
+				csfGenerator.centre = FocusProvider.GetGazePosition();
+				csf = RenderTexture.GetTemporary(source.width, source.height);
+				csfGenerator.GetContrastSensitivityMap(source, csf);
+				material.SetTexture("_CSF", csf);
 				break;
 			default:
 				material.SetTexture("_CSF", whiteTex);
 				break;
-
 		}
 
 		// Draw effect
@@ -418,37 +164,17 @@ public class ExperimentConductor : MonoBehaviour {
 
 		switch(state)
 		{
-			/*
-			case State.SendToDemographics:
-			break;
-			*/
-			/*
-			case State.SendToFilm:
-				if(GUI.Button(messageRect, "Click here when you have seen the introductory film."))
-				{
-					state = State.SendToCalibration;
-				}
-				break;
-				*/
 			case State.SendToCalibration:
 				if(GUI.Button(messageRect, "Click here when the gaze tracker has been calibrated to 5/5!"))
 				{
 					state = State.GameInstructions;
 				}
 				break;
-			/*
-			case State.ShowIntro:
-				HandleIntroGUI();
-				break;
-			case State.GatheringObservations:
-				HandleObservationGUI();
-				break;
-				*/
 			case State.GameInstructions:
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect,"Your mission in the game is move to different check points. " + 
-			          "\nAt each check point, you will be presented with information about the next check point" +
-			          "\nThe descriptions will both involve text instructions and a visual representation of the path you must follow (purple arrows points in the desired direction)");
+				GUI.Label(messageRect,"Your mission in the game is to move to different checkpoints. " + 
+			          "\nAt each checkpoint, you will be presented with information about the next checkpoint." +
+			          "\nThe descriptions will both include text instructions and a visual representation of the path you must follow.");
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					state = State.SendToCalibration;
@@ -457,11 +183,12 @@ public class ExperimentConductor : MonoBehaviour {
 				{
 					state = State.ReadyForTesting;
 				}
-			break;
+				break;
 
 			case State.ReadyForTesting:
+				GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
 				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect ," It seems that you are ready for test? Please press the \"START\" button to start the game");
+				GUI.Label(messageRect ,"Please keep your eyes on the screen. \nWhen you are ready, press the \"START\" button to start the game \n\nEnjoy!");
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					state = State.GameInstructions;
@@ -472,239 +199,31 @@ public class ExperimentConductor : MonoBehaviour {
 					unfreeze();
 					
 				}
-			break;
+				break;
 
 			case State.PlayingGame:
 				if(obScript.enabled == false)
 				{
 					obScript.enabled = true;
 				}
-			break;
+				break;
 			
 			case State.EndTrials:
+				GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
 				GUI.Box(boxRect, " ");
-			if(GUI.Button(messageRect, "No more objectives.\n Thank you for participating!\n\nClick here to start with a questionnaire!"))
+				if(GUI.Button(messageRect, "No more objectives!\n Thank you for participating.\n\nPlease click here to start the questionnaire!"))
 				{
 					state = State.SendToCalibration;
 					uint participantNumber = experiment.ActiveParticipant.Id;
 					Application.OpenURL("https://docs.google.com/forms/d/1Mg9WF5vQzBSCZIw4ooT1K5NcNmyO6SHNcmgIZUI_pF4/viewform?entry.1204578343=" + participantNumber);
 				}
-			break;
-		}
-	}
-	
-	// #################################################################################
-	// #################################################################################
-	// #################################################################################
-
-	
-	private void HandleObservationGUI()
-	{
-		switch(observationState)
-		{
-			case ObservationState.Flashing:
-				GUI.Label(messageRect, "");
-				break;
-			case ObservationState.UserObserving:
-				break;
-			case ObservationState.Resting:
-				GUI.Label(messageRect, restMessage);
-				break;
-			case ObservationState.AwaitingAnswer:
-				GUI.Label(messageRect, guiTextAwaitingAnswer);
-				SendInputToTFC();
+                obScript.Freeze();
 				break;
 		}
-	}
-
-	private void HandleIntroGUI()
-	{
-		switch(introState)
-		{
-			case IntroState.ShowingTrue:
-				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, guiTextShowingTrue);
-				break;
-			case IntroState.ShowingFalse:
-				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, guiTextShowingFalse);
-				break;
-			case IntroState.ShowingExplanation:
-				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, guiTextShowingExplanation);
-				break;
-			case IntroState.ShowingMarker:
-				GUI.Box(boxRect, " ");
-				GUI.Label(messageRect, 
-					"This is the marker, indicating where you must look during the test. Please stick to it!"
-					+ " It will change position every time you answer."
-					+ "\nPress 'Next' when you are ready to start the test, or"
-					+ " 'Back' if you want see the previous information."
-				);
-				break;
-		}
-		HandleIntroInput();
-	}
-
-	private void HandleIntroInput()
-	{
-		switch(introState)
-		{
-			case IntroState.ShowingTrue:
-				if(GUI.Button(mouseRectRight,"Next"))
-				{
-					introState = IntroState.ShowingFalse;
-				}
-				break;
-			case IntroState.ShowingFalse:
-				if(GUI.Button(mouseRectRight,"Next"))
-				{
-					introState = IntroState.ShowingExplanation;
-				}
-				if(GUI.Button(mouseRectLeft,"Back"))
-				{
-					introState = IntroState.ShowingTrue;
-				}
-				break;
-			case IntroState.ShowingExplanation:
-				if(GUI.Button(mouseRectRight,"Next"))
-				{
-					introState = IntroState.ShowingMarker;
-					wantedFocusIndicator.enabled = true;
-					wantedFocusIndicator.SetPositive(2f);
-					wantedFocusIndicator.lerpRandomly = true;
-				}
-				if(GUI.Button(mouseRectLeft,"Back"))
-				{
-					introState = IntroState.ShowingFalse;
-				}
-				break;
-			case IntroState.ShowingMarker:
-				if(GUI.Button(mouseRectRight,"Next"))
-				{
-					wantedFocusIndicator.lerpRandomly = false;
-					StartTrials();
-				}
-				if(GUI.Button(mouseRectLeft,"Back"))
-				{
-					introState = IntroState.ShowingExplanation;
-					wantedFocusIndicator.enabled = false;
-					wantedFocusIndicator.lerpRandomly = true;
-				}
-				break;
-		}
-	}
-
-	private void SendInputToTFC()
-	{
-		if(Input.GetKeyDown(thresholdFinderComponent.positiveKey))
-		{
-			thresholdFinderComponent.AddObservation(true);
-		}
-		else if(Input.GetKeyDown(thresholdFinderComponent.negativeKey))
-		{
-			thresholdFinderComponent.AddObservation(false);
-		}
-	}
-
-	private void StartTrials()
-	{
-		//state = State.RunningTrials;
-		state = State.GatheringObservations;
-
-		gazeLogger.UpdatePath();
-		wantedFocusIndicator.enabled = true;
-
-		UpdateWantedFocusPosition();
-		observationState = ObservationState.Flashing;
-		StartScreenFlash(flashDuration);
-	}
-
-	private void StartScreenFlash(double duration)
-	{
-		flashTimeLeft = duration;
-	}
-
-	private void OnScreenFlashEnd()
-	{
-		if(state == State.GatheringObservations)
-		{
-			StartUserObserving();
-		}
-	}
-
-	private void StartUserObserving()
-	{
-		gazeLogger.Begin();
-		//wantedFocusIndicator.SetNormal();
-
-		observationState = ObservationState.UserObserving;
-		userObservationTimeLeft = userObservationDuration;
-	}
-
-	private void OnUserObservingEnd()
-	{
-		observationState = ObservationState.AwaitingAnswer;
-	}
-
-	private void UpdateWantedFocusPosition()
-	{
-		GenerateNewWantedFocusPosition();
-		wantedFocusIndicator.LerpTo(wantedFocusPosition, wantedFocusIndicatorLerpDuration);
-		gazeLogger.ReferenceLocation = wantedFocusPosition;
-	}
-
-	private void GenerateNewWantedFocusPosition()
-	{
-		// Use uniform distribution for now
-		// TODO implement more proper distribution
-		//wantedFocusPosition = FocusProvider.GetScreenResolution();
-		//wantedFocusPosition.x *= UnityEngine.Random.value;
-		//wantedFocusPosition.y *= UnityEngine.Random.value;
-
-		wantedFocusPosition = CustomRandom.GenerateScreenPoint();
-	}
-	
-
-	private void OnReportObservationEvent(object source, ReportObservationEventArgs args)
-	{
-		print("Reported observation");
-
-		// Pause gaze logging
-		gazeLogger.Pause();
-
-		// Set marker colour
-		if(args.Observation)
-		{
-			wantedFocusIndicator.SetPositive(wantedFocusIndicatorColourFeedbackDuration);
-		}
-		else
-		{
-			wantedFocusIndicator.SetNegative(wantedFocusIndicatorColourFeedbackDuration);
-		}	
-
-		// Flash screen	and move marker
-		observationState = ObservationState.Flashing;
-		StartScreenFlash(flashDuration); 
-		UpdateWantedFocusPosition();
-	}
-
-	private void OnFinishedThresholdFindingEvent(object source, FinishedEventArgs args)
-	{
-		wantedFocusIndicator.enabled = false;
-		state = State.EndTrials;
-	}
-
-	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
-	{
-		print("Finished trial and flashTimeLeft is " + flashTimeLeft);
-		observationState = ObservationState.Resting;
-		StartScreenFlash(flashDurationForRests);
 	}
 
 	void OnApplicationQuit()
 	{
 		gazeLogger.Pause();
 	}
-
 }

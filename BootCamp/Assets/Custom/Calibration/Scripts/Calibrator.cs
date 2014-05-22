@@ -21,10 +21,13 @@ public class Calibrator : MonoBehaviour
 
 	private UI ui;
 
+	private Transform focusIndicator;
+
 	void Start()
 	{
 		cam = Camera.main;
 		ui = new UI(this);
+		focusIndicator = GameObject.FindWithTag ("FocusIndicator").transform;
 		GameObject[] fps = GameObject.FindGameObjectsWithTag("FocusPoint");
 
 		records = new FocusOffsetRecord[fps.Length];
@@ -84,6 +87,7 @@ public class Calibrator : MonoBehaviour
 			{
 				CurrentFocusPoint.StartRecordingOffset(Source);
 			}
+			focusIndicator.position = cam.ScreenToWorldPoint ((Vector3)GetFocusPosition () + Vector3.forward);
 			Debug.DrawLine(
 				cam.ScreenToWorldPoint((Vector3)GetFocusPosition() + Vector3.forward),
 				cam.ScreenToWorldPoint((Vector3)CurrentFocusPoint.ScreenPosition + Vector3.forward),
@@ -102,7 +106,10 @@ public class Calibrator : MonoBehaviour
 				cam.ScreenToWorldPoint((Vector3)GetFocusPosition()) + Vector3.forward,
 				cam.ScreenToWorldPoint((Vector3)offsetPos) + Vector3.forward,
 				Color.red);
+			focusIndicator.position = cam.ScreenToWorldPoint((Vector3)offsetPos + Vector3.forward);
 		}
+
+
 
 		if(Input.GetKeyDown("d"))
 		{

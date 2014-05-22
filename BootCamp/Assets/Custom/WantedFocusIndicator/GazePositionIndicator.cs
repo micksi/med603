@@ -25,6 +25,7 @@ public class GazePositionIndicator : MonoBehaviour {
 		if(Input.GetKey(KeyCode.O))
 		{
 			on = true;
+			print ("O down!");
 		}
 		else
 		{
@@ -34,17 +35,19 @@ public class GazePositionIndicator : MonoBehaviour {
 
 	void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
-		Vector2 centre = FocusProvider.GetGazePosition();
-
-		material.SetFloat("_Radius", (on ? Radius : 0) );
-
-		if(on)
+		if (on) {
+			Vector2 centre = FocusProvider.GetGazePosition ();
+			material.SetFloat ("_Radius", Radius);
+			material.SetColor ("_Colour", Colour);
+			material.SetFloat ("_Thickness", Thickness);
+			material.SetFloat ("_X", centre.x);
+			material.SetFloat ("_Y", centre.y);
+		} 
+		else 
 		{
-			material.SetColor("_Colour", Colour);
-			material.SetFloat("_Thickness", Thickness);
-			material.SetFloat("_X", centre.x);
-			material.SetFloat("_Y", centre.y);
+			material.SetFloat("_Radius", 0);
 		}
+
 		Graphics.Blit(source, dest, material);
 	}
 }

@@ -81,7 +81,6 @@ Shader "Custom/DrawFocus"
 		float h = (i.uv.x - x) / _MainTex_TexelSize.x;
 		float v = (i.uv.y - y) / _MainTex_TexelSize.y;
 
-
 		if( abs(h) < _Radius && abs(v) < _Thickness ||
 			abs(v) < _Radius && abs(h) < _Thickness)
 		{
