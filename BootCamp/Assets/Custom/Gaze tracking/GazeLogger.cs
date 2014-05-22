@@ -14,8 +14,6 @@ public class GazeLogger
 	private string path;
 	private bool logging = false;
 
-	private FocusProvider.Source gazeSource = FocusProvider.Source.Gaze;
-
 	private StringBuilder textBuffer = null;
 	private StringBuilder headerText = null;
 	private const int linesBeforeFlush = 500;
@@ -26,11 +24,11 @@ public class GazeLogger
 
 	public GazeLogger(MonoBehaviour component, string folderPath)
 	{
-		Debug.Log("Creating gazelogger with folderPath " + folderPath);
 		this.component = component;
 		this.experiment = experiment;
 		this.finder = finder;
-		this.folderPath = folderPath;
+        this.path = Path.Combine(folderPath, "Gazelog " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".csv");
+        Debug.Log("Creating gazelogger with path " +   this.path);
 	}
 
 	public void Begin()
@@ -42,12 +40,9 @@ public class GazeLogger
 
 		logging = true;
 		
-		if(gazeSource == FocusProvider.Source.Gaze)
-		{
-			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
-			gazeWrap.GazeUpdate += OnGazeUpdate;
-			Debug.Log("Subscribing gazelogger");
-		}
+		GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
+		gazeWrap.GazeUpdate += OnGazeUpdate;
+		Debug.Log("Subscribing gazelogger");
 	}
 
 	public void Pause()
@@ -60,12 +55,9 @@ public class GazeLogger
 		Flush();
 		logging = false;
 
-		if(gazeSource == FocusProvider.Source.Gaze)
-		{
-			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
-			gazeWrap.GazeUpdate -= OnGazeUpdate;
-			Debug.Log("Unsubscribing gazelogger");
-		}
+		GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
+		gazeWrap.GazeUpdate -= OnGazeUpdate;
+		Debug.Log("Unsubscribing gazelogger");
 	}
 
 	public void OnGazeUpdate(object sender, GazeUpdateEventArgs args)
@@ -76,12 +68,6 @@ public class GazeLogger
 	public void Log(Vector3 position)
 	{
 		Write(DateTime.Now.ToString("HH-mm-ss-fffffff"), position.x, position.y);
-	}
-
-	public void UpdatePath()
-	{
-		string filename = "Gazelog " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".csv";
-		path = Path.Combine(folderPath, filename);
 	}
 
 	private void Flush()
@@ -141,8 +127,6 @@ public class GazeLogger
 		headerText.Append("Gaze tracking data for MED603 experiment 2")
 			.Append(Environment.NewLine);
 		headerText.Append("Current resolution is " + FocusProvider.GetScreenResolution())
-			.Append(Environment.NewLine);
-		headerText.Append("Using " + gazeSource + " as gaze data source.")
 			.Append(Environment.NewLine);
 		headerText.Append("Timestamp is in HH-mm-ss-fffffff")
 			.Append(Environment.NewLine);
