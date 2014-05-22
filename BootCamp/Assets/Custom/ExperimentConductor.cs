@@ -224,6 +224,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnApplicationQuit()
 	{
+        
 		gazeLogger.Pause();
 	}
 }
