@@ -5,11 +5,7 @@ using System.IO;
 using TestFramework;
 using ThresholdFinding;
 
-// TODO Test on groupmates
-// TODO Pilot test on passerby
-
 public class ExperimentConductor : MonoBehaviour {
-
 
 	ObjectiveController obScript;
 
@@ -56,12 +52,12 @@ public class ExperimentConductor : MonoBehaviour {
 		}
 	}
 
-	void freeze()
+	void Freeze()
 	{
         obScript.Freeze();
 	}
 	
-	void unfreeze()
+	void Unfreeze()
 	{
         obScript.Unfreeze();
 	}
@@ -70,7 +66,7 @@ public class ExperimentConductor : MonoBehaviour {
 	{
         obScript = transform.parent.GetComponent<ObjectiveController>();
         obScript.enabled = false;
-        freeze();
+        Freeze();
     		
 		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
 
@@ -115,8 +111,7 @@ public class ExperimentConductor : MonoBehaviour {
 		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
 		experiment.Begin();
 
-		gazeLogger = new GazeLogger(this, experiment, thresholdFinderComponent.Finder);
-		gazeLogger.ReferenceLocation = FocusProvider.GetScreenCentre();
+		gazeLogger = new GazeLogger(this, experiment.ActiveParticipant.FolderPath);
 
 		csfGenerator = GetComponent<CSF>();
 	}
@@ -195,9 +190,9 @@ public class ExperimentConductor : MonoBehaviour {
 				}
 				if(GUI.Button(mouseRectRight,"START"))
 				{
+					gazeLogger.Begin();
 					state = State.PlayingGame;
-					unfreeze();
-					
+					Unfreeze();
 				}
 				break;
 

@@ -6,11 +6,9 @@ using System.IO;
 using ThresholdFinding;
 using TestFramework;
 
-// Logs gaze position data as TIMESTAMP,X,Y, REF_X, REF_Y
-// TODO: Get rid of mutable state plx
+// Logs gaze position data as TIMESTAMP,X,Y
 public class GazeLogger
 {
-
 	private ThresholdFinder finder = null;
 	private Experiment experiment = null;
 	private string path;
@@ -18,30 +16,21 @@ public class GazeLogger
 
 	private FocusProvider.Source gazeSource = FocusProvider.Source.Gaze;
 
-	private StringBuilder sb = null;
-	private StringBuilder sbHeader = null;
+	private StringBuilder textBuffer = null;
+	private StringBuilder headerText = null;
 	private const int linesBeforeFlush = 500;
 
-	// Logged in the beginning of each new file for future reference - this
-	// is where the user is supposed to be looking.
-	public Vector2 ReferenceLocation = new Vector2(0f, 0f);
+	private string folderPath;
 
 	private MonoBehaviour component;
 
-	public GazeLogger(MonoBehaviour component, Experiment experiment, ThresholdFinder finder)
+	public GazeLogger(MonoBehaviour component, string folderPath)
 	{
+		Debug.Log("Creating gazelogger with folderPath " + folderPath);
 		this.component = component;
 		this.experiment = experiment;
 		this.finder = finder;
-
-		this.finder.FinishedTrial += OnFinishedTrialEvent;
-	}
-
-	public GazeLogger(MonoBehaviour component, Experiment experiment, ThresholdFinder finder, 
-		Vector2 referenceLocation)
-		: this(component, experiment, finder)
-	{
-		this.ReferenceLocation = referenceLocation;
+		this.folderPath = folderPath;
 	}
 
 	public void Begin()
@@ -57,7 +46,7 @@ public class GazeLogger
 		{
 			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
 			gazeWrap.GazeUpdate += OnGazeUpdate;
-			Debug.Log("subscribing");
+			Debug.Log("Subscribing gazelogger");
 		}
 	}
 
@@ -75,7 +64,7 @@ public class GazeLogger
 		{
 			GazeWrap gazeWrap = Camera.main.GetComponent<GazeWrap>();
 			gazeWrap.GazeUpdate -= OnGazeUpdate;
-			Debug.Log("unsubscribing");
+			Debug.Log("Unsubscribing gazelogger");
 		}
 	}
 
@@ -91,9 +80,7 @@ public class GazeLogger
 
 	public void UpdatePath()
 	{
-		string folderPath = experiment.ActiveParticipant.FolderPath;
-		Trial currenTrial = finder.CurrentTrial;
-		string filename = currenTrial + " at " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + " gazelog.csv";
+		string filename = "Gazelog " + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fffffff") + ".csv";
 		path = Path.Combine(folderPath, filename);
 	}
 
@@ -102,46 +89,43 @@ public class GazeLogger
 		if(File.Exists(path) == false)
 		{
 			GenerateHeader();
-			System.IO.File.AppendAllText(path,sbHeader.ToString());
+			System.IO.File.AppendAllText(path,headerText.ToString());
 		}
 
-		if(sb == null)
+		if(textBuffer == null)
 		{
 			Debug.Log("Tried to flush; nothing to flush.");
 			return;
 		}
 
-		System.IO.File.AppendAllText(path,sb.ToString());
-		sb = null;
-		// Debug.Log("Flushed...");
+		Debug.Log("Flushinig gazelogger to " + path);
+		System.IO.File.AppendAllText(path,textBuffer.ToString());
+		textBuffer = null;
 	}
 
 	// Does the actual writing of data to the provided path
 	private void WriteLine(string arg)
 	{
-		if(sb == null)
+		if(textBuffer == null)
 		{
 			int capacity = linesBeforeFlush * (arg.Length + 1);
-			// Debug.Log("Capacity: " + capacity);
-			sb = new StringBuilder(capacity, capacity);
+			textBuffer = new StringBuilder(capacity, capacity);
 		}
 
-		//Debug.Log("Length: " + sb.Length + ", MaxCapacity: " + sb.MaxCapacity);
-		if(sb.Length + arg.Length >= sb.MaxCapacity)
+		if(textBuffer.Length + arg.Length >= textBuffer.MaxCapacity)
 		{
 			Flush();
 			WriteLine(arg);
 			return;
 		}
 
-		sb.Append(arg)
+		textBuffer.Append(arg)
 			.Append(Environment.NewLine);
 	}
 
 	private void Write(string arg1, string arg2, string arg3)
 	{
-		string content = arg1 + "," + arg2 + "," + arg3 + "," + 
-			ReferenceLocation.x + "," + ReferenceLocation.y;
+		string content = arg1 + "," + arg2 + "," + arg3;
 		WriteLine(content);
 	}
 
@@ -150,33 +134,22 @@ public class GazeLogger
 		Write(arg1, arg2.ToString(), arg3.ToString());
 	}
 
-	private void OnFinishedTrialEvent(object source, FinishedTrialArgs args)
-	{
-		// Start over in a new file, in order to match the structure of the other logs
-		Flush();
-		UpdatePath(); 
-	}
-
 	private void GenerateHeader()
 	{
-		int headerLength = 300; // header is 229 constant characters + newlines + variable strings
-		sbHeader = new StringBuilder(headerLength);
+		headerText = new StringBuilder(300);
 		// Generate header
-		sbHeader.Append("Gaze tracking data for MED603 experiment 1")
+		headerText.Append("Gaze tracking data for MED603 experiment 2")
 			.Append(Environment.NewLine);
-		sbHeader.Append("User is supposed to look at coordinates " + ReferenceLocation.ToString())
-          	.Append(Environment.NewLine);
-		sbHeader.Append("Current resolution is " + FocusProvider.GetScreenResolution())
+		headerText.Append("Current resolution is " + FocusProvider.GetScreenResolution())
 			.Append(Environment.NewLine);
-		sbHeader.Append("Using " + gazeSource + " as gaze data source.")
+		headerText.Append("Using " + gazeSource + " as gaze data source.")
 			.Append(Environment.NewLine);
-		sbHeader.Append("Timestamp is in HH-mm-ss-fffffff")
+		headerText.Append("Timestamp is in HH-mm-ss-fffffff")
 			.Append(Environment.NewLine);
-		sbHeader.Append("------------------------------")
+		headerText.Append("------------------------------")
 			.Append(Environment.NewLine);
 		
-		sbHeader.Append("Timestamp,x,y,ref_x,ref_y")
+		headerText.Append("Timestamp,x,y")
 			.Append(Environment.NewLine);
-		//print ("header: " + DateTime.Now);
 	}
 }
