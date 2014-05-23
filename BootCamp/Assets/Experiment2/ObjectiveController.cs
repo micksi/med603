@@ -11,6 +11,8 @@ public class ObjectiveController : MonoBehaviour
     
     //[HideInInspector]
     public GameObject currentObjective;
+    public SimpleLogger logger = null;
+
     private Rect dialogRect;
     bool isBig = true;
     Vector2 boxSize = new Vector2(200, 200);
@@ -66,6 +68,8 @@ public class ObjectiveController : MonoBehaviour
         soldier_cam.GetComponent<MouseLook>().enabled = true;
         Screen.showCursor = false;
         Screen.lockCursor = true;
+
+        logger.WriteLineWithTimestamp("Unfreeze");
     }
 
     public GameObject mapCam;
@@ -77,10 +81,13 @@ public class ObjectiveController : MonoBehaviour
             Freeze();
             mapCam.transform.position = transform.position + transform.up * 60;
             mapCam.SetActive(true);
-        } else if (Input.GetKeyUp("tab"))
+            logger.WriteLineWithTimestamp("Open map");
+        } 
+        else if (Input.GetKeyUp("tab"))
         {
             Unfreeze();
             mapCam.SetActive(false);
+            logger.WriteLineWithTimestamp("Close map");
         }
 
         if (isBig == false)
@@ -125,20 +132,23 @@ public class ObjectiveController : MonoBehaviour
                 currentObjective.GetComponent<ObjectiveDialog>().deactivateCamera();
                 counter = 0;
                 isBig = false;
+                logger.WriteLineWithTimestamp("Going small");
             }
         }
         
         if (currentObjective.GetComponent<ObjectiveDialog>().current)
         {
             GUI.Label(dialogRect, "OBJECTIVE: \n\n" + currentObjective.GetComponent<ObjectiveDialog>().dialog, fontStyle);
-        } else
+        } 
+        else
         {
             GoBig();
             //GUI.Label(dialogRect,"No more objectives.\n Thank you for participating!", fontStyle);
             if (isSoldier)
             {
                 soldier_cam.GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
-            } else
+            } 
+            else
             {
                 soldier_cam.GetComponent<ExperimentConductor>().state = ExperimentConductor.State.EndTrials;
             }
@@ -159,17 +169,26 @@ public class ObjectiveController : MonoBehaviour
         {
             currentObjective.GetComponent<ObjectiveDialog>().current = false;
             
+            logger.WriteLineWithTimestamp("Hit objective " + getNextObjective);
+
             getNextObjective++;
             if (checkpoints.Length > getNextObjective)
             {
                 currentObjective = checkpoints [getNextObjective];
                 currentObjective.GetComponent<ObjectiveDialog>().current = true;
                 isBig = true;
-            } else
+            } 
+            else
             {
                 Screen.showCursor = true;
                 //print ("no more objectives");
+                logger.WriteLineWithTimestamp("No more objectives");
             }
         }
+    }
+
+    void OnApplicationQuit()
+    {
+        logger.Flush();
     }
 }

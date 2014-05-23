@@ -98,7 +98,7 @@ public class GazeLogger
 			textBuffer = new StringBuilder(capacity, capacity);
 		}
 
-		if(textBuffer.Length + arg.Length >= textBuffer.MaxCapacity)
+		if(textBuffer.Length + arg.Length >= textBuffer.Capacity)
 		{
 			Flush();
 			WriteLine(arg);

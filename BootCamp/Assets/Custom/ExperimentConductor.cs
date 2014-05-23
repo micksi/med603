@@ -63,11 +63,7 @@ public class ExperimentConductor : MonoBehaviour {
 	}
 
 	void Start()
-	{
-        obScript = transform.parent.GetComponent<ObjectiveController>();
-        obScript.enabled = false;
-        Freeze();
-    		
+	{  		
 		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
 
 		string mode = ConfigReader.GetValueOf("mode");
@@ -112,6 +108,11 @@ public class ExperimentConductor : MonoBehaviour {
 		experiment.Begin();
 
 		gazeLogger = new GazeLogger(this, experiment.ActiveParticipant.FolderPath);
+
+		obScript = transform.parent.GetComponent<ObjectiveController>();
+        obScript.enabled = false;
+        obScript.logger = new SimpleLogger(Path.Combine(experiment.ActiveParticipant.FolderPath, "ActionLog.csv"));
+        Freeze();
 
 		csfGenerator = GetComponent<CSF>();
 	}
