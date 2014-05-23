@@ -1,5 +1,8 @@
 mode=pixelation
 
+halfResolutionEccentricity=26.32
+useNoScreenEffect=false
+
 //ExperimentConductor
 flashDuration=1.5
 flashDurationForRests=10

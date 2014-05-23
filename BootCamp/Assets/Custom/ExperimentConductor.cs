@@ -36,6 +36,8 @@ public class ExperimentConductor : MonoBehaviour {
 	private Rect boxRect;
 	private int boxExtension;
 
+    private bool useNoScreenEffect = false;
+
 	private Texture2D whiteTex = null;
 	private Texture2D blackTex = null;
 
@@ -65,6 +67,11 @@ public class ExperimentConductor : MonoBehaviour {
 	void Start()
 	{  		
 		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
+        useNoScreenEffect = Boolean.Parse(ConfigReader.GetValueOf("useNoScreenEffect"));
+        halfResolutionEccentricity = Single.Parse(ConfigReader.GetValueOf("halfResolutionEccentricity"));
+
+        Debug.Log("useNoScreenEffect: " + useNoScreenEffect);
+        Debug.Log("halfResolutionEccentricity: " + halfResolutionEccentricity);
 
 		string mode = ConfigReader.GetValueOf("mode");
 
@@ -125,6 +132,12 @@ public class ExperimentConductor : MonoBehaviour {
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
+        if (useNoScreenEffect)
+        {
+            Graphics.Blit(source, dest);
+            return;
+        }
+
 		RenderTexture csf = null;
 
 		switch(state)
