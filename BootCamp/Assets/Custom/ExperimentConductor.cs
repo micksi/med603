@@ -80,6 +80,7 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			case "pixelation":
 				csfUser = pixelationShader;
+                material.SetFloat("_DownsampleAt0", Single.Parse(ConfigReader.GetValueOf("_DownsampleAt0")));
 				break;
 			case "antialiasing":
 				csfUser = antialiasingShader;

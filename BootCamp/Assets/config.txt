@@ -1,5 +1,6 @@
 mode=pixelation
 
+_DownsampleAt0=2
 halfResolutionEccentricity=26.32
 useNoScreenEffect=false
 
