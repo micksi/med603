@@ -263,7 +263,7 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.EndTrials:
 				GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
 				GUI.Box(boxRect, " ");
-                GUI.Label(messageRect, "No more objectives!\n Thank you for participating.\n\nPlease apoproach the test conductor for a short interview!");
+                GUI.Label(messageRect, "No more objectives!\n Thank you for participating.\n\nPlease approach the test conductor for a short interview!");
 				
                 obScript.Freeze();
 				break;
