@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class ObjectiveController : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class ObjectiveController : MonoBehaviour
     //[HideInInspector]
     public GameObject currentObjective;
     public SimpleLogger logger = null;
+
+    public event EventHandler<ExitCheckpointArgs> ExitCheckpointEvent;
 
     private Rect dialogRect;
     bool isBig = true;
@@ -125,7 +128,8 @@ public class ObjectiveController : MonoBehaviour
             Freeze();
             currentObjective.GetComponent<ObjectiveDialog>().activateCamera();
             GoBig();
-            GUI.Label(dialogRect, "\n\n\n\nYou are at the red square. \nPress \"" + key + "\" on the keyboad to minimize", fontStyle2);
+            GUI.Label(dialogRect, "\n\n\n\nRemember to set the pixelation level so that you can't see it once you move on." 
+                      + "\nYou are at the red square. \n\nPress \"" + key + "\" on the keyboard to minimize", fontStyle2);
             if (Input.GetKeyDown(key))
             {
                 Unfreeze();
@@ -133,6 +137,8 @@ public class ObjectiveController : MonoBehaviour
                 counter = 0;
                 isBig = false;
                 logger.WriteLineWithTimestamp("Going small");
+
+                ExitCheckpointEvent(this, new ExitCheckpointArgs(getNextObjective));
             }
         }
         
@@ -190,5 +196,15 @@ public class ObjectiveController : MonoBehaviour
     void OnApplicationQuit()
     {
         logger.Flush();
+    }
+
+    public class ExitCheckpointArgs : EventArgs
+    {
+        public int CheckpointID;
+
+        public ExitCheckpointArgs(int CheckpointID)
+        {
+            this.CheckpointID = CheckpointID;
+        }
     }
 }
