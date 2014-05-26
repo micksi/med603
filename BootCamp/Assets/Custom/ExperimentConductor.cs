@@ -141,13 +141,13 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void Update()
 	{
-        if (Input.GetKeyDown(e2IncreaseKey))
+        if (Input.GetKey(e2IncreaseKey))
         {
             halfResolutionEccentricity += e2StepSize;
             Debug.Log(e2StepSize.ToString() + "," + halfResolutionEccentricity);
             e2Logger.WriteLineWithTimestamp(e2StepSize.ToString() + "," + halfResolutionEccentricity);
         } 
-        else if (Input.GetKeyDown(e2DecreaseKey))
+        else if (Input.GetKey(e2DecreaseKey))
         {
             halfResolutionEccentricity -= e2StepSize;
             if(halfResolutionEccentricity < 0.0f)
