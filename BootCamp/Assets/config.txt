@@ -1,9 +1,15 @@
 mode=pixelation
 
-_DownsampleAt0=2
+_DownsampleAt0=16
 halfResolutionEccentricity=26.32
 useNoScreenEffect=false
 
+e2StepSize=1
+
+e2IncreaseKey=KeypadPlus
+
+e2DecreaseKey=KeypadMinus
+y
 //ExperimentConductor
 flashDuration=1.5
 flashDurationForRests=10

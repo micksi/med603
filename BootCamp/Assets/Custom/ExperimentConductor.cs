@@ -36,6 +36,12 @@ public class ExperimentConductor : MonoBehaviour {
 	private Rect boxRect;
 	private int boxExtension;
 
+    private float e2;
+    private float e2StepSize;
+    private KeyCode e2IncreaseKey;
+    private KeyCode e2DecreaseKey;
+    private SimpleLogger e2Logger;
+
     private bool useNoScreenEffect = false;
 
 	private Texture2D whiteTex = null;
@@ -123,13 +129,35 @@ public class ExperimentConductor : MonoBehaviour {
         Freeze();
 
 		csfGenerator = GetComponent<CSF>();
+
+        e2StepSize = Single.Parse(ConfigReader.GetValueOf("e2StepSize"));
+        e2IncreaseKey = (KeyCode) Enum.Parse(typeof(KeyCode), ConfigReader.GetValueOf("e2IncreaseKey"));
+        e2DecreaseKey = (KeyCode) Enum.Parse(typeof(KeyCode), ConfigReader.GetValueOf("e2DecreaseKey"));
+        e2Logger = new SimpleLogger(Path.Combine(experiment.ActiveParticipant.FolderPath, "e2Log.csv"));
+
+        e2Logger.WriteLine("Timestamp,delta,halfResolutionEccentricity");
 	}
 
 
 	void Update()
 	{
-		//print ("State: " + state);
-	}
+        if (Input.GetKeyDown(e2IncreaseKey))
+        {
+            halfResolutionEccentricity += e2StepSize;
+            Debug.Log(e2StepSize.ToString() + "," + halfResolutionEccentricity);
+            e2Logger.WriteLineWithTimestamp(e2StepSize.ToString() + "," + halfResolutionEccentricity);
+        } 
+        else if (Input.GetKeyDown(e2DecreaseKey))
+        {
+            halfResolutionEccentricity -= e2StepSize;
+            if(halfResolutionEccentricity < 0.0f)
+            {
+                halfResolutionEccentricity = 0.0f;
+            }
+            Debug.Log((-e2StepSize).ToString() + "," + halfResolutionEccentricity);
+            e2Logger.WriteLineWithTimestamp((-e2StepSize).ToString() + "," + halfResolutionEccentricity);
+        }
+    }
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
@@ -234,7 +262,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnApplicationQuit()
 	{
-        
+        e2Logger.Flush();
 		gazeLogger.Pause();
 	}
 }
