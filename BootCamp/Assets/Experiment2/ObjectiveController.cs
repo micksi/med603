@@ -128,8 +128,8 @@ public class ObjectiveController : MonoBehaviour
             Freeze();
             currentObjective.GetComponent<ObjectiveDialog>().activateCamera();
             GoBig();
-            GUI.Label(dialogRect, "\n\n\n\nRemember to set the pixelation level so that you can't see it once you move on." 
-                      + "\nYou are at the red square. \n\nPress \"" + key + "\" on the keyboard to minimize", fontStyle2);
+            GUI.Label(dialogRect, "\n\n\nRemember to set the pixelation level so that you can't see it before you reach the next checkpoint." 
+                      + "\nYou are at the red square. \n\nPress the \"" + key + "\" keyboard key to minimize", fontStyle2);
             if (Input.GetKeyDown(key))
             {
                 Unfreeze();

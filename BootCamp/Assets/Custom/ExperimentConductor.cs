@@ -220,8 +220,11 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.GameInstructions:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect,"Your mission in the game is to move to different checkpoints. " + 
-			          "\nAt each checkpoint, you will be presented with information about the next checkpoint." +
-			          "\nThe descriptions will both include text instructions and a visual representation of the path you must follow.");
+                          "\nIn between checkpoints, you must adjust the pixelation amount so that you don't see pixelation." +
+                          "\nIt is important that you finish adjusting before you reach the next checkpoint."
+			          //"\nAt each checkpoint, you will be presented with information about the next checkpoint." +
+			          //"\nThe descriptions will both include text instructions and a visual representation of the path you must follow."
+                          );
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					state = State.SendToCalibration;
@@ -233,10 +236,10 @@ public class ExperimentConductor : MonoBehaviour {
 				break;
             case State.GameInstructions2:
                 GUI.Box(boxRect, " ");
-                GUI.Label(messageRect,"While you're playing the game, use the " + e2IncreaseKey + " and " 
-                          + e2DecreaseKey + " keyboard buttons to decrease or increase the pixelation effect." + 
+                GUI.Label(messageRect,"While you're playing the game, use the " + e2DecreaseKey + " and " 
+                          + e2IncreaseKey + " keyboard buttons to narrow or widen the pixelation effect." + 
                           "\nSet it to a level where you don't feel that you notice it." +
-                          "\nYou can adjust it at any time during the game, and are encouraged to do so.");
+                          "\nYou can adjust it at any time between checkpoints, and are encouraged to do so.");
                 if(GUI.Button(mouseRectLeft,"Back"))
                 {
                     state = State.GameInstructions;
