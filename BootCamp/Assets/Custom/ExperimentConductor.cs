@@ -27,7 +27,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private GazeLogger gazeLogger = null;
 
 	// States
-	public enum State { SendToCalibration, GameInstructions, ReadyForTesting, PlayingGame, EndTrials };
+    public enum State { SendToCalibration, GameInstructions, GameInstructions2, ReadyForTesting, PlayingGame, EndTrials };
 	public State state = State.SendToCalibration;
 
 	private Rect messageRect;
@@ -219,12 +219,26 @@ public class ExperimentConductor : MonoBehaviour {
 				}
 				if(GUI.Button(mouseRectRight,"Next"))
 				{
-					state = State.ReadyForTesting;
+                    state = State.GameInstructions2;
 				}
 				break;
-
-			case State.ReadyForTesting:
-				GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
+            case State.GameInstructions2:
+                GUI.Box(boxRect, " ");
+                GUI.Label(messageRect,"While you're playing the game, use the " + e2IncreaseKey + " and " + e2DecreaseKey + " to decrease or increase the pixelation effect." + 
+                          "\nSet it to a level where you don't feel that you notice it." +
+                          "\nYou can adjust it at any time during the game, and are encouraged to do so.");
+                if(GUI.Button(mouseRectLeft,"Back"))
+                {
+                    state = State.GameInstructions;
+                }
+                if(GUI.Button(mouseRectRight,"Next"))
+                {
+                    state = State.ReadyForTesting;
+                }
+                break;
+                
+            case State.ReadyForTesting:
+                GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect ,"Please keep your eyes on the screen. \nWhen you are ready, press the \"START\" button to start the game \n\nEnjoy!");
 				if(GUI.Button(mouseRectLeft,"Back"))
@@ -249,12 +263,8 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.EndTrials:
 				GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
 				GUI.Box(boxRect, " ");
-				if(GUI.Button(messageRect, "No more objectives!\n Thank you for participating.\n\nPlease click here to start the questionnaire!"))
-				{
-					state = State.SendToCalibration;
-					uint participantNumber = experiment.ActiveParticipant.Id;
-					Application.OpenURL("https://docs.google.com/forms/d/1Mg9WF5vQzBSCZIw4ooT1K5NcNmyO6SHNcmgIZUI_pF4/viewform?entry.1204578343=" + participantNumber);
-				}
+                GUI.Label(messageRect, "No more objectives!\n Thank you for participating.\n\nPlease apoproach the test conductor for a short interview!");
+				
                 obScript.Freeze();
 				break;
 		}
