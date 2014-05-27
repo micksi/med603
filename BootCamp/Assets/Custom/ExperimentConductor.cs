@@ -17,7 +17,6 @@ public class ExperimentConductor : MonoBehaviour {
 	public Shader csfUser; // Must have _CSF and _MainTex texture properties
 	public Shader antialiasingShader;
 	public Shader pixelationShader;
-    private float halfResolutionEccentricityBase;
 	public float halfResolutionEccentricity = 26.32f;
 	//public bool showCursor = true;
 
@@ -28,7 +27,7 @@ public class ExperimentConductor : MonoBehaviour {
 	private GazeLogger gazeLogger = null;
 
 	// States
-    public enum State { SendToCalibration, GameInstructions, GameInstructions2, ReadyForTesting, PlayingGame, EndTrials };
+	public enum State { SendToCalibration, GameInstructions, ReadyForTesting, PlayingGame, EndTrials };
 	public State state = State.SendToCalibration;
 
 	private Rect messageRect;
@@ -36,12 +35,6 @@ public class ExperimentConductor : MonoBehaviour {
 	private Rect mouseRectRight;
 	private Rect boxRect;
 	private int boxExtension;
-
-    private float e2;
-    private float e2StepSize;
-    private KeyCode e2IncreaseKey;
-    private KeyCode e2DecreaseKey;
-    private SimpleLogger e2Logger;
 
     private bool useNoScreenEffect = false;
 
@@ -75,9 +68,10 @@ public class ExperimentConductor : MonoBehaviour {
 	{  		
 		boxExtension = Int32.Parse(ConfigReader.GetValueOf("boxExtension"));
         useNoScreenEffect = Boolean.Parse(ConfigReader.GetValueOf("useNoScreenEffect"));
-        halfResolutionEccentricityBase = Single.Parse(ConfigReader.GetValueOf("halfResolutionEccentricity"));
+        halfResolutionEccentricity = Single.Parse(ConfigReader.GetValueOf("halfResolutionEccentricity"));
 
-        halfResolutionEccentricity = halfResolutionEccentricityBase;
+        Debug.Log("useNoScreenEffect: " + useNoScreenEffect);
+        Debug.Log("halfResolutionEccentricity: " + halfResolutionEccentricity);
 
 		string mode = ConfigReader.GetValueOf("mode");
 
@@ -86,7 +80,6 @@ public class ExperimentConductor : MonoBehaviour {
 		{
 			case "pixelation":
 				csfUser = pixelationShader;
-                material.SetFloat("_DownsampleAt0", Single.Parse(ConfigReader.GetValueOf("_DownsampleAt0")));
 				break;
 			case "antialiasing":
 				csfUser = antialiasingShader;
@@ -115,6 +108,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 		// Set up listeners
 		thresholdFinderComponent = GetComponent<ThresholdFinderComponent>();
+
 		testFramework = GetComponent<TestFramework.TestFramework>();
 
 		experiment = new Experiment(experimentName, testFramework, thresholdFinderComponent);
@@ -128,45 +122,13 @@ public class ExperimentConductor : MonoBehaviour {
         Freeze();
 
 		csfGenerator = GetComponent<CSF>();
-
-        e2StepSize = Single.Parse(ConfigReader.GetValueOf("e2StepSize"));
-        e2IncreaseKey = (KeyCode) Enum.Parse(typeof(KeyCode), ConfigReader.GetValueOf("e2IncreaseKey"));
-        e2DecreaseKey = (KeyCode) Enum.Parse(typeof(KeyCode), ConfigReader.GetValueOf("e2DecreaseKey"));
-        e2Logger = new SimpleLogger(Path.Combine(experiment.ActiveParticipant.FolderPath, "e2Log.csv"));
-
-        e2Logger.WriteLine("Timestamp,halfResolutionEccentricity");
-
-        obScript.ExitCheckpointEvent += OnExitCheckpoint;
 	}
 
 
 	void Update()
 	{
-        if (Input.GetKey(e2IncreaseKey))
-        {
-            halfResolutionEccentricity += e2StepSize;
-        } 
-        else if (Input.GetKey(e2DecreaseKey))
-        {
-            halfResolutionEccentricity -= e2StepSize;
-            if(halfResolutionEccentricity < 0.0f)
-            {
-                halfResolutionEccentricity = 0.0f;
-            }
-        }
-        else  if (Input.GetKeyUp(e2IncreaseKey) || Input.GetKeyUp(e2DecreaseKey))
-        {
-            e2Logger.WriteLineWithTimestamp(halfResolutionEccentricity.ToString());
-        }
-    }
-
-    public void OnExitCheckpoint(object obj, ObjectiveController.ExitCheckpointArgs args)
-    {
-        Debug.Log("On exit checkpoint " + args.CheckpointID);
-        halfResolutionEccentricity = halfResolutionEccentricityBase;
-        e2Logger.WriteLine("RESET AT CHECKPOINT "  + args.CheckpointID);
-        e2Logger.WriteLineWithTimestamp(halfResolutionEccentricity.ToString());
-    }
+		//print ("State: " + state);
+	}
 
 	public void OnRenderImage(RenderTexture source, RenderTexture dest)
 	{
@@ -220,38 +182,20 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.GameInstructions:
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect,"Your mission in the game is to move to different checkpoints. " + 
-                          "\nIn between checkpoints, you must adjust the pixelation amount so that you don't see pixelation." +
-                          "\nIt is important that you finish adjusting before you reach the next checkpoint."
-			          //"\nAt each checkpoint, you will be presented with information about the next checkpoint." +
-			          //"\nThe descriptions will both include text instructions and a visual representation of the path you must follow."
-                          );
+			          "\nAt each checkpoint, you will be presented with information about the next checkpoint." +
+			          "\nThe descriptions will both include text instructions and a visual representation of the path you must follow.");
 				if(GUI.Button(mouseRectLeft,"Back"))
 				{
 					state = State.SendToCalibration;
 				}
 				if(GUI.Button(mouseRectRight,"Next"))
 				{
-                    state = State.GameInstructions2;
+					state = State.ReadyForTesting;
 				}
 				break;
-            case State.GameInstructions2:
-                GUI.Box(boxRect, " ");
-                GUI.Label(messageRect,"While you're playing the game, use the " + e2DecreaseKey + " and " 
-                          + e2IncreaseKey + " keyboard buttons to narrow or widen the pixelation effect." + 
-                          "\nSet it to a level where you don't feel that you notice it." +
-                          "\nYou can adjust it at any time between checkpoints, and are encouraged to do so.");
-                if(GUI.Button(mouseRectLeft,"Back"))
-                {
-                    state = State.GameInstructions;
-                }
-                if(GUI.Button(mouseRectRight,"Next"))
-                {
-                    state = State.ReadyForTesting;
-                }
-                break;
-                
-            case State.ReadyForTesting:
-                GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
+
+			case State.ReadyForTesting:
+				GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
 				GUI.Box(boxRect, " ");
 				GUI.Label(messageRect ,"Please keep your eyes on the screen. \nWhen you are ready, press the \"START\" button to start the game \n\nEnjoy!");
 				if(GUI.Button(mouseRectLeft,"Back"))
@@ -276,13 +220,12 @@ public class ExperimentConductor : MonoBehaviour {
 			case State.EndTrials:
 				GUI.DrawTexture(new Rect(0,0,Screen.width, Screen.height),bs);
 				GUI.Box(boxRect, " ");
-                if(GUI.Button(messageRect, "No more objectives!\n Thank you for participating.\n\nPlease click here to start the questionnaire!"))
-                {
-                    state = State.SendToCalibration;
-                    uint participantNumber = experiment.ActiveParticipant.Id;
-                    Application.OpenURL("https://docs.google.com/forms/d/1Vi7Vrc2P0lpl8pqvnmOaxZddX6fLryEB9a5quBmW8qY/viewform?entry.1204578343=" + participantNumber);
-                }
-                
+				if(GUI.Button(messageRect, "No more objectives!\n Thank you for participating.\n\nPlease click here to start the questionnaire!"))
+				{
+					state = State.SendToCalibration;
+					uint participantNumber = experiment.ActiveParticipant.Id;
+					Application.OpenURL("https://docs.google.com/forms/d/1Mg9WF5vQzBSCZIw4ooT1K5NcNmyO6SHNcmgIZUI_pF4/viewform?entry.1204578343=" + participantNumber);
+				}
                 obScript.Freeze();
 				break;
 		}
@@ -290,7 +233,7 @@ public class ExperimentConductor : MonoBehaviour {
 
 	void OnApplicationQuit()
 	{
-        e2Logger.Flush();
+        
 		gazeLogger.Pause();
 	}
 }

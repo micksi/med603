@@ -13,7 +13,6 @@ public class SimpleLogger
 	{
 		this.path = path;	
 		WriteLineWithTimestamp("Constructed logger");
-        Debug.Log("Created SimpleLogger with path " + path);
 	}
 
 	public void WriteLine(string text)

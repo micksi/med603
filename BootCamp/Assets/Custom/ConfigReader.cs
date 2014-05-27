@@ -41,7 +41,6 @@ public static class ConfigReader {
 				{
 					line = line.Substring(line.IndexOf(delimiter) + 1);
 					found = true;
-                    Debug.Log("Config: Found " + key + " with value " + line);
 					break;
 				}
 			}
