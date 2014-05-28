@@ -1,7 +1,7 @@
 mode=pixelation
 
 _DownsampleAt0=16
-halfResolutionEccentricity=26.32
+halfResolutionEccentricity=2.3
 useNoScreenEffect=false
 
 e2StepSize=0.2

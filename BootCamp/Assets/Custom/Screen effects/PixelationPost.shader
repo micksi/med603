@@ -40,10 +40,11 @@ Shader "Custom/PixelationPost" {
 		float4 csf = tex2D(_CSF, i.uv);
 
 		// Effect is greatest when csf is black i.e. 0
-		float effectSize = 1 - GetIntensity(csf.xyz);
+		float intensity = GetIntensity(csf.xyz);
+		float effectSize = 1 - intensity;
 
 		// Downsampling value interpolated from 0 to max by effect size
-		int downsampling = floor(lerp(0, _DownsampleAt0, effectSize));
+		int downsampling = floor(1.0f / intensity);
 		
 		float2 texcoord = i.uv.xy // pixel position
 			- fmod(i.uv.xy, downsampling * _MainTex_TexelSize.xy) // quantize to nearest downsampled step
