@@ -44,7 +44,7 @@ Shader "Custom/PixelationPost" {
 		float effectSize = 1 - intensity;
 
 		// Downsampling value interpolated from 0 to max by effect size
-		int downsampling = floor(1.0f / intensity);
+		int downsampling = floor(1.0f / sqrt(intensity));
 		
 		float2 texcoord = i.uv.xy // pixel position
 			- fmod(i.uv.xy, downsampling * _MainTex_TexelSize.xy) // quantize to nearest downsampled step
